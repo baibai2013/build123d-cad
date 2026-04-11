@@ -29,10 +29,11 @@ English | [中文](README.md)
 
 <br>
 
-Built on CadQuery founder Dave Cowden's modeling philosophy,<br>
-with full build123d API coverage, 20+ real-world examples (parts/assembly/surface/joints/mounting), and 6 categories of reference docs.<br>
+Built on CadQuery founder Dave Cowden's modeling philosophy and Peter Corke's simulation philosophy,<br>
+with full build123d API coverage, 25+ real-world examples (parts/assembly/surface/joints/mounting/simulation), and 8 categories of reference docs.<br>
 Distilled into 5 core mental models, 8 code quality heuristics, and a complete CAD code generation workflow.<br>
-Covering part modeling, assembly workflow, OCP visualization, manufacturing processes, Dave Cowden philosophy, and verification methods.
+Covering part modeling, assembly workflow, OCP visualization, manufacturing processes, Dave Cowden philosophy, verification methods,<br>
+Peter Corke simulation philosophy, and motion simulation (FK/IK/gait/URDF/PyBullet).
 
 [Examples](#examples) · [Installation](#installation) · [What's Included](#whats-included) · [Part Gallery](#part-gallery)
 
@@ -250,11 +251,21 @@ code --install-extension bernhard-42.ocp-cad-viewer  # VS Code CAD viewer extens
 | [13_enclosure_assembly.py](assets/assembly/13_enclosure_assembly.py) | Enclosure assembly preview |
 | [13_enclosure_exploded.py](assets/assembly/13_enclosure_exploded.py) | Enclosure exploded animation (16s loop) |
 
+### Motion Simulation (`assets/simulation/`)
+
+| # | Example | Difficulty | Key Techniques |
+|---|---------|-----------|----------------|
+| 21 | [FK Leg Chain](assets/simulation/21_fk_leg_chain.py) | ★★ | DH homogeneous transforms + OCP visualization |
+| 22 | [IK Single Leg](assets/simulation/22_ik_single_leg.py) | ★★★ | Analytical IK + dual configuration comparison |
+| 23 | [Workspace Cloud](assets/simulation/23_workspace_cloud.py) | ★★ | FK point cloud + reachability visualization |
+| 24 | [Gait Generator](assets/simulation/24_gait_generator.py) | ★★★★ | Bezier trajectory + IK + OCP animation |
+| 25 | [URDF Export](assets/simulation/25_urdf_export.py) | ★★★ | build123d → URDF + STL |
+
 ---
 
 ## Utility Scripts
 
-The `scripts/` directory contains 8 utility tools organized by function:
+The `scripts/` directory contains 10 utility tools organized by function:
 
 ### Validation (`scripts/validate/`)
 
@@ -284,6 +295,13 @@ The `scripts/` directory contains 8 utility tools organized by function:
 |--------|----------|
 | [`explode_generator.py`](scripts/assembly/explode_generator.py) | Universal exploded animation code generator |
 
+### Simulation (`scripts/simulation/`)
+
+| Script | Function |
+|--------|----------|
+| [`export_urdf.py`](scripts/simulation/export_urdf.py) | STEP → URDF automatic export (traverse Compound) |
+| [`pybullet_preview.py`](scripts/simulation/pybullet_preview.py) | PyBullet URDF loading + gait preview |
+
 ---
 
 ## Repository Structure
@@ -292,7 +310,7 @@ The `scripts/` directory contains 8 utility tools organized by function:
 build123d-cad/
 ├── README.md / README_EN.md              # Chinese / English README
 ├── SKILL.md                              # Core skill definition (installable)
-├── references/                           # 6 categories of reference docs
+├── references/                           # 8 categories of reference docs
 │   ├── parts/                            # Part modeling
 │   │   ├── cheatsheet.md                 #   API quick reference
 │   │   ├── patterns.md                   #   11 modeling patterns
@@ -313,21 +331,31 @@ build123d-cad/
 │   │   └── cross-domain.md              #   Cross-domain (FEA/kinematics/PCB)
 │   ├── dave-cowden/                      # Dave Cowden philosophy
 │   │   └── assembly-philosophy.md        #   Assembly philosophy & honest boundaries
-│   └── verify/                           # Verification
-│       ├── cadcodeverify.md              #   3-layer verification architecture
-│       ├── manual-checklist.md           #   Manual verification checklist
-│       └── visual-verification.md        #   OCP visual verification
-├── assets/                               # 20+ runnable examples
+│   ├── verify/                           # Verification
+│   │   ├── cadcodeverify.md              #   3-layer verification architecture
+│   │   ├── manual-checklist.md           #   Manual verification checklist
+│   │   └── visual-verification.md        #   OCP visual verification
+│   ├── peter-corke/                      # Peter Corke simulation philosophy
+│   │   └── simulation-philosophy.md      #   "Learn by doing" + DH standard
+│   └── simulation/                       # Motion simulation
+│       ├── forward-kinematics.md         #   FK: DH params + homogeneous transforms
+│       ├── inverse-kinematics.md         #   IK: analytical/numerical + workspace
+│       ├── gait-planning.md              #   Gait: Bezier trajectory + IK
+│       ├── urdf-export.md                #   URDF: build123d → URDF end-to-end
+│       └── pybullet-quickstart.md        #   PyBullet quick start
+├── assets/                               # 25+ runnable examples
 │   ├── parts/                            #   13 parts (01~13)
 │   ├── assembly/                         #   Assembly preview + exploded animation
 │   ├── surface/                          #   Surface modeling examples
 │   ├── joints/                           #   Joint assembly examples
-│   └── mounting/                         #   Mounting template examples
-└── scripts/                              # 8 utility scripts
+│   ├── mounting/                         #   Mounting template examples
+│   └── simulation/                       #   Motion simulation (FK/IK/gait/URDF)
+└── scripts/                              # 10 utility scripts
     ├── validate/                         #   Geometry validation + collision detection
     ├── analysis/                         #   Param extraction + STEP info + mass analysis
     ├── export/                           #   Batch export + print export
-    └── assembly/                         #   Exploded animation generator
+    ├── assembly/                         #   Exploded animation generator
+    └── simulation/                       #   URDF export + PyBullet preview
 ```
 
 ---

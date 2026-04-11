@@ -7,8 +7,9 @@ description: |
   触发词：「build123d」「CAD建模」「生成零件」「参数化设计」「导出STEP」「做一个零件」
   「画一个」「建模」「3D打印」「机械零件」「CAD代码」「CNC」「激光切割」
   「设计意图」「建模哲学」「代码评审」「像机械师」。
-  包含 6 大类参考文档、20+ 可运行示例和 8 个工具脚本。
-  覆盖零件建模、装配流、OCP 可视化、制造工艺、Dave Cowden 哲学、验证方法。
+  包含 8 大类参考文档、25+ 可运行示例和 10 个工具脚本。
+  覆盖零件建模、装配流、OCP 可视化、制造工艺、Dave Cowden 哲学、验证方法、
+  Peter Corke 仿真哲学、运动仿真（FK/IK/步态/URDF/PyBullet）。
 ---
 
 # build123d CAD Expert
@@ -34,6 +35,7 @@ description: |
 8. **装配与展开提示**：当零件包含多个独立体（分离实体 / 独立 STEP / Joint 关联零件）完成后，主动提示用户是否需要生成装配预览和爆炸展开图。用户确认后，默认输出两个文件：`xxx_assembly.py`（装配预览）和 `xxx_exploded.py`（爆炸展开），用 OCP CAD Viewer 的 `show()` 展示。装配模式详见 `references/assembly/assembly-patterns.md`，爆炸动画详见 `references/assembly/exploded-animation.md`
 9. **曲面建模指引**：当用户需要有机曲面（流线型外壳、多截面过渡、扭转扫掠）时，引导到 `references/parts/surface-modeling.md`，优先使用 Loft 多截面放样和 Sweep 扭转扫掠，注意 G1/G2 曲面连续性
 10. **制造工艺提醒**：代码生成后，根据用户的目标工艺主动提醒设计约束。3D 打印见 `references/process/3d-printing.md`（壁厚/悬臂/公差），CNC 见 `references/process/cnc-machining.md`（刀具可达/深宽比），激光切割见 `references/process/laser-cutting.md`（切缝补偿/DXF 导出）
+11. **运动仿真指引**：当用户需要让零件「动起来」（步态、IK、仿真）时，引导到 `references/simulation/` 和 `references/peter-corke/simulation-philosophy.md`。FK/IK 用纯 Python + numpy 实现，步态用贝塞尔轨迹 + IK，URDF 导出用 `scripts/simulation/export_urdf.py`，物理仿真用 PyBullet。核心思路来自 Peter Corke 的「Learn by doing」哲学：可执行代码优先于数学推导
 
 ---
 
@@ -70,6 +72,7 @@ description: |
 | **多零件装配** | **Compound + Label + Joints**（见 `references/assembly/assembly-patterns.md`） |
 | **关节/运动连接** | **RevoluteJoint / BallJoint + connect_to()**（见 `references/assembly/joints-reference.md`） |
 | **复杂轮廓（齿轮/凸轮）** | **⚠️ 根实体 + 逐特征 Algebra Mode 融合**（见下方「大型非凸多边形面」说明） |
+| **运动仿真（FK/IK/步态）** | **DH 参数 + 解析 IK + 贝塞尔步态**（见 `references/simulation/`） |
 
 完整代码模板见 `references/parts/patterns.md`，可运行示例见 `assets/` 目录。
 
@@ -599,6 +602,7 @@ print(f"体积: {part.part.volume:.2f} mm³")
 - **复杂装配约束**：build123d 无原生约束求解器（刻意设计选择），用 Joints + Python 编排替代。详见 `references/dave-cowden/assembly-philosophy.md`
 - **大型装配体（>50零件）**：性能可能较慢，建议分零件生成再组装
 - **有限元分析**：build123d 只负责几何建模，不做 FEA
+- **运动仿真**：skill 提供 FK/IK/步态的 Python 参考实现和 PyBullet 预览，但生产级实时控制需要 ROS2，自适应步态需要强化学习框架（legged_gym）。详见 `references/peter-corke/simulation-philosophy.md` 的诚实边界表
 - **精确渐开线齿轮**：近似渐开线已够用于大多数场景，精确齿轮需 cadquery-gear 等外部库
 - **`assets/parts/08_gear_spur.py` 有已知渲染问题**：该文件用单一 300 点多边形拉伸，OCP viewer 会忽略顶底面（`face ignored`）。请改用 `assets/parts/08_gear_spur_v2.py`（根圆柱+逐齿融合）
 - **知识截止**：build123d API 版本 0.10.x；Dave Cowden 建模哲学来源截止 2026年4月
@@ -646,12 +650,23 @@ print(f"体积: {part.part.volume:.2f} mm³")
 - `manual-checklist.md` — 手动验证清单（BRep/体积/壁厚/碰撞/公差）
 - `visual-verification.md` — OCP 视觉验证（截图/剖面/斑马纹/半透明检查）
 
+### 7. Peter Corke 仿真哲学 (`references/peter-corke/`)
+- `simulation-philosophy.md` — 「Learn by doing」+ DH 标准 + 分层验证 + 诚实边界
+
+### 8. 运动仿真 (`references/simulation/`)
+- `forward-kinematics.md` — FK：DH 参数 + 齐次变换 + build123d Location 验证
+- `inverse-kinematics.md` — IK：解析法(三连杆) + 数值法(ikpy/scipy) + 工作空间
+- `gait-planning.md` — 步态：相位表 + 贝塞尔足端轨迹 + 步态→IK→动画
+- `urdf-export.md` — URDF：build123d→URDF 端到端 + yourdfpy 验证
+- `pybullet-quickstart.md` — PyBullet：加载 URDF + 关节控制 + 步态仿真
+
 ### 示例 (`assets/`)
 - `parts/` — 13 个零件示例（01~13，★~★★★★★）
 - `assembly/` — 装配预览 + 爆炸动画示例
 - `surface/` — 曲面建模示例（有机外壳、多截面过渡）
 - `joints/` — 关节装配示例（铰链、四足腿链）
 - `mounting/` — 安装实战示例（舵机座、PCB 壳体、传感器支架）
+- `simulation/` — 运动仿真示例（FK/IK/工作空间/步态/URDF 导出）
 
 ### 工具脚本 (`scripts/`)
 - `validate/validate_part.py` — 几何验证工具
@@ -662,3 +677,5 @@ print(f"体积: {part.part.volume:.2f} mm³")
 - `export/batch_export.py` — 批量导出
 - `export/print_export.py` — 打印导出（STL/3MF + 精度预设）
 - `assembly/explode_generator.py` — 爆炸动画代码生成器
+- `simulation/export_urdf.py` — STEP→URDF 自动导出
+- `simulation/pybullet_preview.py` — PyBullet URDF 预览
