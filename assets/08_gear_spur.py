@@ -6,6 +6,12 @@
 
 注意：此版本使用"近似渐开线"（梯形逼近）。
       工业级精确渐开线需配合 cadquery-gear 或 build123d-contrib 插件。
+
+⚠️ 已知渲染问题（2026-04）：
+   此文件将全部轮廓（~300点非凸多边形）一次性拉伸，
+   OCP CAD Viewer（Three.js）无法三角化顶底面，输出 "face ignored"，
+   导致 3D 视图中顶底面透明。STEP 几何本身完全正确。
+   ✅ 修复版请用 08_gear_spur_v2.py（根圆柱 + 逐齿 Algebra Mode 融合）
 """
 from build123d import *
 import math

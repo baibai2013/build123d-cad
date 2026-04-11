@@ -208,3 +208,123 @@ result = fillet(housing.edges().filter_by(GeomType.CIRCLE), radius=1)
 
 export_step(result, "housing.step")
 ```
+
+---
+
+## 11. 直齿圆柱齿轮（根圆柱 + 逐齿 Algebra Mode 融合）
+
+**适用场景**：任何需要多边形轮廓拉伸且轮廓高度非凸的零件（齿轮、凸轮等）
+
+**关键原则**：不要一次性拉伸全部轮廓。用「根实体 + N 个小特征融合」代替「一个大多边形拉伸」，避免 OCP viewer 的 Three.js 三角化器跳过复杂非凸面。
+
+```python
+"""
+直齿圆柱齿轮 / Spur Gear — 根圆柱 + 逐齿融合（OCP viewer 兼容）
+⚠️ 不要用单一 300 点多边形拉伸：OCP viewer 会忽略顶底面（face ignored）
+"""
+from build123d import *
+from OCP.OCP.BRepBuilderAPI import BRepBuilderAPI_MakeFace
+from OCP.OCP.gp import gp_Pln, gp_Pnt, gp_Dir
+import math
+
+# ===== 参数 =====
+module      = 2        # 模数 m（越大齿越粗）
+teeth       = 20       # 齿数 z
+face_width  = 12       # 齿宽 mm
+shaft_r     = 4        # 轴孔半径 mm
+keyway_w    = 2.0      # 键槽宽 mm（0 = 无）
+pressure_a  = 20       # 压力角 °（标准 20°）
+
+# ===== 计算 =====
+pitch_r    = module * teeth / 2
+addendum_r = pitch_r + module
+root_r     = pitch_r - 1.25 * module
+base_r     = pitch_r * math.cos(math.radians(pressure_a))
+pitch_a    = 2 * math.pi / teeth
+half_t     = math.pi / (2 * teeth)
+
+XY_PLANE   = gp_Pln(gp_Pnt(0, 0, 0), gp_Dir(0, 0, 1))
+
+def make_planar_face(pts_2d):
+    """从 2D 点列表创建平面 Face（显式指定 XY 平面）"""
+    wire = Wire.make_polygon([(x, y, 0) for x, y in pts_2d], close=True)
+    return Face(BRepBuilderAPI_MakeFace(XY_PLANE, wire.wrapped, True).Face())
+
+def tooth_pts(i, steps=8):
+    """第 i 个齿的 2D 轮廓（仅齿根圆以上的凸起，约 20 点，近似凸形）"""
+    a_i      = pitch_a * i
+    inv_max  = math.sqrt(max(0, (addendum_r / base_r) ** 2 - 1))
+
+    left = []
+    for s in range(steps + 1):
+        ia = inv_max * s / steps
+        r  = min(base_r * math.sqrt(1 + ia ** 2), addendum_r)
+        if r < root_r:
+            continue
+        th = a_i + half_t - ia + math.atan(ia)
+        left.append((r * math.cos(th), r * math.sin(th)))
+
+    right = []
+    for s in range(steps, -1, -1):
+        ia = inv_max * s / steps
+        r  = min(base_r * math.sqrt(1 + ia ** 2), addendum_r)
+        if r < root_r:
+            continue
+        th = a_i - half_t + ia - math.atan(ia)
+        right.append((r * math.cos(th), r * math.sin(th)))
+
+    if not left or not right:
+        return None
+
+    # 齿根弧收口（右侧 → 左侧，短弧）
+    th_r = math.atan2(right[-1][1], right[-1][0])
+    th_l = math.atan2(left[0][1],  left[0][0])
+    if th_l < th_r:
+        th_l += 2 * math.pi
+    arc = [(root_r * math.cos(th_r + (th_l - th_r) * k / 4),
+            root_r * math.sin(th_r + (th_l - th_r) * k / 4))
+           for k in range(1, 4)]
+    return left + right + arc
+
+# ===== 建模：Algebra Mode =====
+# Cylinder 以原点为中心（z = -h/2 到 +h/2）
+gear = Cylinder(radius=root_r, height=face_width)
+
+for i in range(teeth):
+    pts = tooth_pts(i)
+    if pts is None:
+        continue
+    f = make_planar_face(pts)
+    with BuildPart() as tooth:
+        # ⚠️ 草图偏移 -face_width/2，与 Cylinder 中心对齐（否则高度变 1.5×）
+        with BuildSketch(Plane.XY.offset(-face_width / 2)):
+            add(f)
+        extrude(amount=face_width)
+    gear = gear + tooth.part
+
+# 轴孔 + 键槽
+gear = gear - Cylinder(radius=shaft_r, height=face_width)
+if keyway_w > 0:
+    slot_depth = shaft_r + keyway_w * 1.2
+    gear = gear - Box(keyway_w, slot_depth, face_width).moved(
+        Location((0, slot_depth / 2, 0))
+    )
+
+# ===== 验证 =====
+bb = gear.bounding_box()
+print(f"尺寸: {bb.size.X:.2f} x {bb.size.Y:.2f} x {bb.size.Z:.2f} mm")
+print(f"体积: {gear.volume:.2f} mm³")
+
+# ===== 导出 =====
+export_step(gear, "gear_spur.step")
+```
+
+**调参指引**
+
+| 变量 | 效果 |
+|------|------|
+| `module` | 齿的粗细（模数越大，齿越粗，传递力越大） |
+| `teeth` | 齿数（越多越接近圆柱，传动比越精细） |
+| `face_width` | 齿宽（越宽承载能力越大，一般取 8–15× module） |
+| `shaft_r` | 轴孔半径（与配对轴直径一致） |
+| `steps` | 渐开线采样点数（越多齿形越精确，6–12 即可） |
