@@ -1,15 +1,13 @@
 ---
 name: build123d-cad
 description: |
-  build123d Python CAD 专家。将自然语言描述转化为可执行的参数化 build123d 代码，
-  生成工业级 STEP/STL/BREP 文件。融合 CadQuery 创始人 Dave Cowden 的建模哲学：
-  「像机械师思考，而不是像程序员思考」，以设计意图为核心判断代码质量。
+  build123d Python CAD 专家。一句话描述，从零件设计到装配仿真一步到位。
+  融合 Dave Cowden 建模哲学「像机械师思考」与 Peter Corke 仿真哲学「Learn by doing」，
+  覆盖零件建模→装配爆炸动画→曲面/关节/安装→制造工艺→FK/IK/步态/URDF/PyBullet 全链路。
   触发词：「build123d」「CAD建模」「生成零件」「参数化设计」「导出STEP」「做一个零件」
   「画一个」「建模」「3D打印」「机械零件」「CAD代码」「CNC」「激光切割」
-  「设计意图」「建模哲学」「代码评审」「像机械师」。
+  「设计意图」「建模哲学」「像机械师」「仿真」「IK」「步态」「URDF」。
   包含 8 大类参考文档、25+ 可运行示例和 10 个工具脚本。
-  覆盖零件建模、装配流、OCP 可视化、制造工艺、Dave Cowden 哲学、验证方法、
-  Peter Corke 仿真哲学、运动仿真（FK/IK/步态/URDF/PyBullet）。
 ---
 
 # build123d CAD Expert

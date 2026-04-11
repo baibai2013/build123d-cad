@@ -13,7 +13,7 @@ English | [中文](README.md)
 
 <br>
 
-**Natural Language → Parametric CAD Code → Industrial-Grade STEP Files. One sentence, one part.**
+**Natural Language → Part Design → Assembly → Motion Simulation → Industrial Output. One sentence, one complete CAD project.**
 
 <br>
 
@@ -29,11 +29,10 @@ English | [中文](README.md)
 
 <br>
 
-Built on CadQuery founder Dave Cowden's modeling philosophy and Peter Corke's simulation philosophy,<br>
-with full build123d API coverage, 25+ real-world examples (parts/assembly/surface/joints/mounting/simulation), and 8 categories of reference docs.<br>
-Distilled into 5 core mental models, 8 code quality heuristics, and a complete CAD code generation workflow.<br>
-Covering part modeling, assembly workflow, OCP visualization, manufacturing processes, Dave Cowden philosophy, verification methods,<br>
-Peter Corke simulation philosophy, and motion simulation (FK/IK/gait/URDF/PyBullet).
+Combines Dave Cowden's modeling philosophy "Think like a machinist" with Peter Corke's simulation philosophy "Learn by doing".<br>
+Covers part modeling, assembly & exploded animation, surface/joint/mounting, manufacturing verification, FK/IK/gait/URDF/PyBullet — the full pipeline.<br>
+25+ runnable examples, 8 categories of reference docs, 10 utility scripts.<br>
+Describe the part you want in one sentence — from sketch to motion simulation, done.
 
 [Examples](#examples) · [Installation](#installation) · [What's Included](#whats-included) · [Part Gallery](#part-gallery)
 
