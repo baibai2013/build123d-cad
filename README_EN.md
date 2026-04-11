@@ -30,8 +30,9 @@ English | [中文](README.md)
 <br>
 
 Built on CadQuery founder Dave Cowden's modeling philosophy,<br>
-with full build123d API coverage, 12 real-world part examples, and 11 typical modeling patterns.<br>
-Distilled into 5 core mental models, 8 code quality heuristics, and a complete CAD code generation workflow.
+with full build123d API coverage, 20+ real-world examples (parts/assembly/surface/joints/mounting), and 6 categories of reference docs.<br>
+Distilled into 5 core mental models, 8 code quality heuristics, and a complete CAD code generation workflow.<br>
+Covering part modeling, assembly workflow, OCP visualization, manufacturing processes, Dave Cowden philosophy, and verification methods.
 
 [Examples](#examples) · [Installation](#installation) · [What's Included](#whats-included) · [Part Gallery](#part-gallery)
 
@@ -126,9 +127,9 @@ animation.add_track("/Group/lid",  "t", t,
 animation.animate(1)
 ```
 
-> Full example in [`assets/`](assets/): [`13_enclosure_box.py`](assets/13_enclosure_box.py) (parts) + [`13_enclosure_assembly.py`](assets/13_enclosure_assembly.py) (assembly) + [`13_enclosure_exploded.py`](assets/13_enclosure_exploded.py) (exploded animation)
+> Full example in [`assets/assembly/`](assets/assembly/): [`13_enclosure_box.py`](assets/assembly/13_enclosure_box.py) (parts) + [`13_enclosure_assembly.py`](assets/assembly/13_enclosure_assembly.py) (assembly) + [`13_enclosure_exploded.py`](assets/assembly/13_enclosure_exploded.py) (exploded animation)
 
-> Plus 12 more runnable part examples covering mounting plates, flanges, brackets, stepped shafts, gears, hinges, and more.
+> Plus 20+ runnable examples covering parts, assembly preview, surface modeling, joint assemblies, and mounting templates.
 
 This is not template-based code completion. Every piece of code applies Dave Cowden's modeling philosophy — "operation sequence thinking," "design intent first," "selectors over coordinates," "STEP first." It doesn't stitch APIs together; it models parts through a machinist's cognitive framework.
 
@@ -202,35 +203,86 @@ code --install-extension bernhard-42.ocp-cad-viewer  # VS Code CAD viewer extens
 
 ## Part Gallery
 
-The `assets/` directory contains 12 ready-to-run parts, from beginner to advanced:
+### Parts (`assets/parts/`)
 
 | # | Part | Difficulty | Key Techniques |
 |---|------|-----------|----------------|
-| 01 | [Mounting Plate](assets/01_mounting_plate.py) | ★ | Box + GridLocations + Hole |
-| 02 | [Flange](assets/02_flange.py) | ★★ | Cylinder + PolarLocations |
-| 03 | [L-Bracket](assets/03_l_bracket.py) | ★★ | Multi-extrude + Fillet |
-| 04 | [Enclosure](assets/04_enclosure.py) | ★★★ | Shell + wall thickness |
-| 05 | [Stepped Shaft](assets/05_shaft.py) | ★★★ | Revolve + keyway cut |
-| 06 | [PCB Standoff](assets/06_pcb_standoff.py) | ★★ | Concentric cylinders |
-| 07 | [Pipe Elbow](assets/07_pipe_elbow.py) | ★★★ | Sweep + hollow section |
-| 08 | [Spur Gear](assets/08_gear_spur_v2.py) | ★★★★★ | Root cylinder + per-tooth fusion |
-| 09 | [Hinge](assets/09_hinge.py) | ★★★★ | Multi-body assembly |
-| 10 | [Heat Sink](assets/10_heat_sink.py) | ★★★ | GridLocations + fin extrude |
-| 11 | [Countersunk Plate](assets/11_countersunk_plate.py) | ★★ | CounterSinkHole |
-| 12 | [Snap-Fit Clip](assets/12_snap_fit_clip.py) | ★★★★ | Complex profile extrude |
+| 01 | [Mounting Plate](assets/parts/01_mounting_plate.py) | ★ | Box + GridLocations + Hole |
+| 02 | [Flange](assets/parts/02_flange.py) | ★★ | Cylinder + PolarLocations |
+| 03 | [L-Bracket](assets/parts/03_l_bracket.py) | ★★ | Multi-extrude + Fillet |
+| 04 | [Enclosure](assets/parts/04_enclosure.py) | ★★★ | Shell + wall thickness |
+| 05 | [Stepped Shaft](assets/parts/05_shaft.py) | ★★★ | Revolve + keyway cut |
+| 06 | [PCB Standoff](assets/parts/06_pcb_standoff.py) | ★★ | Concentric cylinders |
+| 07 | [Pipe Elbow](assets/parts/07_pipe_elbow.py) | ★★★ | Sweep + hollow section |
+| 08 | [Spur Gear](assets/parts/08_gear_spur_v2.py) | ★★★★★ | Root cylinder + per-tooth fusion |
+| 09 | [Hinge](assets/parts/09_hinge.py) | ★★★★ | Multi-body assembly |
+| 10 | [Heat Sink](assets/parts/10_heat_sink.py) | ★★★ | GridLocations + fin extrude |
+| 11 | [Countersunk Plate](assets/parts/11_countersunk_plate.py) | ★★ | CounterSinkHole |
+| 12 | [Snap-Fit Clip](assets/parts/12_snap_fit_clip.py) | ★★★★ | Complex profile extrude |
+| 13 | [Enclosure Box](assets/assembly/13_enclosure_box.py) | ★★★ | Shell + snap-fit lid |
+
+### Surface Modeling (`assets/surface/`)
+
+| # | Part | Difficulty | Key Techniques |
+|---|------|-----------|----------------|
+| 14 | [Organic Shell](assets/surface/14_organic_shell.py) | ★★★★ | Multi-section Loft + Shell |
+| 15 | [Loft Transition](assets/surface/15_loft_transition.py) | ★★★ | Circle→Square→Circle Loft |
+
+### Joint Assembly (`assets/joints/`)
+
+| # | Part | Difficulty | Key Techniques |
+|---|------|-----------|----------------|
+| 16 | [Revolute Hinge](assets/joints/16_revolute_hinge.py) | ★★★ | RevoluteJoint + connect_to |
+| 17 | [Quadruped Leg](assets/joints/17_quadruped_leg.py) | ★★★★★ | Multi-joint chain hip→knee→ankle→foot |
+
+### Mounting Templates (`assets/mounting/`)
+
+| # | Part | Difficulty | Key Techniques |
+|---|------|-----------|----------------|
+| 18 | [Servo Mount SG90](assets/mounting/18_servo_mount_sg90.py) | ★★★ | Servo cavity + ear slots + cable exit |
+| 19 | [PCB Enclosure](assets/mounting/19_pcb_enclosure.py) | ★★★★ | Standoffs + USB-C opening + snap lid |
+| 20 | [Sensor Bracket](assets/mounting/20_sensor_bracket.py) | ★★★ | HC-SR04 ultrasonic twin windows |
+
+### Assembly & Animation (`assets/assembly/`)
+
+| File | Content |
+|------|---------|
+| [13_enclosure_assembly.py](assets/assembly/13_enclosure_assembly.py) | Enclosure assembly preview |
+| [13_enclosure_exploded.py](assets/assembly/13_enclosure_exploded.py) | Enclosure exploded animation (16s loop) |
 
 ---
 
 ## Utility Scripts
 
-The `scripts/` directory contains 4 utility tools:
+The `scripts/` directory contains 8 utility tools organized by function:
+
+### Validation (`scripts/validate/`)
 
 | Script | Function |
 |--------|----------|
-| [`validate_part.py`](scripts/validate_part.py) | BRep validation, volume/bounding box checks |
-| [`batch_export.py`](scripts/batch_export.py) | Batch export all parts (multi-format) |
-| [`extract_params.py`](scripts/extract_params.py) | Extract parametric variables from scripts |
-| [`step_info.py`](scripts/step_info.py) | STEP file metadata inspection |
+| [`validate_part.py`](scripts/validate/validate_part.py) | BRep validation, volume/bounding box checks |
+| [`assembly_check.py`](scripts/validate/assembly_check.py) | Assembly collision detection (multi-STEP interference) |
+
+### Analysis (`scripts/analysis/`)
+
+| Script | Function |
+|--------|----------|
+| [`extract_params.py`](scripts/analysis/extract_params.py) | Extract parametric variables from scripts |
+| [`step_info.py`](scripts/analysis/step_info.py) | STEP file metadata inspection |
+| [`mass_properties.py`](scripts/analysis/mass_properties.py) | Mass/inertia analysis (13 material presets) |
+
+### Export (`scripts/export/`)
+
+| Script | Function |
+|--------|----------|
+| [`batch_export.py`](scripts/export/batch_export.py) | Batch export all parts (multi-format) |
+| [`print_export.py`](scripts/export/print_export.py) | Print export (STL/3MF + 4 quality presets) |
+
+### Assembly (`scripts/assembly/`)
+
+| Script | Function |
+|--------|----------|
+| [`explode_generator.py`](scripts/assembly/explode_generator.py) | Universal exploded animation code generator |
 
 ---
 
@@ -238,23 +290,44 @@ The `scripts/` directory contains 4 utility tools:
 
 ```
 build123d-cad/
-├── README.md                             # Chinese README
-├── README_EN.md                          # English README
+├── README.md / README_EN.md              # Chinese / English README
 ├── SKILL.md                              # Core skill definition (installable)
-├── references/
-│   ├── cheatsheet.md                     # API quick reference
-│   ├── patterns.md                       # 11 modeling pattern templates
-│   └── cadcodeverify.md                  # CADCodeVerify integration guide
-├── assets/                               # 12 runnable examples (★ ~ ★★★★★)
-│   ├── 01_mounting_plate.py
-│   ├── 02_flange.py
-│   ├── ...
-│   └── 12_snap_fit_clip.py
-└── scripts/                              # 4 utility scripts
-    ├── validate_part.py
-    ├── batch_export.py
-    ├── extract_params.py
-    └── step_info.py
+├── references/                           # 6 categories of reference docs
+│   ├── parts/                            # Part modeling
+│   │   ├── cheatsheet.md                 #   API quick reference
+│   │   ├── patterns.md                   #   11 modeling patterns
+│   │   └── surface-modeling.md           #   Surface modeling (Loft/Sweep/NURBS)
+│   ├── assembly/                         # Assembly workflow
+│   │   ├── joints-reference.md           #   Joints system (5 types + full params)
+│   │   ├── assembly-patterns.md          #   8 assembly patterns
+│   │   ├── mounting-experience.md        #   Mounting templates (servo/PCB/sensor)
+│   │   └── exploded-animation.md         #   Exploded animation
+│   ├── ocp/                              # OCP CAD Viewer
+│   │   ├── show-reference.md             #   show() 100+ parameters
+│   │   ├── animation-reference.md        #   Animation API
+│   │   └── studio-materials.md           #   PBR materials/lighting
+│   ├── process/                          # Manufacturing processes
+│   │   ├── 3d-printing.md                #   3D printing design rules
+│   │   ├── cnc-machining.md              #   CNC machining
+│   │   ├── laser-cutting.md              #   Laser cutting
+│   │   └── cross-domain.md              #   Cross-domain (FEA/kinematics/PCB)
+│   ├── dave-cowden/                      # Dave Cowden philosophy
+│   │   └── assembly-philosophy.md        #   Assembly philosophy & honest boundaries
+│   └── verify/                           # Verification
+│       ├── cadcodeverify.md              #   3-layer verification architecture
+│       ├── manual-checklist.md           #   Manual verification checklist
+│       └── visual-verification.md        #   OCP visual verification
+├── assets/                               # 20+ runnable examples
+│   ├── parts/                            #   13 parts (01~13)
+│   ├── assembly/                         #   Assembly preview + exploded animation
+│   ├── surface/                          #   Surface modeling examples
+│   ├── joints/                           #   Joint assembly examples
+│   └── mounting/                         #   Mounting template examples
+└── scripts/                              # 8 utility scripts
+    ├── validate/                         #   Geometry validation + collision detection
+    ├── analysis/                         #   Param extraction + STEP info + mass analysis
+    ├── export/                           #   Batch export + print export
+    └── assembly/                         #   Exploded animation generator
 ```
 
 ---

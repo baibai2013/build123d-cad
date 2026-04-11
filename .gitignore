@@ -34,3 +34,7 @@ env/
 # 测试/临时文件
 *.tmp
 *.log
+
+# Cache
+.mypy_cache/
+__pycache__/

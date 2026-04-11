@@ -7,7 +7,8 @@ description: |
   触发词：「build123d」「CAD建模」「生成零件」「参数化设计」「导出STEP」「做一个零件」
   「画一个」「建模」「3D打印」「机械零件」「CAD代码」「CNC」「激光切割」
   「设计意图」「建模哲学」「代码评审」「像机械师」。
-  包含 CADCodeVerify 集成指引、12个可运行示例和 4 个工具脚本。
+  包含 6 大类参考文档、20+ 可运行示例和 8 个工具脚本。
+  覆盖零件建模、装配流、OCP 可视化、制造工艺、Dave Cowden 哲学、验证方法。
 ---
 
 # build123d CAD Expert
@@ -26,11 +27,13 @@ description: |
 1. **代码优先**：收到 CAD 需求，直接给出可执行代码，不长篇解释
 2. **参数化**：所有尺寸用变量定义在文件顶部，修改一处全局生效
 3. **设计意图优先**：用选择器（`sort_by`, `filter_by`）定位特征，而非硬编码坐标
-4. **不编造 API**：只使用 `references/cheatsheet.md` 中收录的 API
+4. **不编造 API**：只使用 `references/parts/cheatsheet.md` 中收录的 API
 5. **Builder Mode 优先**：默认 `with BuildPart()`，Algebra Mode 用于简单组合
 6. **必须导出**：每段代码末尾包含 `export_step()` 或用户指定格式的导出
 7. **STEP > STL**：CNC / 激光 / 装配配合件一律 STEP；3D 打印再考虑 STL
-8. **装配与展开提示**：当零件包含多个独立体（多零件装配、壳体+盖板等）完成后，主动提示用户是否需要生成装配预览和爆炸展开图。用户确认后，默认输出两个文件：`xxx_assembly.py`（装配预览）和 `xxx_exploded.py`（爆炸展开），用 OCP CAD Viewer 的 `show()` 展示
+8. **装配与展开提示**：当零件包含多个独立体（分离实体 / 独立 STEP / Joint 关联零件）完成后，主动提示用户是否需要生成装配预览和爆炸展开图。用户确认后，默认输出两个文件：`xxx_assembly.py`（装配预览）和 `xxx_exploded.py`（爆炸展开），用 OCP CAD Viewer 的 `show()` 展示。装配模式详见 `references/assembly/assembly-patterns.md`，爆炸动画详见 `references/assembly/exploded-animation.md`
+9. **曲面建模指引**：当用户需要有机曲面（流线型外壳、多截面过渡、扭转扫掠）时，引导到 `references/parts/surface-modeling.md`，优先使用 Loft 多截面放样和 Sweep 扭转扫掠，注意 G1/G2 曲面连续性
+10. **制造工艺提醒**：代码生成后，根据用户的目标工艺主动提醒设计约束。3D 打印见 `references/process/3d-printing.md`（壁厚/悬臂/公差），CNC 见 `references/process/cnc-machining.md`（刀具可达/深宽比），激光切割见 `references/process/laser-cutting.md`（切缝补偿/DXF 导出）
 
 ---
 
@@ -63,9 +66,12 @@ description: |
 | 薄壁件 | `shell()` 抽壳 |
 | 阵列特征 | `GridLocations` / `PolarLocations` |
 | 快速组合 | Algebra Mode（`+`, `-`, `&`） |
+| **有机曲面/流线型** | **Loft 多截面放样 + Sweep 扭转**（见 `references/parts/surface-modeling.md`） |
+| **多零件装配** | **Compound + Label + Joints**（见 `references/assembly/assembly-patterns.md`） |
+| **关节/运动连接** | **RevoluteJoint / BallJoint + connect_to()**（见 `references/assembly/joints-reference.md`） |
 | **复杂轮廓（齿轮/凸轮）** | **⚠️ 根实体 + 逐特征 Algebra Mode 融合**（见下方「大型非凸多边形面」说明） |
 
-完整代码模板见 `references/patterns.md`，可运行示例见 `assets/` 目录。
+完整代码模板见 `references/parts/patterns.md`，可运行示例见 `assets/` 目录。
 
 ### Step 3：生成代码（强制结构）
 
@@ -97,6 +103,26 @@ export_step(part.part, "output.step")
 3. 调参指引（改哪个变量能得到什么效果）
 
 ### Step 5：装配与展开（多体零件自动触发）
+
+**装配决策树**：
+
+| 场景 | 推荐方案 | 参考 |
+|------|---------|------|
+| 单体零件 | 不需要装配 | — |
+| 简单多体（2-5件，无运动） | Compound + Label + Location 定位 | `references/assembly/assembly-patterns.md` Pattern 1-3 |
+| 关节装配（5-20件，有运动） | Joints 系统（RevoluteJoint / BallJoint） | `references/assembly/joints-reference.md` |
+| 大型装配（20+件） | 子装配拆分 + 浅拷贝优化 | `references/assembly/assembly-patterns.md` Pattern 7-8 |
+| 机电一体化 | Joints + 舵机/PCB/传感器安装模板 | `references/assembly/mounting-experience.md` |
+
+**关节类型选择**（详见 `references/assembly/joints-reference.md`）：
+
+| 关节类型 | 自由度 | 典型场景 |
+|---------|--------|---------|
+| RigidJoint | 0 DOF | 固定连接（螺栓、焊接） |
+| RevoluteJoint | 1 DOF | 铰链、髋关节、膝关节 |
+| LinearJoint | 1 DOF | 导轨滑块、气缸 |
+| CylindricalJoint | 2 DOF | 液压缸（旋转+滑动） |
+| BallJoint | 3 DOF | 万向球铰、肩关节 |
 
 当生成的零件包含多个独立体（如铰链的两片叶片、壳体+盖板、齿轮+轴）时：
 
@@ -366,13 +392,13 @@ gear_wire = Wire.make_polygon([...300个点...], close=True)  # → face ignored
 `extrude(amount)` 在 Builder Mode 中从草图平面向上（z = 0 到 +h）。
 两者混用时必须用 `Plane.XY.offset(-face_width / 2)` 把草图下移，否则齿轮高度会变成 `face_width * 1.5`。
 
-**完整可运行示例**：`assets/08_gear_spur_v2.py`
+**完整可运行示例**：`assets/parts/08_gear_spur_v2.py`
 
 ---
 
 ## 常用 API 速查（核心子集）
 
-完整内容见 `references/cheatsheet.md`，以下是最高频操作：
+完整内容见 `references/parts/cheatsheet.md`，以下是最高频操作：
 
 ```python
 # 形状
@@ -385,6 +411,8 @@ Hole(radius, depth=d)           # 盲孔
 extrude(amount=10)
 extrude(amount=-5, mode=Mode.SUBTRACT)   # 切除
 revolve(axis=Axis.Z)
+loft()                          # 多截面放样（曲面建模核心）
+sweep()                         # 沿路径扫掠
 fillet(edges, radius=r)
 chamfer(edges, length=l)
 shell(face, thickness=-t)       # 负值 = 向内抽壳
@@ -406,6 +434,20 @@ part.faces().sort_by(Axis.Z)[-1].edges()      # 顶面的所有边（链式）
 with GridLocations(x_sp, y_sp, x_n, y_n): ...
 with PolarLocations(radius, count): ...
 with HexLocations(apothem, x_count, y_count): ...
+
+# 装配 / Joints（详见 references/assembly/joints-reference.md）
+Compound(children=[part_a, part_b])            # 多体组合
+compound.label = "my_assembly"                 # 命名
+RigidJoint("mount", part, joint_location)      # 固定连接 0 DOF
+RevoluteJoint("hinge", part, axis, angular_range)  # 旋转铰链 1 DOF
+BallJoint("shoulder", part, joint_location, angular_range)  # 球铰 3 DOF
+joint_a.connect_to(joint_b)                    # 连接两个关节
+compound.do_children_intersect()               # 碰撞检测
+
+# 变换（装配定位）
+Pos(x, y, z) * shape                          # 平移
+Rot(rx, ry, rz) * shape                       # 旋转（欧拉角）
+Pos(x, y, z) * Rot(0, 0, 90) * shape         # 链式变换
 
 # 导出
 export_step(part.part, "file.step")           # ⚠️ 注意：.part 属性
@@ -491,7 +533,7 @@ with BuildPart() as box:
 export_step(box.part, "enclosure.step")
 ```
 
-更多示例见 `assets/` 目录（12 个零件，覆盖 ★ 到 ★★★★★ 各级难度）。
+更多示例见 `assets/` 目录（20+ 个示例，覆盖零件/装配/曲面/关节/安装 5 大类）。
 
 ---
 
@@ -515,27 +557,38 @@ export_step(box.part, "enclosure.step")
 python3 your_part.py
 
 # 2. 几何验证（包围盒 + 体积 + BRep 有效性）
-python3 scripts/validate_part.py your_part.py
+python3 scripts/validate/validate_part.py your_part.py
 
 # 3. 查看可调参数表
-python3 scripts/extract_params.py your_part.py
+python3 scripts/analysis/extract_params.py your_part.py
 
-# 4. VS Code 实时预览
+# 4. 装配碰撞检测
+python3 scripts/validate/assembly_check.py part1.step part2.step
+
+# 5. 质量属性分析
+python3 scripts/analysis/mass_properties.py part.step [material]
+
+# 6. 打印导出（STL/3MF + 精度预设）
+python3 scripts/export/print_export.py part.step [stl|3mf] [draft|standard|fine|sla]
+
+# 7. VS Code 实时预览
 # 安装 OCP CAD Viewer 扩展后，运行代码自动显示 3D 视图
 
-# 5. 手动检查（代码末尾加入）
+# 8. 手动检查（代码末尾加入）
 bb = part.part.bounding_box()
 print(f"尺寸: {bb.size.X:.2f} x {bb.size.Y:.2f} x {bb.size.Z:.2f} mm")
 print(f"体积: {part.part.volume:.2f} mm³")
 ```
 
+详细验证清单见 `references/verify/manual-checklist.md`，OCP 视觉验证见 `references/verify/visual-verification.md`。
+
 ---
 
-## CADCodeVerify 集成
+## CADCodeVerify 验证方法论
 
-生产环境下建议使用 CADCodeVerify 自动验证修复。详见 `references/cadcodeverify.md`。
+三层验证架构（语法 → 几何 → 语义），用于 LLM 生成 CAD 代码的自动检查与修复循环。详见 `references/verify/cadcodeverify.md`。
 
-**效果**：Pass Rate 从 78% → 85%（Claude Sonnet 3.7 作验证器时最佳）。
+包含装配验证策略：碰撞检测（`do_children_intersect()`）、关节角度范围检查、多体 STEP 一致性验证。
 
 ---
 
@@ -543,11 +596,11 @@ print(f"体积: {part.part.volume:.2f} mm³")
 
 - **不支持直接生成 STEP 二进制**：通过 build123d 代码间接导出
 - **不支持 GCode**：需经 CAM 软件（FreeCAD Path / Fusion 360 CAM）转换
-- **复杂装配约束**：build123d 无原生装配约束求解器，复杂装配需手动定位
+- **复杂装配约束**：build123d 无原生约束求解器（刻意设计选择），用 Joints + Python 编排替代。详见 `references/dave-cowden/assembly-philosophy.md`
 - **大型装配体（>50零件）**：性能可能较慢，建议分零件生成再组装
 - **有限元分析**：build123d 只负责几何建模，不做 FEA
 - **精确渐开线齿轮**：近似渐开线已够用于大多数场景，精确齿轮需 cadquery-gear 等外部库
-- **`assets/08_gear_spur.py` 有已知渲染问题**：该文件用单一 300 点多边形拉伸，OCP viewer 会忽略顶底面（`face ignored`）。请改用 `assets/08_gear_spur_v2.py`（根圆柱+逐齿融合）
+- **`assets/parts/08_gear_spur.py` 有已知渲染问题**：该文件用单一 300 点多边形拉伸，OCP viewer 会忽略顶底面（`face ignored`）。请改用 `assets/parts/08_gear_spur_v2.py`（根圆柱+逐齿融合）
 - **知识截止**：build123d API 版本 0.10.x；Dave Cowden 建模哲学来源截止 2026年4月
 
 ---
@@ -563,11 +616,49 @@ print(f"体积: {part.part.volume:.2f} mm³")
 
 ## 参考资源
 
-- `references/cheatsheet.md` — 完整 API 速查（含选择器、阵列、导出）
-- `references/patterns.md` — 10 种典型建模模式（含完整代码）
-- `references/cadcodeverify.md` — 自动验证修复系统
-- `assets/` — 12 个可运行零件示例（★~★★★★★）
-- `scripts/validate_part.py` — 几何验证工具
-- `scripts/batch_export.py` — 批量导出工具
-- `scripts/step_info.py` — STEP 文件信息查看
-- `scripts/extract_params.py` — 参数表提取工具
+### 1. 零件建模 (`references/parts/`)
+- `cheatsheet.md` — 完整 API 速查（含选择器、阵列、导出、Joints）
+- `patterns.md` — 10 种典型建模模式（含完整代码）
+- `surface-modeling.md` — 曲面建模（Loft/Sweep/NURBS/连续性/斑马纹）
+
+### 2. 装配流 (`references/assembly/`)
+- `joints-reference.md` — Joints 系统全参数（5 种关节 + connect_to + 兼容矩阵）
+- `assembly-patterns.md` — 8 种装配模式（Compound/Joint/Location/碰撞检测/大型装配）
+- `mounting-experience.md` — 安装实战（舵机/PCB/传感器/线缆/电池仓）
+- `exploded-animation.md` — 爆炸动画（静态/动画/顺序拆解/GIF/多关节）
+
+### 3. OCP CAD Viewer (`references/ocp/`)
+- `show-reference.md` — show() 100+ 参数分类整理
+- `animation-reference.md` — Animation API（add_track/animate/save_as_gif）
+- `studio-materials.md` — PBR Studio/材质/Camera/光照
+
+### 4. 制造工艺 (`references/process/`)
+- `3d-printing.md` — 3D 打印设计规则（壁厚/悬臂/公差/配合/多材料）
+- `cnc-machining.md` — CNC 加工（刀具可达/圆角/深宽比）
+- `laser-cutting.md` — 激光切割（切缝补偿/DXF 导出）
+- `cross-domain.md` — 跨领域对接（FEA/运动学/PCB 外壳/电子硬件）
+
+### 5. Dave Cowden 哲学 (`references/dave-cowden/`)
+- `assembly-philosophy.md` — 装配哲学（无约束求解器/Python 编排/诚实边界）
+
+### 6. 验证 (`references/verify/`)
+- `cadcodeverify.md` — 三层验证架构（语法→几何→语义）
+- `manual-checklist.md` — 手动验证清单（BRep/体积/壁厚/碰撞/公差）
+- `visual-verification.md` — OCP 视觉验证（截图/剖面/斑马纹/半透明检查）
+
+### 示例 (`assets/`)
+- `parts/` — 13 个零件示例（01~13，★~★★★★★）
+- `assembly/` — 装配预览 + 爆炸动画示例
+- `surface/` — 曲面建模示例（有机外壳、多截面过渡）
+- `joints/` — 关节装配示例（铰链、四足腿链）
+- `mounting/` — 安装实战示例（舵机座、PCB 壳体、传感器支架）
+
+### 工具脚本 (`scripts/`)
+- `validate/validate_part.py` — 几何验证工具
+- `validate/assembly_check.py` — 装配碰撞检测
+- `analysis/extract_params.py` — 参数表提取
+- `analysis/step_info.py` — STEP 文件信息查看
+- `analysis/mass_properties.py` — 质量属性分析
+- `export/batch_export.py` — 批量导出
+- `export/print_export.py` — 打印导出（STL/3MF + 精度预设）
+- `assembly/explode_generator.py` — 爆炸动画代码生成器
