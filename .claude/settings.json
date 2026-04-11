@@ -1,12 +1,7 @@
 {
   "permissions": {
     "allow": [
-      "Edit(~/.claude/skills/dave-cowden-perspective/**)",
-      "Read(//Users/liyijiang/.agents/skills/dave-cowden-perspective/**)",
-      "Read(//Users/liyijiang/.agents/skills/**)"
-    ],
-    "additionalDirectories": [
-      "/Users/liyijiang/.agents/skills/dave-cowden-perspective"
+      "Read(C:/Users/Administrator/.agents/skills/build123d-cad/**)"
     ]
   }
 }

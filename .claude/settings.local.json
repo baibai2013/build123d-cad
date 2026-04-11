@@ -1,7 +1,20 @@
 {
   "permissions": {
     "allow": [
-      "Edit(~/.claude/skills/dave-cowden-perspective/**)"
+      "Read(C:/Users/Administrator/.agents/skills/build123d-cad/**)",
+      "Bash(gh auth:*)",
+      "Bash(where gh:*)",
+      "Bash(ping -n 2 github.com)",
+      "Bash(curl -x http://127.0.0.1:7890 -sL --connect-timeout 10 \"https://github.com\" -o /dev/null -w \"%{http_code}\")",
+      "Bash(curl -x socks5://127.0.0.1:7891 -sL --connect-timeout 10 \"https://github.com\" -o /dev/null -w \"%{http_code}\")",
+      "Bash(git ls-remote:*)",
+      "Bash(git remote:*)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "Bash(wc -l /c/Users/Administrator/.agents/skills/build123d-cad/references/*.md /c/Users/Administrator/.agents/skills/build123d-cad/assets/*.py /c/Users/Administrator/.agents/skills/build123d-cad/scripts/*.py)",
+      "WebFetch(domain:github.com)",
+      "Bash(git clone:*)",
+      "Bash(powershell -Command \"Add-Type -AssemblyName System.Windows.Forms; [System.Windows.Forms.Screen]::PrimaryScreen.Bounds\")",
+      "Bash(powershell -Command ':*)"
     ]
   }
 }
