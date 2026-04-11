@@ -98,7 +98,37 @@ with BuildPart() as elbow:
 export_step(elbow.part, "pipe_elbow.step")
 ```
 
-> All 12 runnable examples are in the [`assets/`](assets/) directory, covering mounting plates, flanges, brackets, enclosures, stepped shafts, gears, hinges, and more.
+### Prompt: Make an enclosure with a lid, and generate an exploded animation
+
+After part modeling is complete, the skill automatically offers to generate assembly preview and exploded animation:
+
+```python
+from build123d import *
+from ocp_vscode import show, Animation
+
+# ===== Explode Parameters =====
+explode_dist = 30                              # total explode distance mm
+half = explode_dist / 2
+
+# ===== Show assembled state (animation start) =====
+show(body, assembled_lid,
+     names=["body", "lid"],
+     colors=["steelblue", "orange"])
+
+# ===== Explode animation: open 2s → hold 10s → close 2s → hold 2s (16s loop) =====
+t = [0, 2, 12, 14, 16]
+
+animation = Animation()
+animation.add_track("/Group/body", "t", t,
+                    [[0,0,0], [0,0,-half], [0,0,-half], [0,0,0], [0,0,0]])
+animation.add_track("/Group/lid",  "t", t,
+                    [[0,0,0], [0,0,half],  [0,0,half],  [0,0,0], [0,0,0]])
+animation.animate(1)
+```
+
+> Full example in [`assets/`](assets/): [`13_enclosure_box.py`](assets/13_enclosure_box.py) (parts) + [`13_enclosure_assembly.py`](assets/13_enclosure_assembly.py) (assembly) + [`13_enclosure_exploded.py`](assets/13_enclosure_exploded.py) (exploded animation)
+
+> Plus 12 more runnable part examples covering mounting plates, flanges, brackets, stepped shafts, gears, hinges, and more.
 
 This is not template-based code completion. Every piece of code applies Dave Cowden's modeling philosophy — "operation sequence thinking," "design intent first," "selectors over coordinates," "STEP first." It doesn't stitch APIs together; it models parts through a machinist's cognitive framework.
 

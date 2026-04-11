@@ -98,7 +98,37 @@ with BuildPart() as elbow:
 export_step(elbow.part, "pipe_elbow.step")
 ```
 
-> 完整的 12 个可运行示例在 [`assets/`](assets/) 目录，覆盖安装板、法兰、支架、壳体、阶梯轴、齿轮、铰链等真实零件。
+### 问：做一个带盖子的壳体，帮我生成爆炸动画
+
+零件建模完成后，skill 自动提示生成装配预览和爆炸动画：
+
+```python
+from build123d import *
+from ocp_vscode import show, Animation
+
+# ===== 爆炸参数 =====
+explode_dist = 30                              # 爆炸总距离 mm
+half = explode_dist / 2
+
+# ===== 显示装配态（动画起点） =====
+show(body, assembled_lid,
+     names=["body", "lid"],
+     colors=["steelblue", "orange"])
+
+# ===== 爆炸动画：炸2s → 停10s → 合2s → 停2s（16s循环） =====
+t = [0, 2, 12, 14, 16]
+
+animation = Animation()
+animation.add_track("/Group/body", "t", t,
+                    [[0,0,0], [0,0,-half], [0,0,-half], [0,0,0], [0,0,0]])
+animation.add_track("/Group/lid",  "t", t,
+                    [[0,0,0], [0,0,half],  [0,0,half],  [0,0,0], [0,0,0]])
+animation.animate(1)
+```
+
+> 完整示例在 [`assets/`](assets/) 目录：[`13_enclosure_box.py`](assets/13_enclosure_box.py)（零件）+ [`13_enclosure_assembly.py`](assets/13_enclosure_assembly.py)（装配）+ [`13_enclosure_exploded.py`](assets/13_enclosure_exploded.py)（爆炸动画）
+
+> 另有 12 个可运行零件示例，覆盖安装板、法兰、支架、阶梯轴、齿轮、铰链等真实零件。
 
 这不是套了 CAD 模板的代码补全。每段代码都在运用 Dave Cowden 的建模哲学——「操作序列思维」「设计意图优先」「选择器代替坐标」「STEP 优先」。它不拼凑 API，它用机械师的认知框架帮你建模。
 
