@@ -30,6 +30,7 @@ description: |
 5. **Builder Mode 优先**：默认 `with BuildPart()`，Algebra Mode 用于简单组合
 6. **必须导出**：每段代码末尾包含 `export_step()` 或用户指定格式的导出
 7. **STEP > STL**：CNC / 激光 / 装配配合件一律 STEP；3D 打印再考虑 STL
+8. **装配与展开提示**：当零件包含多个独立体（多零件装配、壳体+盖板等）完成后，主动提示用户是否需要生成装配预览和爆炸展开图。用户确认后，默认输出两个文件：`xxx_assembly.py`（装配预览）和 `xxx_exploded.py`（爆炸展开），用 OCP CAD Viewer 的 `show()` 展示
 
 ---
 
@@ -94,6 +95,78 @@ export_step(part.part, "output.step")
 1. 完整可执行的 Python 代码块
 2. 3-5 行说明（操作序列思路，关键参数含义）
 3. 调参指引（改哪个变量能得到什么效果）
+
+### Step 5：装配与展开（多体零件自动触发）
+
+当生成的零件包含多个独立体（如铰链的两片叶片、壳体+盖板、齿轮+轴）时：
+
+1. **主动提示**：「零件已完成。检测到多个独立体，是否需要生成装配预览和爆炸展开图？」
+2. **用户确认后**，默认生成两个文件：
+
+**装配预览文件** `xxx_assembly.py`：
+- 将各零件按设计位置组合
+- 用 `show()` 在 OCP CAD Viewer 中展示完整装配效果
+- 不同零件用不同颜色区分
+
+```python
+from build123d import *
+from ocp_vscode import show
+
+# 导入零件（或内联构建）
+leaf_a = import_step("09_hinge_leaf_a.step")
+leaf_b = import_step("09_hinge_leaf_b.step")
+
+# 装配定位（镜像/旋转/平移到设计位置）
+assy_b = Rot(0, 0, 180) * leaf_b  # 翻转第二片
+
+# OCP 预览（不同颜色区分零件）
+show(leaf_a, assy_b, names=["leaf_a", "leaf_b"],
+     colors=["steelblue", "orange"])
+```
+
+**爆炸展开文件** `xxx_exploded.py`：
+- 各零件沿主轴方向平移展开，露出内部结构
+- 默认为静态爆炸图（`show()` 展示）
+- 用户要求时可加 ocp-vscode 动画效果（`Animation`）
+
+```python
+from build123d import *
+from ocp_vscode import show, Camera
+
+# 导入零件
+leaf_a = import_step("09_hinge_leaf_a.step")
+leaf_b = import_step("09_hinge_leaf_b.step")
+pin = import_step("09_hinge_pin.step")
+
+# 爆炸展开（沿 Y 轴分离）
+explode_dist = 30  # 爆炸距离 mm
+exp_a = Pos(0, -explode_dist, 0) * leaf_a
+exp_b = Pos(0, explode_dist, 0) * leaf_b
+exp_pin = Pos(0, 0, explode_dist) * pin
+
+# 静态爆炸图预览
+show(exp_a, exp_b, exp_pin,
+     names=["leaf_a", "leaf_b", "pin"],
+     colors=["steelblue", "orange", "gray"])
+```
+
+**动画版本**（用户要求时）：
+```python
+from ocp_vscode import show, Animation
+
+# 创建动画：从装配位置到爆炸位置
+animation = Animation()
+animation.add_track("leaf_a", "t", [0, 1], [[0,0,0], [0,-30,0]])
+animation.add_track("leaf_b", "t", [0, 1], [[0,0,0], [0,30,0]])
+animation.add_track("pin",    "t", [0, 1], [[0,0,0], [0,0,30]])
+
+show(leaf_a, leaf_b, pin,
+     names=["leaf_a", "leaf_b", "pin"],
+     colors=["steelblue", "orange", "gray"])
+animation.animate(2)  # 2秒动画
+```
+
+**触发关键词**：「装配」「展开」「爆炸图」「exploded view」「组合预览」「assembly」
 
 ---
 

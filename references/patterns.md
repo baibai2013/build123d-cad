@@ -328,3 +328,95 @@ export_step(gear, "gear_spur.step")
 | `face_width` | 齿宽（越宽承载能力越大，一般取 8–15× module） |
 | `shaft_r` | 轴孔半径（与配对轴直径一致） |
 | `steps` | 渐开线采样点数（越多齿形越精确，6–12 即可） |
+
+---
+
+## 12. 装配预览 + 爆炸展开（多体零件）
+
+当零件包含多个独立体时，生成两个辅助文件用于 OCP CAD Viewer 预览。
+
+### 装配预览
+
+```python
+from build123d import *
+from ocp_vscode import show
+
+# ===== 导入零件 =====
+part_a = import_step("hinge_leaf_a.step")
+part_b = import_step("hinge_leaf_b.step")
+pin = import_step("hinge_pin.step")
+
+# ===== 装配定位 =====
+# 零件 B 翻转 180° 对齐铰链轴
+assy_b = Rot(0, 0, 180) * part_b
+
+# ===== OCP 预览 =====
+show(part_a, assy_b, pin,
+     names=["leaf_a", "leaf_b", "pin"],
+     colors=["steelblue", "orange", "gray"])
+```
+
+**要点**：
+- 用 `Rot()` 旋转、`Pos()` 平移定位零件
+- `names` 参数给每个零件命名，OCP 侧边栏可单独显隐
+- `colors` 用不同颜色区分零件
+
+### 爆炸展开（静态）
+
+```python
+from build123d import *
+from ocp_vscode import show
+
+# ===== 导入零件 =====
+part_a = import_step("hinge_leaf_a.step")
+part_b = import_step("hinge_leaf_b.step")
+pin = import_step("hinge_pin.step")
+
+# ===== 爆炸参数 =====
+explode_dist = 30   # mm，根据零件尺寸调整
+
+# ===== 沿主轴展开 =====
+exp_a   = Pos(0, -explode_dist, 0) * part_a
+exp_b   = Pos(0,  explode_dist, 0) * part_b
+exp_pin = Pos(0, 0, explode_dist)  * pin
+
+# ===== OCP 预览 =====
+show(exp_a, exp_b, exp_pin,
+     names=["leaf_a", "leaf_b", "pin"],
+     colors=["steelblue", "orange", "gray"])
+```
+
+**要点**：
+- `explode_dist` 控制展开距离，建议为零件最大尺寸的 30%–50%
+- 沿零件装配方向的主轴展开（铰链沿 Y 轴，层叠件沿 Z 轴）
+- 展开距离不宜过大，保持零件间空间关系可读
+
+### 爆炸动画（ocp-vscode Animation）
+
+```python
+from build123d import *
+from ocp_vscode import show, Animation
+
+# ===== 导入零件 =====
+part_a = import_step("hinge_leaf_a.step")
+part_b = import_step("hinge_leaf_b.step")
+pin = import_step("hinge_pin.step")
+
+# ===== OCP 显示（初始装配位置） =====
+show(part_a, part_b, pin,
+     names=["leaf_a", "leaf_b", "pin"],
+     colors=["steelblue", "orange", "gray"])
+
+# ===== 动画：从装配位置到爆炸位置 =====
+animation = Animation()
+animation.add_track("leaf_a", "t", [0, 1], [[0,0,0], [0,-30,0]])
+animation.add_track("leaf_b", "t", [0, 1], [[0,0,0], [0,30,0]])
+animation.add_track("pin",    "t", [0, 1], [[0,0,0], [0,0,30]])
+animation.animate(2)   # 2 秒完成展开
+```
+
+**要点**：
+- `add_track(name, "t", keyframes, positions)` — `"t"` 表示平移动画
+- `keyframes` 是时间点（0=开始, 1=结束），`positions` 是对应的 XYZ 偏移
+- `animate(duration)` 控制动画时长（秒）
+- 动画在 OCP CAD Viewer 中自动播放，可暂停/回放
