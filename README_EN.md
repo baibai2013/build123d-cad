@@ -19,9 +19,13 @@ English | [中文](README.md)
 
 <img src="preview.png" alt="build123d Spur Gear Example — OCP CAD Viewer" width="720">
 
+*Spur Gear — OCP CAD Viewer Live Preview*
+
 <br>
 
 <img src="enclosure_explode.gif" alt="Enclosure Exploded Animation — Assembly & Disassembly Demo" width="720">
+
+*Enclosure Exploded Animation — Auto Assembly & Disassembly Demo*
 
 <br>
 

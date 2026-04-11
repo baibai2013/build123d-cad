@@ -19,9 +19,13 @@
 
 <img src="preview.png" alt="build123d 直齿轮示例 — OCP CAD Viewer" width="720">
 
+*直齿轮 — OCP CAD Viewer 实时预览*
+
 <br>
 
 <img src="enclosure_explode.gif" alt="壳体爆炸动画 — 装配与展开演示" width="720">
+
+*壳体爆炸动画 — 自动装配与展开演示*
 
 <br>
 
