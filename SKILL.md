@@ -150,21 +150,49 @@ show(exp_a, exp_b, exp_pin,
      colors=["steelblue", "orange", "gray"])
 ```
 
-**动画版本**（用户要求时）：
+**动画版本**（默认推荐，含循环播放）：
+
+爆炸动画默认参数（来自实战验证）：
+
+| 参数 | 默认值 | 说明 |
+|------|--------|------|
+| `explode_dist` | `30` mm | 爆炸总距离，各零件各移一半 |
+| 动画时间轴 | `[0, 2, 12, 14, 16]` 秒 | 炸开2s → 停留10s → 合拢2s → 停留2s |
+| `animate(speed)` | `1` | 正常速度播放，16s 循环 |
+| 路径前缀 | `"/Group/name"` | OCP Viewer 要求的完整路径 |
+| 颜色方案 | `steelblue` + `orange` + `gray` | 主体/盖板/紧固件 |
+
 ```python
+from build123d import *
 from ocp_vscode import show, Animation
 
-# 创建动画：从装配位置到爆炸位置
-animation = Animation()
-animation.add_track("leaf_a", "t", [0, 1], [[0,0,0], [0,-30,0]])
-animation.add_track("leaf_b", "t", [0, 1], [[0,0,0], [0,30,0]])
-animation.add_track("pin",    "t", [0, 1], [[0,0,0], [0,0,30]])
+# ===== 爆炸参数 =====
+explode_dist = 30                              # 爆炸总距离 mm
+half = explode_dist / 2                        # 各零件移动半距
 
-show(leaf_a, leaf_b, pin,
-     names=["leaf_a", "leaf_b", "pin"],
-     colors=["steelblue", "orange", "gray"])
-animation.animate(2)  # 2秒动画
+# ===== 显示装配态（动画起点） =====
+show(part_a, part_b,
+     names=["body", "lid"],
+     colors=["steelblue", "orange"])
+
+# ===== 爆炸动画：炸2s → 停10s → 合2s → 停2s（16s循环） =====
+t = [0, 2, 12, 14, 16]                        # 关键帧时间点（秒）
+
+animation = Animation()
+animation.add_track("/Group/body", "t", t,
+                    [[0,0,0], [0,0,-half], [0,0,-half], [0,0,0], [0,0,0]])
+animation.add_track("/Group/lid",  "t", t,
+                    [[0,0,0], [0,0,half],  [0,0,half],  [0,0,0], [0,0,0]])
+animation.animate(1)                           # speed=1 正常速度
 ```
+
+**动画时间轴说明**：
+- `0→2s`：零件从装配位置移动到爆炸位置（展开）
+- `2→12s`：停留在爆炸状态，用户可旋转查看内部结构
+- `12→14s`：零件从爆炸位置回到装配位置（合拢）
+- `14→16s`：停留在装配状态，然后循环
+
+**⚠️ 注意**：`add_track` 的 name 参数必须带 `/Group/` 前缀（如 `"/Group/body"`），与 `show()` 中 `names` 列表对应。
 
 **触发关键词**：「装配」「展开」「爆炸图」「exploded view」「组合预览」「assembly」
 

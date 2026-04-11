@@ -391,32 +391,55 @@ show(exp_a, exp_b, exp_pin,
 - 沿零件装配方向的主轴展开（铰链沿 Y 轴，层叠件沿 Z 轴）
 - 展开距离不宜过大，保持零件间空间关系可读
 
-### 爆炸动画（ocp-vscode Animation）
+### 爆炸动画（ocp-vscode Animation，默认推荐）
+
+默认参数（来自实战验证）：
+
+| 参数 | 默认值 | 说明 |
+|------|--------|------|
+| `explode_dist` | `30` mm | 爆炸总距离，各零件各移半距 |
+| 时间轴 `t` | `[0, 2, 12, 14, 16]` 秒 | 炸开2s → 停留10s → 合拢2s → 停留2s |
+| `animate(speed)` | `1` | 正常速度，16s 循环 |
+| 路径前缀 | `"/Group/name"` | OCP Viewer 要求的完整路径 |
+| 颜色方案 | `steelblue` / `orange` / `gray` | 主体 / 盖板 / 紧固件 |
 
 ```python
 from build123d import *
 from ocp_vscode import show, Animation
 
 # ===== 导入零件 =====
-part_a = import_step("hinge_leaf_a.step")
-part_b = import_step("hinge_leaf_b.step")
-pin = import_step("hinge_pin.step")
+body = import_step("enclosure_box.step")
+lid  = import_step("enclosure_lid.step")
 
-# ===== OCP 显示（初始装配位置） =====
-show(part_a, part_b, pin,
-     names=["leaf_a", "leaf_b", "pin"],
-     colors=["steelblue", "orange", "gray"])
+# 盖子装配位置（盒体顶面对齐）
+lid_z = outer_h / 2 + lid_thick / 2
+assembled_lid = Pos(0, 0, lid_z) * lid
 
-# ===== 动画：从装配位置到爆炸位置 =====
+# ===== 爆炸参数 =====
+explode_dist = 30                              # 爆炸总距离 mm
+half = explode_dist / 2                        # 各零件移动半距
+
+# ===== 显示装配态（动画起点） =====
+show(body, assembled_lid,
+     names=["body", "lid"],
+     colors=["steelblue", "orange"])
+
+# ===== 爆炸动画：炸2s → 停10s → 合2s → 停2s（16s循环） =====
+t = [0, 2, 12, 14, 16]                        # 关键帧时间点（秒）
+
 animation = Animation()
-animation.add_track("leaf_a", "t", [0, 1], [[0,0,0], [0,-30,0]])
-animation.add_track("leaf_b", "t", [0, 1], [[0,0,0], [0,30,0]])
-animation.add_track("pin",    "t", [0, 1], [[0,0,0], [0,0,30]])
-animation.animate(2)   # 2 秒完成展开
+animation.add_track("/Group/body", "t", t,
+                    [[0,0,0], [0,0,-half], [0,0,-half], [0,0,0], [0,0,0]])
+animation.add_track("/Group/lid",  "t", t,
+                    [[0,0,0], [0,0,half],  [0,0,half],  [0,0,0], [0,0,0]])
+animation.animate(1)                           # speed=1 正常速度
 ```
 
 **要点**：
-- `add_track(name, "t", keyframes, positions)` — `"t"` 表示平移动画
-- `keyframes` 是时间点（0=开始, 1=结束），`positions` 是对应的 XYZ 偏移
-- `animate(duration)` 控制动画时长（秒）
-- 动画在 OCP CAD Viewer 中自动播放，可暂停/回放
+- `add_track` 的 name 必须带 `"/Group/"` 前缀，与 `show()` 的 `names` 对应
+- `"t"` 表示平移动画（translation）
+- 时间轴用实际秒数，`animate(speed)` 控制播放速度（1=正常）
+- 每个关键帧对应一个 `[x, y, z]` 偏移量（相对于初始位置）
+- 停留阶段（2→12s）重复同一位置，让用户有充足时间旋转查看
+- 层叠零件沿 Z 轴展开；并列零件沿 X/Y 轴展开
+- `explode_dist` 建议为零件最大尺寸的 30%–50%
