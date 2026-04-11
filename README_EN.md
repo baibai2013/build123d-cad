@@ -21,6 +21,10 @@ English | [中文](README.md)
 
 <br>
 
+<img src="enclosure_explode.gif" alt="Enclosure Exploded Animation — Assembly & Disassembly Demo" width="720">
+
+<br>
+
 Built on CadQuery founder Dave Cowden's modeling philosophy,<br>
 with full build123d API coverage, 12 real-world part examples, and 11 typical modeling patterns.<br>
 Distilled into 5 core mental models, 8 code quality heuristics, and a complete CAD code generation workflow.

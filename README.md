@@ -21,6 +21,10 @@
 
 <br>
 
+<img src="enclosure_explode.gif" alt="壳体爆炸动画 — 装配与展开演示" width="720">
+
+<br>
+
 融合 CadQuery 创始人 Dave Cowden 的建模哲学，<br>
 基于 build123d API 全量梳理、12 个真实零件案例、11 种典型建模模式，<br>
 提炼 5 个核心心智模型、8 条代码质量启发式和完整的 CAD 代码生成工作流。
