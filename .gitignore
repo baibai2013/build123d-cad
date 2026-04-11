@@ -1,0 +1,36 @@
+# build123d 导出文件（运行时生成，不纳入版本控制）
+*.step
+*.stp
+*.stl
+*.brep
+*.3mf
+*.gltf
+*.glb
+*.dxf
+
+# 批量导出输出目录
+exports/
+
+# Python 缓存
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+
+# 虚拟环境
+.venv/
+venv/
+env/
+
+# IDE
+.DS_Store
+*.swp
+*.swo
+.idea/
+.vscode/
+*.code-workspace
+
+# 测试/临时文件
+*.tmp
+*.log
