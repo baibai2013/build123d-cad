@@ -64,7 +64,7 @@ description: |
 | 简单零件（<5特征） | 直接 Builder Mode |
 | 旋转体 | `revolve()` + `BuildSketch(Plane.XZ)` |
 | 管道/异形 | `sweep()` + `BuildLine()` 路径 |
-| 薄壁件 | `shell()` 抽壳 |
+| 薄壁件 | `offset(amount=-t, openings=face)` 抽壳 |
 | 阵列特征 | `GridLocations` / `PolarLocations` |
 | 快速组合 | Algebra Mode（`+`, `-`, `&`） |
 | **有机曲面/流线型** | **Loft 多截面放样 + Sweep 扭转**（见 `references/parts/surface-modeling.md`） |
@@ -352,6 +352,7 @@ extrude(sketch, 10)                      # Builder Mode 内不传 sketch
 part.add(box)                            # 没有 add 方法
 export_step(part, "f.step")             # 应传 part.part，不是 BuildPart 对象
 part.is_valid()                          # is_valid 是属性不是方法，不加括号
+shell(face, thickness=-t)                # shell() 未被导出！正确写法：offset(amount=-t, openings=face)
 
 # ❌ Plane 构造陷阱（高频踩坑）
 # z_dir 是平面【法向量】，不是草图"向上"方向
@@ -442,7 +443,7 @@ loft()                          # 多截面放样（曲面建模核心）
 sweep()                         # 沿路径扫掠
 fillet(edges, radius=r)
 chamfer(edges, length=l)
-shell(face, thickness=-t)       # 负值 = 向内抽壳
+offset(amount=-t, openings=face)  # 抽壳：负值向内，openings 指定开放面；注意 shell() 未导出
 
 # 孔系
 CounterBoreHole(radius=r, counter_bore_radius=cr, counter_bore_depth=cd)  # 沉头孔
@@ -555,7 +556,8 @@ wall_t = 2.5
 
 with BuildPart() as box:
     Box(outer_l, outer_w, outer_h)
-    shell(box.faces().sort_by(Axis.Z)[-1], thickness=-wall_t)
+    top_face = box.faces().sort_by(Axis.Z)[-1]
+    offset(amount=-wall_t, openings=top_face)   # shell() 未导出，用 offset(openings=) 代替
 
 export_step(box.part, "enclosure.step")
 ```
