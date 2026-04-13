@@ -34,6 +34,7 @@ description: |
 9. **曲面建模指引**：当用户需要有机曲面（流线型外壳、多截面过渡、扭转扫掠）时，引导到 `references/parts/surface-modeling.md`，优先使用 Loft 多截面放样和 Sweep 扭转扫掠，注意 G1/G2 曲面连续性
 10. **制造工艺提醒**：代码生成后，根据用户的目标工艺主动提醒设计约束。3D 打印见 `references/process/3d-printing.md`（壁厚/悬臂/公差），CNC 见 `references/process/cnc-machining.md`（刀具可达/深宽比），激光切割见 `references/process/laser-cutting.md`（切缝补偿/DXF 导出）
 11. **运动仿真指引**：当用户需要让零件「动起来」（步态、IK、仿真）时，引导到 `references/simulation/` 和 `references/peter-corke/simulation-philosophy.md`。FK/IK 用纯 Python + numpy 实现，步态用贝塞尔轨迹 + IK，URDF 导出用 `scripts/simulation/export_urdf.py`，物理仿真用 PyBullet。核心思路来自 Peter Corke 的「Learn by doing」哲学：可执行代码优先于数学推导
+12. **OCP 预览强制**：每次生成完零件或装配代码，必须在代码末尾加入 OCP 自动预览块（见下方标准模板），并在回答中告知用户「OCP Viewer 预览已打开」。预览块使用 `get_ports()` + `port_check()` 自动探测运行中的 Viewer 端口，不依赖硬编码端口号，优雅 fallback 到提示语。
 
 ---
 
@@ -95,7 +96,25 @@ print(f"尺寸: {bb.size.X:.2f} x {bb.size.Y:.2f} x {bb.size.Z:.2f} mm")
 
 # ===== 导出 =====
 export_step(part.part, "output.step")
+
+# ===== OCP 预览（自动连接运行中的 Viewer）=====
+# ⚠️ 每次生成代码必须包含此块，并告知用户预览已打开
+try:
+    from ocp_vscode import show, set_port, Camera
+    from ocp_vscode.comms import port_check
+    from ocp_vscode.state import get_ports
+    active_port = next((int(p) for p in get_ports() if port_check(int(p))), None)
+    if active_port:
+        set_port(active_port)
+        show(part.part, names=["part"], reset_camera=Camera.ISO)
+        print(f"OCP Viewer: 已在端口 {active_port} 打开预览 ✓")
+    else:
+        print("OCP Viewer: 未检测到运行中的 Viewer，请在 VS Code 中启动 OCP CAD Viewer 扩展")
+except Exception:
+    print("提示: 在 VS Code + OCP CAD Viewer 扩展中运行可看 3D 预览")
 ```
+
+> **回答中必须说明**：代码生成后，在文字回复中告知用户「代码已包含 OCP 预览，运行后将自动在 Viewer 中打开 ISO 视角预览」。
 
 ### Step 4：输出格式
 

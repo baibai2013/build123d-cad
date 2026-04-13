@@ -10,7 +10,7 @@
 from build123d import *
 
 # 基本有效性
-assert part.part.is_valid(), "BRep 几何无效！"
+assert part.part.is_valid, "BRep 几何无效！"
 
 # 检查实体数量
 solids = part.part.solids()
@@ -181,7 +181,7 @@ def validate_part(part, name="part", expected_dims=None, material="PLA"):
     print(f"{'='*40}")
     
     # 1. BRep 有效性
-    assert part.is_valid(), "❌ BRep 无效"
+    assert part.is_valid, "❌ BRep 无效"
     print("✅ BRep 有效")
     
     # 2. 体积

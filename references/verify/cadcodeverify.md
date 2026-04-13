@@ -28,7 +28,7 @@ def verify_cad_code(code: str, description: str, expected_dims: dict = None):
     
     # Layer 2: 几何验证
     assert part.part is not None, "❌ part 为空"
-    assert part.part.is_valid(), "❌ BRep 无效"
+    assert part.part.is_valid, "❌ BRep 无效"
     assert part.part.volume > 0, "❌ 体积为 0"
     
     bb = part.part.bounding_box()
@@ -69,7 +69,7 @@ def verify_and_fix(code, description, max_iterations=3):
             # 获取实际的 part 对象
             actual_part = part.part if hasattr(part, 'part') else part
             
-            assert actual_part.is_valid(), "BRep 无效"
+            assert actual_part.is_valid, "BRep 无效"
             assert actual_part.volume > 0, "体积为 0"
             
             print(f"✅ 迭代 {i+1}: 验证通过")
@@ -151,7 +151,7 @@ response = client.messages.create(
 ```python
 # ===== 验证 =====
 # 1. BRep 有效性
-assert part.part.is_valid(), "BRep 无效"
+assert part.part.is_valid, "BRep 无效"
 
 # 2. 体积和尺寸
 bb = part.part.bounding_box()
