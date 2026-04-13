@@ -5,7 +5,7 @@
 """
 from build123d import *
 
-# ===== 参数 =====
+# ===== Parameters / 参数 =====
 leaf_l      = 60    # 合页叶片长度 mm
 leaf_w      = 30    # 叶片宽度 mm
 leaf_t      = 2.5   # 叶片厚度 mm
@@ -15,7 +15,7 @@ pin_r       = 1.5   # 轴销半径 mm
 hole_r      = 2.0   # 安装孔半径（M4 通孔）
 hole_n      = 2     # 每片安装孔数量
 
-# ===== 构建单片合页 =====
+# ===== Build single leaf / 构建单片合页 =====
 def make_leaf(knuckle_count, total_knuckles):
     """
     knuckle_count: 此叶片上的轴管数
@@ -58,7 +58,7 @@ def make_leaf(knuckle_count, total_knuckles):
 leaf_a = make_leaf(knuckle_count=2, total_knuckles=barrel_n)
 leaf_b = make_leaf(knuckle_count=1, total_knuckles=barrel_n)
 
-# ===== 导出 =====
+# ===== Export / 导出 =====
 export_step(leaf_a, "09_hinge_leaf_a.step")
 export_step(leaf_b, "09_hinge_leaf_b.step")
 

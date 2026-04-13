@@ -351,6 +351,13 @@ Hole(radius=3, through=True)             # through 参数不存在
 extrude(sketch, 10)                      # Builder Mode 内不传 sketch
 part.add(box)                            # 没有 add 方法
 export_step(part, "f.step")             # 应传 part.part，不是 BuildPart 对象
+part.is_valid()                          # is_valid 是属性不是方法，不加括号
+
+# ❌ Plane 构造陷阱（高频踩坑）
+# z_dir 是平面【法向量】，不是草图"向上"方向
+Plane(origin=pt, z_dir=Vector(0,0,1))   # ← 以为是"朝上"，实际是法向
+# 正确理解：z_dir = 平面法向（normal），草图 Y 轴 = x_dir × z_dir（右手系）
+# 验证方法：Plane.XZ.offset(10) 的 origin=(0,-10,0), z_dir=(0,-1,0)，不是(0,0,1)
 ```
 
 ### 明确反模式（直接指出，不软化）
@@ -553,6 +560,68 @@ with BuildPart() as box:
 export_step(box.part, "enclosure.step")
 ```
 
+### Sweep 弯管（含两端连接口）
+
+`path @ t` = 路径 t 参数处的坐标点（t=0 起点，t=1 终点）
+`path % t` = 路径 t 参数处的切线方向向量
+
+切线方向即截面平面的法向——`Plane(origin=path @ t, z_dir=path % t)` 是标准写法。
+`extrude(amount=-hub_len)` 沿法向反方向延伸（起点端向外）；`extrude(amount=+hub_len)` 沿法向正方向延伸（终点端向外）。
+
+```python
+from build123d import *
+
+bend_r, bend_angle = 40, 90
+outer_r, inner_r   = 15, 13
+hub_r, hub_len     = 18, 8   # 连接口比管体大一圈 / hub larger than pipe body
+
+# 弧线路径（XZ 平面内 90° 弧）/ Arc path in XZ plane
+path = Edge.make_circle(radius=bend_r, plane=Plane.XZ,
+                        start_angle=0, end_angle=bend_angle)
+
+start_plane = Plane(origin=path @ 0, z_dir=path % 0)  # 切线 = 法向
+end_plane   = Plane(origin=path @ 1, z_dir=path % 1)
+
+with BuildPart() as elbow:
+    # 实心外管 → 减内孔 = 空心管壁
+    with BuildSketch(start_plane): Circle(outer_r)
+    sweep(path=path)
+    with BuildSketch(start_plane): Circle(inner_r)
+    sweep(path=path, mode=Mode.SUBTRACT)
+
+    # 起始端连接口（向外 = 沿法向反方向）
+    with BuildSketch(start_plane):
+        Circle(hub_r); Circle(inner_r, mode=Mode.SUBTRACT)
+    extrude(amount=-hub_len)
+
+    # 末端连接口（向外 = 沿法向正方向）
+    with BuildSketch(end_plane):
+        Circle(hub_r); Circle(inner_r, mode=Mode.SUBTRACT)
+    extrude(amount=hub_len)
+
+export_step(elbow.part, "pipe_elbow.step")
+```
+
+### 旋转体键槽（key_angle 参数化，可绕轴旋转）
+
+键槽平面的解析公式——适用于任意 `key_angle`（绕轴 Z 旋转的角度）：
+
+```python
+import math
+_a = math.radians(key_angle)          # 0° = -Y 面（正前方），90° = +X 面（右侧）
+keyway_plane = Plane(
+    origin = Vector( r * math.sin(_a), -r * math.cos(_a), 0),  # 轴表面对应角度处
+    x_dir  = Vector( math.cos(_a),      math.sin(_a),     0),  # 切向（键槽宽度方向）
+    z_dir  = Vector( math.sin(_a),     -math.cos(_a),     0),  # 径向外向（= 平面法向）
+)
+# 注意：该平面的 y_dir = x_dir × z_dir = (0, 0, -1)，即轴向朝下
+# 所以 Locations((0, -z_center)) 用负值将草图定位到主轴段中心
+with BuildSketch(keyway_plane):
+    with Locations((0, -z_center)):
+        Rectangle(key_width, key_length)
+extrude(amount=-key_depth, mode=Mode.SUBTRACT)   # 向内切入
+```
+
 更多示例见 `assets/` 目录（20+ 个示例，覆盖零件/装配/曲面/关节/安装 5 大类）。
 
 ---
@@ -571,6 +640,36 @@ export_step(box.part, "enclosure.step")
 ---
 
 ## 验证方法
+
+### ⚡ 三层验证标准模式（每个零件必须通过）
+
+实战验证的标准结构，适用于所有零件测试文件：
+
+```python
+# ===== Layer 1 + 2：BRep 有效性 + 尺寸/体积断言 =====
+assert part.part is not None,  "part is None"
+assert part.part.is_valid,     "BRep invalid"   # ⚠️ is_valid 是属性，不加括号！
+
+vol = part.part.volume
+bb  = part.part.bounding_box()
+print(f"尺寸: {bb.size.X:.2f} x {bb.size.Y:.2f} x {bb.size.Z:.2f} mm")
+print(f"体积: {vol:.2f} mm³")
+
+assert abs(bb.size.X - expected_x) < 1.0, f"X 偏差: {bb.size.X:.2f}"
+assert 0 < vol < upper_bound,              f"体积超范围: {vol:.2f}"
+assert len(part.part.solids()) == 1,       "应只有一个 solid"
+
+# ===== Layer 3：STEP 导出 + 重导入体积一致性 =====
+export_step(part.part, step_path)
+reimported = import_step(step_path)
+vol_diff = abs(reimported.volume - vol) / vol
+assert vol_diff < 0.001, f"STEP 精度损失: {vol_diff:.4%}"
+```
+
+**各层含义：**
+- Layer 1（执行）：代码不报错，能生成几何体
+- Layer 2（几何）：BRep 合法、包围盒尺寸对、体积在合理范围、恰好一个 solid
+- Layer 3（导出）：STEP 重导入后体积偏差 < 0.1%（精度无损失）
 
 ```bash
 # 1. 直接运行（需要 build123d）

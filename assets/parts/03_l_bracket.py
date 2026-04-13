@@ -5,7 +5,7 @@ L 形支架 / L-Bracket
 """
 from build123d import *
 
-# ===== 参数 =====
+# ===== Parameters / 参数 =====
 base_l       = 60       # 底板长度 mm
 base_w       = 40       # 底板宽度 mm
 rib_h        = 50       # 竖板高度 mm
@@ -22,7 +22,7 @@ rib_holes    = [        # 竖板安装孔位置（X, Z offset from rib center）
     (-15, 35), (15, 35)
 ]
 
-# ===== 建模 =====
+# ===== Modeling / 建模 =====
 with BuildPart() as bracket:
     # 底板
     Box(base_l, base_w, thickness)
@@ -55,10 +55,13 @@ with BuildPart() as bracket:
             Circle(hole_r)
     extrude(amount=-thickness, mode=Mode.SUBTRACT)
 
-# ===== 验证 =====
+# ===== Validation / 验证 =====
+assert bracket.part is not None, "part is None / part 为空"
+assert bracket.part.is_valid,    "BRep invalid / BRep 无效"
+
 bb = bracket.part.bounding_box()
 print(f"尺寸: {bb.size.X:.1f} x {bb.size.Y:.1f} x {bb.size.Z:.1f} mm")
 print(f"体积: {bracket.part.volume:.1f} mm³")
 
-# ===== 导出 =====
+# ===== Export / 导出 =====
 export_step(bracket.part, "03_l_bracket.step")
