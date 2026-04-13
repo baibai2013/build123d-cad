@@ -562,6 +562,26 @@ with BuildPart() as box:
 export_step(box.part, "enclosure.step")
 ```
 
+### Sweep 扭转缎带（is_frenet 自然扭转）
+
+```python
+# 螺旋路径：四分之一圈，半径 40mm，高 60mm
+path = Edge.make_helix(pitch=240, height=60, radius=40)   # 返回 Wire
+
+# 截面平面：垂直于起点切线（path % 0 = 起点切线向量）
+start_plane = Plane(origin=path @ 0, z_dir=path % 0)
+
+with BuildPart() as ribbon:
+    with BuildSketch(start_plane):
+        Rectangle(30, 5)        # 薄矩形截面 / thin ribbon cross-section
+    sweep(path=path, is_frenet=True)   # Frenet 框架驱动截面自然翻转 / natural twist
+```
+
+**关键**：`is_frenet=True` 让截面跟随路径的 Frenet 框架旋转，路径曲率越大扭转越明显。
+直线路径用 multisection + 多截面；曲线路径用 is_frenet=True。
+
+---
+
 ### Sweep 弯管（含两端连接口）
 
 `path @ t` = 路径 t 参数处的坐标点（t=0 起点，t=1 终点）
