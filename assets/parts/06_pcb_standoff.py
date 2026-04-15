@@ -6,14 +6,14 @@ PCB 支柱 / PCB Standoff
 """
 from build123d import *
 
-# ===== 参数 =====
+# ===== Parameters / 参数 =====
 outer_d    = 6.35   # 六边形对边距（5mm 规格标准：5.0，6.35mm = 1/4 英寸）mm
 height     = 11     # 支柱高度 mm
 screw_d    = 3.0    # 螺钉通孔直径（M3 光孔）mm
 thread_d   = 2.5    # 螺纹孔底径（M3 预钻孔）mm
 thread_h   = 6      # 螺纹孔深度 mm（底部）
 
-# ===== 建模 =====
+# ===== Modeling / 建模 =====
 with BuildPart() as standoff:
     # 六边形棱柱
     with BuildSketch(Plane.XY):
@@ -35,10 +35,13 @@ with BuildPart() as standoff:
     bot_circle = standoff.edges().filter_by(GeomType.CIRCLE).sort_by(Axis.Z)[0]
     chamfer([top_circle, bot_circle], length=0.3)
 
-# ===== 验证 =====
+# ===== Validation / 验证 =====
+assert standoff.part is not None, "part is None / part 为空"
+assert standoff.part.is_valid,    "BRep invalid / BRep 无效"
+
 bb = standoff.part.bounding_box()
 print(f"尺寸: {outer_d:.1f}mm 对边 x H{bb.size.Z:.1f}mm")
 print(f"体积: {standoff.part.volume:.1f} mm³")
 
-# ===== 导出 =====
+# ===== Export / 导出 =====
 export_step(standoff.part, "06_pcb_standoff.step")

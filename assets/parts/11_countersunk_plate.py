@@ -5,7 +5,7 @@
 """
 from build123d import *
 
-# ===== 参数 =====
+# ===== Parameters / 参数 =====
 plate_l     = 100   # 板长 mm
 plate_w     = 60    # 板宽 mm
 plate_h     = 6     # 板厚 mm
@@ -25,7 +25,7 @@ csink_angle   = 82      # 锥角 °（标准 82°）
 cbore_positions = [(30, 20), (30, -20), (-30, 20), (-30, -20)]   # 沉头孔（四角）
 csink_positions = [(0, 20), (0, -20)]                             # 锥孔（中部）
 
-# ===== 建模 =====
+# ===== Modeling / 建模 =====
 with BuildPart() as plate:
     Box(plate_l, plate_w, plate_h)
     fillet(plate.edges().filter_by(Axis.Z), radius=corner_r)
@@ -46,10 +46,13 @@ with BuildPart() as plate:
             counter_sink_angle=csink_angle
         )
 
-# ===== 验证 =====
+# ===== Validation / 验证 =====
+assert plate.part is not None, "part is None / part 为空"
+assert plate.part.is_valid,    "BRep invalid / BRep 无效"
+
 bb = plate.part.bounding_box()
 print(f"尺寸: {bb.size.X:.1f} x {bb.size.Y:.1f} x {bb.size.Z:.1f} mm")
 print(f"体积: {plate.part.volume:.1f} mm³")
 
-# ===== 导出 =====
+# ===== Export / 导出 =====
 export_step(plate.part, "11_countersunk_plate.step")

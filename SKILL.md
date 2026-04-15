@@ -34,12 +34,327 @@ description: |
 9. **曲面建模指引**：当用户需要有机曲面（流线型外壳、多截面过渡、扭转扫掠）时，引导到 `references/parts/surface-modeling.md`，优先使用 Loft 多截面放样和 Sweep 扭转扫掠，注意 G1/G2 曲面连续性
 10. **制造工艺提醒**：代码生成后，根据用户的目标工艺主动提醒设计约束。3D 打印见 `references/process/3d-printing.md`（壁厚/悬臂/公差），CNC 见 `references/process/cnc-machining.md`（刀具可达/深宽比），激光切割见 `references/process/laser-cutting.md`（切缝补偿/DXF 导出）
 11. **运动仿真指引**：当用户需要让零件「动起来」（步态、IK、仿真）时，引导到 `references/simulation/` 和 `references/peter-corke/simulation-philosophy.md`。FK/IK 用纯 Python + numpy 实现，步态用贝塞尔轨迹 + IK，URDF 导出用 `scripts/simulation/export_urdf.py`，物理仿真用 PyBullet。核心思路来自 Peter Corke 的「Learn by doing」哲学：可执行代码优先于数学推导
+12. **OCP 预览强制**：每次生成完零件或装配代码，必须在代码末尾加入 OCP 自动预览块（见下方标准模板），并在回答中告知用户「OCP Viewer 预览已打开」。预览块使用 `get_ports()` + `port_check()` 自动探测运行中的 Viewer 端口，不依赖硬编码端口号，优雅 fallback 到提示语。
 
 ---
 
 ## 回答工作流（Agentic Protocol）
 
 **核心原则：先理解几何意图，再生成代码。能向机械师描述清楚，代码才算写对了。**
+
+### 流程路由（收到需求后先判断）
+
+| 需求类型 | 判断标准 | 使用流程 |
+|---------|---------|---------|
+| **参考物建模** | 需求中包含已存在的具体产品型号（手机/芯片板/舵机/传感器…） | 👇 参考物建模流程（Step R1~R5，先收集资料再建模） |
+| **单部件** | 只有一个独立实体，无装配关系 | 👇 Step 1~4（含3变体对比） |
+| **多部件** | 2个以上部件 / 有关节装配 / 有仿真需求 | 👇 多部件 4 阶段流程（Phase 1~4，每部件含3变体） |
+
+---
+
+## 参考物建模流程（Reference-Product Protocol）
+
+> **触发条件**：需求中包含已存在的具体产品型号，例如：
+> 「帮我做红米 K80 的手机壳」「给树莓派 4B 做散热壳」「SG90 舵机安装座」
+>
+> **核心思路**：先收集真实产品尺寸，反推建模参数，再走标准建模流程。
+
+### Step R1 — 识别 + 生成搜索计划（先告知，不执行）
+
+AI 输出搜索计划，等用户确认：
+
+```
+检测到目标产品：「<产品名>」
+将按以下顺序收集参考资料：
+
+📌 来源 1 — 官网规格页
+  → <品牌>官网 <产品名> 产品页（尺寸 / 重量 / 摄像头 / 按键位置…）
+
+📌 来源 2 — 购物平台
+  → 京东「<产品名>」商品参数页
+  → 淘宝「<产品名> 手机壳/配件」同类产品标注尺寸
+
+📌 来源 3 — 3D 模型库
+  → GrabCAD 搜索「<产品名>」
+  → Printables 搜索「<产品名> case」
+
+收集完成后保存至：references/<product-slug>/
+并生成 params.md 参数汇总表。
+
+[ 确认开始搜集 ] [ 我来提供资料 ]
+```
+
+---
+
+### Step R2 — 执行搜集（用户确认后）
+
+按以下规则保存到 `references/<product-slug>/`：
+
+| 资料类型 | 操作 | 文件命名 |
+|---------|------|---------|
+| 官网文本规格 | 抓取并写入 | `raw_specs.md` |
+| 官方图片 | 下载到文件夹 | `official_01.png`, `official_02.png`... |
+| 购物平台图片 | 下载到文件夹 | `shopping_01.png`, `shopping_02.png`... |
+| STEP / STL 模型 | 下载保存 | `model.step` / `model.stl` |
+
+**找到 STEP 模型时**：用 `import_step()` 加载，通过 `bounding_box()` 和关键边提取实际尺寸。
+
+**兜底（找不到资料时）**：
+
+```
+未能找到「<产品名>」的完整尺寸资料。
+请提供以下任意一种：
+  [ ] 产品三视图（正/侧/背面照片）
+  [ ] 官方规格截图
+  [ ] 手动测量值（需要的话我提供测量位置清单）
+```
+
+---
+
+### Step R3 — 生成 params.md（建模直接输入）
+
+```markdown
+# 参数表：<产品名> 配件建模参考
+
+## 数据来源
+- 官网：<url>  ✅ 高置信度
+- 购物平台：京东商品参数  ✅ 中置信度
+- 3D模型：GrabCAD - <产品名>  ✅ 高置信度（已下载 model.step）
+
+## 产品尺寸（建模直接使用）
+| 参数       | 数值    | 来源     | 置信度 |
+|-----------|--------|----------|--------|
+| 长度       | ???mm  | 官网     | ★★★★★ |
+| 宽度       | ???mm  | 官网     | ★★★★★ |
+| 厚度       | ???mm  | 购物平台 | ★★★★  |
+| 关键特征尺寸 | ???mm | 3D模型   | ★★★   |
+
+## 配件建模参数建议
+| 参数         | 推荐值  | 说明 |
+|-------------|--------|------|
+| 壁厚         | 1.2mm  | FDM 打印最小可靠壁厚 |
+| 配合间隙（单侧）| +0.3mm | 确保装入顺畅 |
+| 开孔余量（单侧）| +0.5mm | 防止遮挡关键接口 |
+```
+
+**确认门 ✋** 用户确认参数表无误后，进入建模。
+
+---
+
+### Step R4 — 进入标准建模流程
+
+以 `params.md` 为参数输入，根据部件数量路由：
+- 单个配件 → 单部件 Step 1~4（含3变体OCP对比）
+- 多部件配件 → 多部件 Phase 1~4
+
+---
+
+### Step R5 — 收尾提示
+
+建模完成后输出：
+
+```
+配件建模完成。
+参考资料 references/<product-slug>/ 已完成使命，是否删除？
+[ 删除 ] [ 保留作为设计依据 ]
+```
+
+---
+
+## 多部件 4 阶段流程（Multi-Part Protocol）
+
+> **触发条件**：需求涉及多个部件、关节装配或仿真。每个 Phase 末尾有确认门 ✋，用户确认后才进入下一 Phase。
+
+### Phase 1：需求拆解 + 专家咨询
+
+收到需求后输出以下结构，等用户确认：
+
+```
+## 需求拆解报告
+
+### 部件清单
+| 编号 | 名称 | 功能 | 对应参考图区域 |
+|------|------|------|----------------|
+| P1   | ...  | ...  | 图中xxx区域     |
+
+### 装配关系
+P1 → RigidJoint → P2 → RevoluteJoint(Y轴, ±45°) → P3 → ...
+
+### 工艺确认
+目标工艺：[ ] 3D打印  [ ] CNC铝板  [ ] 激光切割  [ ] 其他
+AI推荐：___（附理由）
+
+### 仿真需求
+[ ] 无需仿真  [ ] OCP动画  [ ] FK/IK运动学  [ ] PyBullet物理仿真
+
+### 专家意见（仅当建模简化 vs 仿真精度有分歧时展示）
+Dave Cowden 角度：___
+Peter Corke 角度：___
+取舍建议：___
+```
+
+**Phase 1 开始前必须询问**：
+
+```
+在开始拆解之前，请问你是否有参考图、参考链接或详细描述？
+（有的话发给我，我会用「参考图标注」方案 D 解读后再拆解部件）
+```
+
+**确认门 ✋** 用户回复「OK」或修改部件清单后，才进入 Phase 2。
+
+> **几何对齐（Phase 1~2 均可触发）**：用户说出触发词时，执行对应方案（见单部件 Step 1.5 的5种方案）。Phase 1 推荐：方案 D（参考图标注）+ 方案 B（OCP占位块）+ 方案 E（参数表）三连。AI 不主动触发，必须用户要求。
+
+---
+
+### Phase 2：逐部件建模 + 3变体验证门
+
+**每个部件执行完整 4 步循环，全部通过才进入下一部件。**
+
+#### Step 2a — 建3个变体并排展示
+
+```python
+# 三变体并排（X方向偏移，OCP同一窗口对比）
+# V1 保守：尺寸偏小/偏薄，适合轻量化
+# V2 参考：最贴合参考图，标准工艺（推荐）
+# V3 加强：关键截面加宽，承载需求高
+offset = part_width * 1.5
+v1 = make_variant_1(...)
+v2 = make_variant_2(...).move(Location((offset, 0, 0)))
+v3 = make_variant_3(...).move(Location((offset*2, 0, 0)))
+show(v1, v2, v3,
+     names=["V1_conservative", "V2_reference", "V3_reinforced"],
+     colors=["steelblue", "orange", "green"],
+     reset_camera=Camera.ISO)
+```
+
+#### Step 2b — AI 自动比对分析（必须输出）
+
+```
+## 部件 Pn「name」变体对比
+
+| 变体 | 对应参考图位置 | 尺寸符合度 | 建模特点       | 推荐工艺 |
+|------|--------------|-----------|----------------|---------|
+| V1   | 图中xxx区域   | ~85%      | 轻量，腰部偏细  | 3D打印  |
+| V2   | 图中xxx区域   | ~97%      | 标准CNC截面    | CNC     |
+| V3   | 图中xxx区域   | ~80%      | 端部加宽，略重  | CNC     |
+
+推荐：V2（最贴合参考图，符合已确认工艺）
+```
+
+#### Step 2c — 自动断言（三项全过才可选，任一失败标红不可选）
+
+```python
+assert part.is_valid,                        "BRep 无效"
+assert lower_bound < part.volume < upper_bound, "体积超范围"
+export_step(part, step_path); reimported = import_step(step_path)
+assert abs(reimported.volume - part.volume) / part.volume < 0.001, "STEP精度损失"
+```
+
+输出格式：
+```
+V1: ✅ BRep有效  ✅ 体积合理  ✅ STEP精度  → 可选
+V2: ✅ BRep有效  ✅ 体积合理  ✅ STEP精度  → 可选（推荐）
+V3: ✅ BRep有效  ❌ 体积过大(偏差>20%)    → 不可选
+```
+
+#### Step 2d — 确认门 ✋
+
+```
+请选择 Pn 的变体：[ V1 ] [ V2（推荐）] 或告诉我需要调整的参数
+选定后导出 STEP 存档，进入 P(n+1)「下一部件」建模
+```
+
+---
+
+### Phase 3：装配讨论（脑图）+ 执行
+
+#### Step 3a — 装配方案脑图（先讨论，不写装配代码）
+
+用 Mermaid mindmap 展示部件关系，用户一眼看清层级和关节类型：
+
+````markdown
+```mermaid
+mindmap
+  root((装配方案))
+    关节链
+      P1 根部件
+        RigidJoint 固定
+          P2 部件名
+            RevoluteJoint Y轴 角度范围
+              P3 部件名
+                ...
+    帧对齐预警
+      RevoluteJoint Y轴需 ry=-90°补偿
+      使 angle=0 = 自然下垂姿态
+    装配零点
+      原点在根部件中心
+      +Z 朝上
+    OCP展示计划
+      render_joints=True
+      各部件不同颜色
+      碰撞检测 do_children_intersect
+```
+````
+
+**确认门 ✋** 用户看脑图后回复「OK」或指出修改节点，才写装配代码执行。
+
+#### Step 3b — 装配执行
+
+生成关节代码 → 运行 → `show(..., render_joints=True)` → `do_children_intersect()` → STEP 导出。
+
+**帧对齐强制规则**（test 11 实战验证）：RevoluteJoint Y轴时必须加 `joint_location=Location((0,0,0),(0,-90,0))`，验证：`assert part.bounding_box().min.Z < -part_h * 0.8`
+
+---
+
+### Phase 4：仿真规划（3方案）+ 执行
+
+#### Step 4a — 仿真方案脑图（给非专业用户看，先选方案不写代码）
+
+````markdown
+```mermaid
+mindmap
+  root((仿真方案))
+    方案1 纯视觉动画
+      难度 ⭐
+      工具 OCP Animation
+      能看到 关节运动 GIF循环
+      适合 快速展示 演示用途
+    方案2 FK/IK运动学
+      难度 ⭐⭐⭐
+      工具 numpy + OCP Animation
+      能看到 足端轨迹 关节角度 工作空间
+      适合 步态研究 轨迹规划
+    方案3 PyBullet物理仿真
+      难度 ⭐⭐⭐⭐⭐
+      工具 URDF导出 + PyBullet
+      能看到 重力响应 地面接触 关节受力
+      适合 实体机器人验证
+```
+````
+
+Peter Corke 专家建议（面向非专业用户）：
+
+```
+「先走路再跑步——从方案1开始，能让你在10分钟内看到腿动起来。
+ 方案2适合你想研究「腿怎么走才不摔」的阶段。
+ 方案3只在你真的要做实体机器人时才需要。」
+
+请选择：
+[ ] 方案1 — 我只需要看动画效果
+[ ] 方案2 — 我想研究步态和轨迹（推荐）
+[ ] 方案3 — 我要做实体机器人
+[ ] 方案1+2 — 先做动画，再加运动学
+```
+
+**确认门 ✋** 用户选择后，AI 说明该方案具体实现步骤（DH参数表/步态相位表/URDF计划），再次确认才生成代码。
+
+#### Step 4b — 仿真执行
+
+按确认方案生成代码 → OCP 动画 / GIF 导出 / PyBullet 预览。
+
+---
+
+## 单部件简化流程（Single-Part Protocol）
 
 ### Step 1：需求分析
 
@@ -56,6 +371,236 @@ description: |
 **缺失关键尺寸时**：先询问，不要自行假设关键参数（如螺纹规格、配合尺寸）。
 非关键尺寸（如圆角半径）可给合理默认值并标注。
 
+**需求分析结束前必须询问**：
+
+```
+在开始建模之前，请问你是否有参考图、参考链接或参考描述？
+（有的话发给我，我会根据参考来建模并标注符合度）
+```
+
+---
+
+### Step 1.5：几何对齐（用户主动触发，5种方案）
+
+> **核心目的**：在建 3D 模型之前，确认 AI 理解的形状和用户脑子里的形状是同一个东西。
+> **原则**：**方案 A（3视图草图）默认自动执行**，无需用户开口。用户说「跳过草图」/「直接建模」才跳过。其余4种方案（B/C/D/E）仍需用户主动触发。
+
+---
+
+#### 方案 A：3视图草图（⭐ 默认自动执行）
+
+**默认触发**：收到任何建模需求后，在 Step 2 建模策略之前自动生成。
+**跳过触发词**：「跳过草图」「不需要草图」「直接建模」「skip sketch」
+
+用 Matplotlib 生成正视图 / 侧视图 / 俯视图 PNG，保存后**自动打开**让用户直接看到：
+
+```python
+import matplotlib.pyplot as plt
+import matplotlib.patches as patches
+import subprocess, sys, os
+
+fig, axes = plt.subplots(1, 3, figsize=(14, 5))
+fig.suptitle("Concept Sketch / 概念草图", fontsize=13, fontweight='bold')
+
+for ax, title in zip(axes, ["Front View / 正视图", "Side View / 侧视图", "Top View / 俯视图"]):
+    ax.set_title(title, fontsize=10)
+    ax.set_aspect('equal')
+    ax.grid(True, alpha=0.3)
+    ax.axhline(0, color='lightgray', linewidth=0.8, linestyle='--')
+    ax.axvline(0, color='lightgray', linewidth=0.8, linestyle='--')
+    ax.set_xlabel('mm')
+    ax.set_ylabel('mm')
+
+# ── 根据部件形状在对应 ax 绘制轮廓 + 尺寸标注 ──
+# 正视图：主轮廓 + 总长×总高尺寸线 / Front: main outline + overall dimensions
+axes[0].add_patch(patches.Rectangle((-20, -25), 40, 50,
+                  fill=False, edgecolor='black', linewidth=1.5))
+axes[0].annotate('', xy=(22, -25), xytext=(22, 25),
+                 arrowprops=dict(arrowstyle='<->', color='red', lw=1.2))
+axes[0].text(25, 0, '50mm', color='red', fontsize=8, va='center')
+axes[0].annotate('', xy=(-20, -28), xytext=(20, -28),
+                 arrowprops=dict(arrowstyle='<->', color='blue', lw=1.2))
+axes[0].text(0, -32, '40mm', color='blue', fontsize=8, ha='center')
+
+# 侧视图：壁厚 / Side: wall thickness
+# 俯视图：孔位 / Top: hole pattern
+# （根据实际部件几何填充各视图内容）
+
+plt.tight_layout()
+
+# ===== 保存 + 自动打开 =====
+sketch_path = os.path.join(output_dir, "concept_sketch.png")
+plt.savefig(sketch_path, dpi=130, bbox_inches='tight')
+plt.close()
+
+# 自动用系统查看器打开（macOS: open, Windows: start, Linux: xdg-open）
+if sys.platform == "darwin":
+    subprocess.Popen(["open", sketch_path])
+elif sys.platform == "win32":
+    os.startfile(sketch_path)
+else:
+    subprocess.Popen(["xdg-open", sketch_path])
+
+print(f"概念草图已生成并打开 / Concept sketch opened: {sketch_path}")
+```
+
+AI **同时输出文字说明**，标注每个视图的几何意图：
+
+```
+## 概念草图说明
+
+正视图：主轮廓 + 中心线，总长×总高，关键台阶位置
+侧视图：截面形状，壁厚/圆角/槽深
+俯视图：孔位分布，PCD/间距/阵列
+
+图已自动打开，请确认形状是否符合预期？
+[ ✅ 确认，进入建模 ] 或 [ ❌ 第N视图不对：___ ]
+```
+
+**确认门 ✋** 用户确认草图正确后，才进入 Step 2 建模策略。
+
+**最适合**：所有场景，默认执行，无需用户开口。
+
+---
+
+#### 方案 B：OCP 快速原型（Bounding Box Proxy）
+
+**触发词**：「先看比例」「先预览比例」「占位块」「proxy」「先看看大概」
+
+用 `Box` / `Cylinder` 代替真实部件，在 OCP 中展示3D比例和装配位置：
+
+```python
+from build123d import *
+from ocp_vscode import show, Camera
+
+# 每个部件用包围盒几何体替代，验证比例和位置 / replace each part with bbox proxy
+femur_proxy  = Box(femur_l, femur_w_end, femur_t)
+tibia_proxy  = Box(tibia_l, tibia_w_knee, tibia_t) \
+               .move(Location((0, 0, -femur_l)))
+foot_proxy   = Box(foot_w, foot_h, foot_t) \
+               .move(Location((0, 0, -femur_l - tibia_l)))
+
+show(femur_proxy, tibia_proxy, foot_proxy,
+     names=["femur_proxy", "tibia_proxy", "foot_proxy"],
+     colors=["steelblue", "orange", "green"],
+     reset_camera=Camera.ISO)
+print("OCP 占位预览已显示，请确认各部件比例和位置")
+```
+
+**确认门 ✋** 用户在 OCP 中旋转确认3D比例正确后才精建每个部件。
+
+**最适合**：多部件装配，先对齐整体比例再逐部件精建。
+
+---
+
+#### 方案 C：关键截面草图（Profile Sketch）
+
+**触发词**：「画截面」「截面轮廓」「旋转轮廓」「profile」「扫掠截面」「revolve截面」
+
+专为 **Revolve / Sweep** 零件——用 Matplotlib 画2D截面轮廓，用户确认截面后再建实体：
+
+```python
+import matplotlib.pyplot as plt
+
+fig, ax = plt.subplots(figsize=(6, 8))
+ax.set_title("Revolve Profile / 旋转截面轮廓 (XZ平面半截面)")
+ax.set_aspect('equal')
+ax.grid(True, alpha=0.3)
+ax.axvline(0, color='gray', linestyle='--', linewidth=1, label='旋转轴 Z')
+
+# 截面轮廓点（右半侧，Z为轴）/ profile points (right half, Z = revolve axis)
+profile_pts = [(5,0), (5,20), (8,20), (8,30), (6,30), (6,50)]
+xs, zs = zip(*profile_pts)
+ax.plot(xs, zs, 'b-o', linewidth=2, markersize=5, label='截面轮廓')
+
+# 关键尺寸标注 / key dimension annotations
+ax.annotate('', xy=(8,19), xytext=(5,19),
+            arrowprops=dict(arrowstyle='<->', color='red'))
+ax.text(6.5, 18, f'Δr={8-5}mm', color='red', fontsize=8, ha='center')
+
+ax.set_xlabel('R (半径方向)')
+ax.set_ylabel('Z (轴向)')
+ax.legend()
+plt.tight_layout()
+plt.savefig("output/profile_sketch.png", dpi=120, bbox_inches='tight')
+print("截面草图已保存: output/profile_sketch.png")
+```
+
+**确认门 ✋** 截面轮廓确认正确后才执行 `revolve()` / `sweep()`。
+
+**最适合**：阶梯轴、弯管、有机外壳等旋转体和扫掠件。
+
+---
+
+#### 方案 D：参考图标注
+
+**触发词**：「解读一下图」「标注图」「图里xxx是什么」「你怎么理解这张图的」「有参考图」
+
+用户提供参考图时，AI 用纯文字标注自己对图的解读，让用户纠错：
+
+```
+## 参考图解读
+
+图中各区域识别：
+  顶部圆盘结构  → P1 hip_mount   直径 ≈ 22mm，厚 ≈ 5mm
+  左侧长臂      → P2 femur       长 ≈ 50mm，腰宽 ≈ 4mm，端部 ≈ 11mm
+  右侧短臂      → P3 tibia       长 ≈ 45mm，比 femur 略细
+  底部弧形板    → P5 foot_pad    弧深 ≈ 3mm，宽 ≈ 14mm
+  两根细杆      → P6/P7 韧带     直径 ≈ 2mm，平行于大腿臂
+
+AI 理解的不确定点（需要确认）：
+  ❓ 韧带的上下附着点位置——图中不清晰
+  ❓ 脚掌弧线是圆弧还是椭圆弧
+
+请指出理解有误的地方。
+```
+
+**确认门 ✋** 用户纠正后才进入建模，不需要生成任何代码。
+
+**最适合**：用户有参考图、AI 可能看错局部细节时，零代码开销。
+
+---
+
+#### 方案 E：参数约束表
+
+**触发词**：「先确认参数」「列出参数」「参数合同」「先列尺寸」「把参数给我看看」
+
+建模前列出所有关键参数，用户逐行确认，形成「参数合同」：
+
+```
+## 参数确认表（建模前）
+
+| 参数名       | AI 拟用值 | 单位 | 来源         | 确认？ |
+|-------------|----------|------|-------------|-------|
+| femur_l     | 50       | mm   | 参考图推算   | ✅/❌ |
+| femur_w_mid | 4        | mm   | 参考图推算   | ✅/❌ |
+| femur_t     | 3        | mm   | CNC标准板厚  | ✅/❌ |
+| pivot_r     | 2.5      | mm   | M5轴径标准   | ✅/❌ |
+| foot_arc_h  | 3        | mm   | 描述推断     | ✅/❌ |
+
+有不对的直接给我正确值，其余默认 ✅ 确认。
+```
+
+**确认门 ✋** 参数表全部确认后才生成建模代码。
+
+**最适合**：有精度要求的配合件、尺寸需要精确匹配时。
+
+---
+
+#### 5种方案选择速查
+
+| 方案 | 对齐的是什么 | 生成开销 | 最适合场景 |
+|------|------------|---------|-----------|
+| A 3视图草图 | 整体形状 | 中（Matplotlib） | 复杂单体，无参考图 |
+| B OCP快速原型 | 3D比例+装配位置 | 快（build123d） | 多部件装配 |
+| C 关键截面草图 | 截面轮廓 | 中（Matplotlib） | Revolve / Sweep 件 |
+| D 参考图标注 | AI对图的理解 | 极快（纯文字） | 有参考图时 |
+| E 参数约束表 | 关键尺寸数值 | 极快（表格） | 精度配合件 |
+
+> **可组合**：多部件设计推荐 B（整体比例）+ D（参考图理解）+ E（参数锁定）三连。
+
+---
+
 ### Step 2：选择建模策略
 
 | 情况 | 策略 |
@@ -63,47 +608,112 @@ description: |
 | 简单零件（<5特征） | 直接 Builder Mode |
 | 旋转体 | `revolve()` + `BuildSketch(Plane.XZ)` |
 | 管道/异形 | `sweep()` + `BuildLine()` 路径 |
-| 薄壁件 | `shell()` 抽壳 |
+| 薄壁件 | `offset(amount=-t, openings=face)` 抽壳 |
 | 阵列特征 | `GridLocations` / `PolarLocations` |
 | 快速组合 | Algebra Mode（`+`, `-`, `&`） |
 | **有机曲面/流线型** | **Loft 多截面放样 + Sweep 扭转**（见 `references/parts/surface-modeling.md`） |
 | **多零件装配** | **Compound + Label + Joints**（见 `references/assembly/assembly-patterns.md`） |
-| **关节/运动连接** | **RevoluteJoint / BallJoint + connect_to()**（见 `references/assembly/joints-reference.md`） |
+| **关节/运动连接** | **RevoluteJoint / BallJoint + connect_to()**（见 `references/assembly/joints-reference.md`）⚠️ Y轴旋转关节需 `joint_location=Location((0,0,0),(0,-90,0))` 补偿帧对齐偏转 |
 | **复杂轮廓（齿轮/凸轮）** | **⚠️ 根实体 + 逐特征 Algebra Mode 融合**（见下方「大型非凸多边形面」说明） |
 | **运动仿真（FK/IK/步态）** | **DH 参数 + 解析 IK + 贝塞尔步态**（见 `references/simulation/`） |
 
 完整代码模板见 `references/parts/patterns.md`，可运行示例见 `assets/` 目录。
 
-### Step 3：生成代码（强制结构）
+### Step 3：生成3个变体 + OCP 并排对比
+
+**⚠️ 无论单部件还是多部件，建模时必须生成3个变体，OCP 并排展示，用户选定后才导出最终 STEP。**
+
+#### Step 3a — 建3个变体并排展示
 
 ```python
 from build123d import *
+from ocp_vscode import show, set_port, Camera
+from ocp_vscode.comms import port_check
+from ocp_vscode.state import get_ports
 
-# ===== 参数 =====
-param_1 = value    # 注释说明（用途 + 单位）
-param_2 = value
+# ===== 参数（3个变体共用基础参数，各自差异化一个维度）=====
+# V1 保守：尺寸偏小/偏薄，适合轻量化 / conservative: smaller/thinner
+# V2 参考：最贴合参考图，标准工艺（推荐）/ reference: closest to spec (recommended)
+# V3 加强：关键截面加宽/加厚，承载优先 / reinforced: wider/thicker key sections
 
-# ===== 建模 =====
-with BuildPart() as part:
-    # 步骤1：基础形状（机械师的"毛坯"）
-    # 步骤2：特征操作（"加工工序"）
-    # 步骤3：圆角/倒角（"去毛刺/精修"）
+def make_v1(): ...   # 保守方案
+def make_v2(): ...   # 参考方案（推荐）
+def make_v3(): ...   # 加强方案
 
-# ===== 验证 =====
-bb = part.part.bounding_box()
-print(f"尺寸: {bb.size.X:.2f} x {bb.size.Y:.2f} x {bb.size.Z:.2f} mm")
+v1 = make_v1()
+v2 = make_v2()
+v3 = make_v3()
 
-# ===== 导出 =====
-export_step(part.part, "output.step")
+# 并排偏移：X方向间隔 1.5× 部件最大宽度 / side-by-side offset
+offset = max(v1.bounding_box().size.X,
+             v2.bounding_box().size.X,
+             v3.bounding_box().size.X) * 1.5
+v2 = v2.move(Location((offset, 0, 0)))
+v3 = v3.move(Location((offset * 2, 0, 0)))
+
+# ===== OCP 并排预览 =====
+try:
+    active_port = next((int(p) for p in get_ports() if port_check(int(p))), None)
+    if active_port:
+        set_port(active_port)
+        show(v1, v2, v3,
+             names=["V1_conservative", "V2_reference", "V3_reinforced"],
+             colors=["steelblue", "orange", "green"],
+             reset_camera=Camera.ISO)
+        print("OCP Viewer: 3变体并排展示 ✓")
+    else:
+        print("OCP Viewer: 未检测到 Viewer，请启动 OCP CAD Viewer 扩展")
+except Exception as e:
+    print(f"OCP 预览跳过: {e}")
 ```
 
-### Step 4：输出格式
+#### Step 3b — AI 比对分析（必须输出，参考图优先）
 
-1. 完整可执行的 Python 代码块
-2. 3-5 行说明（操作序列思路，关键参数含义）
-3. 调参指引（改哪个变量能得到什么效果）
+```
+## 变体对比分析
 
-### Step 5：装配与展开（多体零件自动触发）
+| 变体 | 对应参考图位置       | 尺寸符合度 | 建模特点         | 推荐工艺 |
+|------|---------------------|-----------|------------------|---------|
+| V1   | 图中xxx区域，偏细    | ~85%      | 轻量，腰部偏细   | 3D打印  |
+| V2   | 图中xxx区域，最接近  | ~97%      | 标准CNC铝板截面  | CNC     |
+| V3   | 图中xxx区域，偏厚    | ~80%      | 端部加宽，略重   | CNC     |
+
+推荐：V2（最贴合参考图，符合工艺约束）
+
+（无参考图时：V2 为行业标准尺寸，V1/V3 为轻量化/加强化方向）
+```
+
+#### Step 3c — 自动断言（三项全过才可选）
+
+```python
+for name, part in [("V1", v1_original), ("V2", v2_original), ("V3", v3_original)]:
+    ok = []
+    ok.append("✅ BRep有效" if part.is_valid else "❌ BRep无效")
+    vol = part.volume
+    ok.append("✅ 体积合理" if lower < vol < upper else f"❌ 体积超范围({vol:.0f})")
+    export_step(part, f"/tmp/{name}.step")
+    ri = import_step(f"/tmp/{name}.step")
+    diff = abs(ri.volume - vol) / vol
+    ok.append("✅ STEP精度" if diff < 0.001 else f"❌ STEP精度损失({diff:.3%})")
+    print(f"{name}: {' '.join(ok)}")
+```
+
+#### Step 3d — 确认门 ✋
+
+```
+请选择变体：[ V1 ] [ V2（推荐）] [ V3 ]
+或告诉我调整参数，我重新生成。
+```
+
+### Step 4：导出 + 输出格式
+
+用户选定变体后：
+
+1. 导出选定变体的 STEP 文件存档
+2. 输出：操作序列说明（3-5行）+ 调参指引
+3. 告知用户「已选 Vn，STEP 已导出，OCP 中显示的即为最终版本」
+
+### Step 5：装配与展开（单部件完成后，检测到多体时触发）
 
 **装配决策树**：
 
@@ -332,6 +942,14 @@ Hole(radius=3, through=True)             # through 参数不存在
 extrude(sketch, 10)                      # Builder Mode 内不传 sketch
 part.add(box)                            # 没有 add 方法
 export_step(part, "f.step")             # 应传 part.part，不是 BuildPart 对象
+part.is_valid()                          # is_valid 是属性不是方法，不加括号
+shell(face, thickness=-t)                # shell() 未被导出！正确写法：offset(amount=-t, openings=face)
+
+# ❌ Plane 构造陷阱（高频踩坑）
+# z_dir 是平面【法向量】，不是草图"向上"方向
+Plane(origin=pt, z_dir=Vector(0,0,1))   # ← 以为是"朝上"，实际是法向
+# 正确理解：z_dir = 平面法向（normal），草图 Y 轴 = x_dir × z_dir（右手系）
+# 验证方法：Plane.XZ.offset(10) 的 origin=(0,-10,0), z_dir=(0,-1,0)，不是(0,0,1)
 ```
 
 ### 明确反模式（直接指出，不软化）
@@ -416,7 +1034,7 @@ loft()                          # 多截面放样（曲面建模核心）
 sweep()                         # 沿路径扫掠
 fillet(edges, radius=r)
 chamfer(edges, length=l)
-shell(face, thickness=-t)       # 负值 = 向内抽壳
+offset(amount=-t, openings=face)  # 抽壳：负值向内，openings 指定开放面；注意 shell() 未导出
 
 # 孔系
 CounterBoreHole(radius=r, counter_bore_radius=cr, counter_bore_depth=cd)  # 沉头孔
@@ -442,7 +1060,7 @@ compound.label = "my_assembly"                 # 命名
 RigidJoint("mount", part, joint_location)      # 固定连接 0 DOF
 RevoluteJoint("hinge", part, axis, angular_range)  # 旋转铰链 1 DOF
 BallJoint("shoulder", part, joint_location, angular_range)  # 球铰 3 DOF
-joint_a.connect_to(joint_b)                    # 连接两个关节
+joint_a.connect_to(joint_b, angle=0)           # 连接两个关节（⚠️ Y轴旋转需 ry=-90 补偿，见下方帧对齐陷阱）
 compound.do_children_intersect()               # 碰撞检测
 
 # 变换（装配定位）
@@ -529,12 +1147,168 @@ wall_t = 2.5
 
 with BuildPart() as box:
     Box(outer_l, outer_w, outer_h)
-    shell(box.faces().sort_by(Axis.Z)[-1], thickness=-wall_t)
+    top_face = box.faces().sort_by(Axis.Z)[-1]
+    offset(amount=-wall_t, openings=top_face)   # shell() 未导出，用 offset(openings=) 代替
 
 export_step(box.part, "enclosure.step")
 ```
 
+### Sweep 扭转缎带（is_frenet 自然扭转）
+
+```python
+# 螺旋路径：四分之一圈，半径 40mm，高 60mm
+path = Edge.make_helix(pitch=240, height=60, radius=40)   # 返回 Wire
+
+# 截面平面：垂直于起点切线（path % 0 = 起点切线向量）
+start_plane = Plane(origin=path @ 0, z_dir=path % 0)
+
+with BuildPart() as ribbon:
+    with BuildSketch(start_plane):
+        Rectangle(30, 5)        # 薄矩形截面 / thin ribbon cross-section
+    sweep(path=path, is_frenet=True)   # Frenet 框架驱动截面自然翻转 / natural twist
+```
+
+**关键**：`is_frenet=True` 让截面跟随路径的 Frenet 框架旋转，路径曲率越大扭转越明显。
+直线路径用 multisection + 多截面；曲线路径用 is_frenet=True。
+
+---
+
+### Sweep 弯管（含两端连接口）
+
+`path @ t` = 路径 t 参数处的坐标点（t=0 起点，t=1 终点）
+`path % t` = 路径 t 参数处的切线方向向量
+
+切线方向即截面平面的法向——`Plane(origin=path @ t, z_dir=path % t)` 是标准写法。
+`extrude(amount=-hub_len)` 沿法向反方向延伸（起点端向外）；`extrude(amount=+hub_len)` 沿法向正方向延伸（终点端向外）。
+
+```python
+from build123d import *
+
+bend_r, bend_angle = 40, 90
+outer_r, inner_r   = 15, 13
+hub_r, hub_len     = 18, 8   # 连接口比管体大一圈 / hub larger than pipe body
+
+# 弧线路径（XZ 平面内 90° 弧）/ Arc path in XZ plane
+path = Edge.make_circle(radius=bend_r, plane=Plane.XZ,
+                        start_angle=0, end_angle=bend_angle)
+
+start_plane = Plane(origin=path @ 0, z_dir=path % 0)  # 切线 = 法向
+end_plane   = Plane(origin=path @ 1, z_dir=path % 1)
+
+with BuildPart() as elbow:
+    # 实心外管 → 减内孔 = 空心管壁
+    with BuildSketch(start_plane): Circle(outer_r)
+    sweep(path=path)
+    with BuildSketch(start_plane): Circle(inner_r)
+    sweep(path=path, mode=Mode.SUBTRACT)
+
+    # 起始端连接口（向外 = 沿法向反方向）
+    with BuildSketch(start_plane):
+        Circle(hub_r); Circle(inner_r, mode=Mode.SUBTRACT)
+    extrude(amount=-hub_len)
+
+    # 末端连接口（向外 = 沿法向正方向）
+    with BuildSketch(end_plane):
+        Circle(hub_r); Circle(inner_r, mode=Mode.SUBTRACT)
+    extrude(amount=hub_len)
+
+export_step(elbow.part, "pipe_elbow.step")
+```
+
+### 旋转体键槽（key_angle 参数化，可绕轴旋转）
+
+键槽平面的解析公式——适用于任意 `key_angle`（绕轴 Z 旋转的角度）：
+
+```python
+import math
+_a = math.radians(key_angle)          # 0° = -Y 面（正前方），90° = +X 面（右侧）
+keyway_plane = Plane(
+    origin = Vector( r * math.sin(_a), -r * math.cos(_a), 0),  # 轴表面对应角度处
+    x_dir  = Vector( math.cos(_a),      math.sin(_a),     0),  # 切向（键槽宽度方向）
+    z_dir  = Vector( math.sin(_a),     -math.cos(_a),     0),  # 径向外向（= 平面法向）
+)
+# 注意：该平面的 y_dir = x_dir × z_dir = (0, 0, -1)，即轴向朝下
+# 所以 Locations((0, -z_center)) 用负值将草图定位到主轴段中心
+with BuildSketch(keyway_plane):
+    with Locations((0, -z_center)):
+        Rectangle(key_width, key_length)
+extrude(amount=-key_depth, mode=Mode.SUBTRACT)   # 向内切入
+```
+
 更多示例见 `assets/` 目录（20+ 个示例，覆盖零件/装配/曲面/关节/安装 5 大类）。
+
+---
+
+### ⚠️ RevoluteJoint 帧对齐陷阱（connect_to 隐式 +90° 旋转）
+
+**问题描述**
+
+`RigidJoint` + `RevoluteJoint` 组合，当 RevoluteJoint 的旋转轴为 Y 轴（`Axis((0,0,0),(0,1,0))`），且 RigidJoint 的 `joint_location` 为单位变换时，`connect_to(angle=0)` 并**不**让零件保持原始朝向。
+
+**根本原因**：`connect_to` 在对齐关节帧时会施加一次隐式的 **+90° Y 轴旋转**。结果是零件的 -Z 方向（原始"朝下"）被旋转到 -X 方向（水平），angle=0 实际上是水平姿态，而非直立姿态。
+
+**正确解法：在 RigidJoint 的 joint_location 上补偿 -90° Y 旋转**
+
+```python
+# ✅ 正确：ry=-90 补偿 connect_to 的隐式 +90° 对齐，angle=0 = 小腿朝下（直腿）
+j_thigh = RigidJoint(
+    label="knee_upper",
+    to_part=thigh,
+    joint_location=Location((0, 0, 0), (0, -90, 0))   # ry=-90° → angle=0 = 直腿
+)
+j_shin = RevoluteJoint(
+    label="knee_lower",
+    to_part=shin,
+    axis=Axis((0, 0, 0), (0, 1, 0)),     # Y 轴旋转 / Y-axis rotation
+    angular_range=(-10, 120)             # -10° 过伸 ↔ 120° 全屈 / hyperext to full flex
+)
+j_thigh.connect_to(j_shin, angle=0)     # angle=0 → 小腿朝下 ✓ / shin pointing down ✓
+
+# ❌ 错误：identity joint_location，angle=0 = 小腿水平（向 -X 方向），不是直腿
+j_thigh_wrong = RigidJoint(label="knee_upper", to_part=thigh)  # no joint_location
+```
+
+**调试方法：用 bounding_box 验证朝向**
+
+```python
+# 连接后立刻检查小腿的 Z 轴跨度——朝下则 Z_min ≈ -(shin_h + ankle_r)
+j_thigh.connect_to(j_shin, angle=0)
+bb = shin.bounding_box()
+print(f"Z_min={bb.min.Z:.1f}")           # 期望约 -51（shin_h=45 + ankle_r=6）
+assert bb.min.Z < -shin_h * 0.8, "小腿未朝下！检查 joint_location ry 值"
+```
+
+**规律总结（Y 轴 RevoluteJoint）**
+
+| `joint_location` ry | `angle=0` 时零件朝向 |
+|---|---|
+| 0°（默认） | 水平（-X 方向）❌ 通常不是设计意图 |
+| **-90°** | 朝下（-Z 方向）✓ 适合骨骼/铰链悬垂结构 |
+| +90° | 朝上（+Z 方向）|
+
+**注意**：此行为对 Y 轴旋转关节成立。X 轴或 Z 轴旋转关节的补偿值不同，需实测验证。
+
+---
+
+### OCP Animation 关节路径规则
+
+`Animation.add_track` 的路径来自 `show()` 时 `names` 参数，格式为 `"/Group/<name>"`。
+
+```python
+# ✅ 正确：分开 show 各零件，让 OCP 能独立寻址 / show parts separately for addressability
+show(thigh, shin, names=["thigh", "shin"], render_joints=True, reset_camera=Camera.ISO)
+
+anim = Animation()
+# 路径 = "/Group/" + names 中对应的名字 / path = "/Group/" + name from show()
+anim.add_track("/Group/shin", "ry",
+               times =[0,   2,   3,   5,   6],
+               values=[0,  60,  60,   0,   0])
+anim.animate(speed=1)
+
+# ❌ 错误：把零件包在 Compound 里再 show，子 label 路径无法被寻址
+asm = Compound([thigh, shin], label="leg_joint")
+show(asm, names=["leg_joint"])               # → "/Group/leg_joint/shin" 路径不可用
+```
 
 ---
 
@@ -552,6 +1326,36 @@ export_step(box.part, "enclosure.step")
 ---
 
 ## 验证方法
+
+### ⚡ 三层验证标准模式（每个零件必须通过）
+
+实战验证的标准结构，适用于所有零件测试文件：
+
+```python
+# ===== Layer 1 + 2：BRep 有效性 + 尺寸/体积断言 =====
+assert part.part is not None,  "part is None"
+assert part.part.is_valid,     "BRep invalid"   # ⚠️ is_valid 是属性，不加括号！
+
+vol = part.part.volume
+bb  = part.part.bounding_box()
+print(f"尺寸: {bb.size.X:.2f} x {bb.size.Y:.2f} x {bb.size.Z:.2f} mm")
+print(f"体积: {vol:.2f} mm³")
+
+assert abs(bb.size.X - expected_x) < 1.0, f"X 偏差: {bb.size.X:.2f}"
+assert 0 < vol < upper_bound,              f"体积超范围: {vol:.2f}"
+assert len(part.part.solids()) == 1,       "应只有一个 solid"
+
+# ===== Layer 3：STEP 导出 + 重导入体积一致性 =====
+export_step(part.part, step_path)
+reimported = import_step(step_path)
+vol_diff = abs(reimported.volume - vol) / vol
+assert vol_diff < 0.001, f"STEP 精度损失: {vol_diff:.4%}"
+```
+
+**各层含义：**
+- Layer 1（执行）：代码不报错，能生成几何体
+- Layer 2（几何）：BRep 合法、包围盒尺寸对、体积在合理范围、恰好一个 solid
+- Layer 3（导出）：STEP 重导入后体积偏差 < 0.1%（精度无损失）
 
 ```bash
 # 1. 直接运行（需要 build123d）

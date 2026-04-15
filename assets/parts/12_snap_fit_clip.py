@@ -5,8 +5,9 @@
 注意：打印方向：Z轴朝上，卡爪在顶端。建议 PETG 或 TPU 材料。
 """
 from build123d import *
+import math
 
-# ===== 参数 =====
+# ===== Parameters / 参数 =====
 body_l      = 20    # 卡扣臂长度 mm
 body_w      = 8     # 宽度 mm
 body_t      = 1.5   # 臂厚度 mm（决定弹性，越薄越灵活）
@@ -17,7 +18,7 @@ base_h      = 4     # 底座厚度 mm
 mount_r     = 1.5   # 安装孔半径（M3）mm
 clearance   = 0.3   # 配合间隙（单边）mm
 
-# ===== 建模 =====
+# ===== Modeling / 建模 =====
 with BuildPart() as clip:
     # 底座
     Box(base_l, body_w, base_h)
@@ -60,11 +61,14 @@ with BuildPart() as clip:
         radius=0.5
     )
 
-# ===== 验证 =====
+# ===== Validation / 验证 =====
+assert clip.part is not None, "part is None / part 为空"
+assert clip.part.is_valid,    "BRep invalid / BRep 无效"
+
 bb = clip.part.bounding_box()
 print(f"总尺寸: {bb.size.X:.1f} x {bb.size.Y:.1f} x {bb.size.Z:.1f} mm")
 print(f"臂厚: {body_t}mm（材料 PETG 推荐 1.2-2.0mm）")
 print(f"体积: {clip.part.volume:.1f} mm³")
 
-# ===== 导出 =====
+# ===== Export / 导出 =====
 export_step(clip.part, "12_snap_fit_clip.step")
