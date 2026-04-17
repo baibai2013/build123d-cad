@@ -137,15 +137,71 @@ AI 输出搜索计划，等用户确认：
 | 开孔余量（单侧）| +0.5mm | 防止遮挡关键接口 |
 ```
 
-**确认门 ✋** 用户确认参数表无误后，进入建模。
+**确认门 ✋** 用户确认参数表无误后，进入合同生成。
+
+---
+
+### Step R3.5 — 生成 Layer 0 参数合同（contract.yaml）
+
+从 params.md 自动派生机器可读合同，补充空间约束。详见 `references/verify/layer0-contract.md`。
+
+合同包含三块：
+- **dims**：特征自身尺寸（绝对值 + 归一化比例）
+- **pos**：特征绝对定位（偏移量 + 边距）
+- **constraints**：空间约束（每特征 ≥ 3 条，覆盖 XYZ 三轴）
+
+```yaml
+# 合同结构概要
+meta:
+  product: "产品名"
+  body_ref: {L: 长, W: 宽, T: 厚}
+features:
+  - name: feature_name
+    type: rounded_rect | rect | circle | ...
+    face: back | right | bottom | top | ...
+    dims: {w: 38.0, h: 38.0, r: 8.0, _ratios: {...}}
+    pos: {cx: -13.0, cy: 55.0}
+    constraints:
+      - {type: on_face, value: back, locks: [Z]}
+      - {type: edge_dist, ref: top, value: 26.4, tol: 2.0, locks: [Y]}
+      - {type: edge_dist, ref: left, value: 24.9, tol: 2.0, locks: [X]}
+param_map:
+  feature.field: CODE_VARIABLE
+```
+
+AI 生成合同后自动跑静态检查（完备性 + 矛盾检测），通过后提交用户确认。
+
+**确认门 ✋** 用户确认合同无误后，进入建模。
 
 ---
 
 ### Step R4 — 进入标准建模流程
 
-以 `params.md` 为参数输入，根据部件数量路由：
+以 `params.md` + `contract.yaml` 为参数输入，根据部件数量路由：
 - 单个配件 → 单部件 Step 1~4（含3变体OCP对比）
 - 多部件配件 → 多部件 Phase 1~4
+
+建模完成后自动跑 **Layer 1 合同验证**（Stage A~D），详见 `references/verify/layer1-verification.md`。验证不通过时进入自动修复循环（最多 3 轮）。
+
+```bash
+# Layer 0 静态检查 / Layer 1 运行时验证
+python3 scripts/validate/contract_verify.py --contract contract.yaml --check-only
+python3 scripts/validate/contract_verify.py --contract contract.yaml --params params.json
+```
+
+Layer 1 通过后自动进入 **Layer 2 视觉比对验证**，详见 `references/verify/layer2-visual.md`。后端自动降级：ai_vision → opencv → manual → skip。
+
+```bash
+# Layer 2 视觉比对 (via cad-vision-verify skill)
+python3 /Users/liyijiang/.agents/skills/cad-vision-verify/scripts/verify_loop.py --contract contract.yaml --ref-dir references/<product>/images --output-dir output/visual
+# Legacy (deprecated): python3 scripts/validate/visual_compare.py ...
+```
+
+**验证失败反馈闭环**（详见 `references/verify/feedback-diagnosis.md`）：
+- 根因 A（数据源错）→ 回 R2/R3 重新搜集
+- 根因 B（合同错）→ 回 R3.5 修改 contract.yaml
+- 根因 C（代码错）→ 修改建模代码
+- 修复上限：L1×3 + L2×2 + 跨层×2 = 总计 ≤ 5 轮，超限人工介入
 
 ---
 
@@ -1395,6 +1451,19 @@ print(f"体积: {part.part.volume:.2f} mm³")
 
 包含装配验证策略：碰撞检测（`do_children_intersect()`）、关节角度范围检查、多体 STEP 一致性验证。
 
+### 参考物建模多层验证（Layer 0~2 + 反馈闭环）
+
+当建模目标是真实产品时，使用完整的多层参数验证体系：
+
+- **Layer 0 合同**（`references/verify/layer0-contract.md`）：从 params.md 生成 YAML 合同，定义特征尺寸 + 空间约束（每特征 ≥ 3 条约束，覆盖 XYZ 三轴）
+- **Layer 1 验证**（`references/verify/layer1-verification.md`）：4 阶段流水线（基础体检 → 尺寸指纹 → 空间约束 → STEP 精度），FAIL 时自动修复循环（最多 3 轮）
+- **Layer 2 视觉验证**（`references/verify/layer2-visual.md`）：多角度截图与参考图比对，4 种后端自动降级（ai_vision → opencv → manual → skip）
+- **反馈闭环**（`references/verify/feedback-diagnosis.md`）：根因诊断（A 数据源 / B 合同 / C 代码）+ 修复路由 + 循环上限（总计 ≤ 5 轮）
+- **验证工具**：
+  - `scripts/validate/contract_verify.py`（Layer 0 静态检查 + Layer 1 运行时验证）
+  - `scripts/validate/visual_compare.py`（Layer 2 视觉比对）
+- **示例合同**：`references/verify/examples/k70-contract.yaml`（Redmi K70 手机壳完整合同）
+
 ---
 
 ## 诚实边界
@@ -1451,6 +1520,11 @@ print(f"体积: {part.part.volume:.2f} mm³")
 - `cadcodeverify.md` — 三层验证架构（语法→几何→语义）
 - `manual-checklist.md` — 手动验证清单（BRep/体积/壁厚/碰撞/公差）
 - `visual-verification.md` — OCP 视觉验证（截图/剖面/斑马纹/半透明检查）
+- `layer0-contract.md` — Layer 0 参数合同规范（YAML schema/约束类型/完备性规则）
+- `layer1-verification.md` — Layer 1 合同验证算法（Stage A~D 流水线/自动修复循环）
+- `layer2-visual.md` — Layer 2 视觉比对验证（4种后端/截图/比对/判定阈值）
+- `feedback-diagnosis.md` — 反馈闭环（根因诊断A/B/C/修复路由/循环上限）
+- `examples/k70-contract.yaml` — Redmi K70 手机壳完整合同示例
 
 ### 7. Peter Corke 仿真哲学 (`references/peter-corke/`)
 - `simulation-philosophy.md` — 「Learn by doing」+ DH 标准 + 分层验证 + 诚实边界
@@ -1473,6 +1547,8 @@ print(f"体积: {part.part.volume:.2f} mm³")
 ### 工具脚本 (`scripts/`)
 - `validate/validate_part.py` — 几何验证工具
 - `validate/assembly_check.py` — 装配碰撞检测
+- `validate/contract_verify.py` — Layer 0/1 参数合同验证（静态检查 + 运行时约束验证）
+- `validate/visual_compare.py` — Layer 2 视觉比对（Vision API/OpenCV/人工并排/自动降级）
 - `analysis/extract_params.py` — 参数表提取
 - `analysis/step_info.py` — STEP 文件信息查看
 - `analysis/mass_properties.py` — 质量属性分析

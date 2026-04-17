@@ -1,0 +1,182 @@
+# ===== Layer 0 Parameter Contract =====
+# Product: Redmi K70 Phone Case (FDM 3D Printing)
+# Source: references/xiaomi-k70/params.md
+# 自动从 params.md 派生 + AI 补充空间约束
+
+version: "0.1"
+
+meta:
+  product: "Redmi K70 Case"
+  type: phone_case
+  body_ref:
+    L: 162.78    # 长度 mm (Y axis)
+    W: 75.74     # 宽度 mm (X axis)
+    T: 8.59      # 厚度 mm (Z axis)
+  coord:
+    X: width
+    Y: length
+    Z: thickness
+    origin: body_center
+  source: "references/xiaomi-k70/params.md"
+
+globals:
+  wall_t: {val: 1.5, unit: mm}
+  gap: {val: 0.3, unit: mm}
+  lip_h: {val: 1.5, unit: mm}
+  hole_margin: {val: 0.5, unit: mm}
+
+features:
+  # ────────── F1: 摄像头模组开孔 / Camera module cutout ──────────
+  - name: camera_cutout
+    type: rounded_rect
+    face: back
+    dims:
+      w: 38.0
+      h: 38.0
+      r: 8.0
+      _ratios:
+        w_over_W: 0.502     # 38.0 / 75.74
+        aspect: 1.0          # 38.0 / 38.0
+        r_over_w: 0.211      # 8.0 / 38.0
+    pos:
+      cx: -13.0
+      cy: 55.0
+      from_top: 26.39       # 162.78/2 - 55.0
+      from_left: 24.87      # 75.74/2 + (-13.0)
+    constraints:
+      - {type: on_face, value: back, locks: [Z]}
+      - {type: edge_dist, ref: top, value: 26.39, tol: 2.0, locks: [Y]}
+      - {type: edge_dist, ref: left, value: 24.87, tol: 2.0, locks: [X]}
+      - {type: ratio, param: aspect, expected: 1.0, tol: 0.1}
+      - {type: ordering, axis: Y, sequence: [camera_cutout, volume_btn, power_btn]}
+
+  # ────────── F2: 音量键开孔 / Volume button cutout ──────────
+  - name: volume_btn
+    type: rect
+    face: right
+    dims:
+      w: 24.0
+      h: 4.0
+      _ratios:
+        w_over_L: 0.147      # 24.0 / 162.78
+    pos:
+      from_top: 40.0
+    constraints:
+      - {type: on_face, value: right, locks: [X]}
+      - {type: edge_dist, ref: top, value: 40.0, tol: 3.0, locks: [Y]}
+      - {type: offset, axis: Z, value: side_center, locks: [Z]}
+      - {type: colinear, target: power_btn, axis: X, tol: 0.1}
+      - {type: inter_dist, target: power_btn, axis: Y, value: 4.0, tol: 3.0}
+
+  # ────────── F3: 电源键开孔 / Power button cutout ──────────
+  - name: power_btn
+    type: rect
+    face: right
+    dims:
+      w: 12.0
+      h: 4.0
+      _ratios:
+        w_over_L: 0.074      # 12.0 / 162.78
+    pos:
+      from_top: 68.0
+    constraints:
+      - {type: on_face, value: right, locks: [X]}
+      - {type: edge_dist, ref: top, value: 68.0, tol: 3.0, locks: [Y]}
+      - {type: offset, axis: Z, value: side_center, locks: [Z]}
+      - {type: same_face, target: volume_btn}
+
+  # ────────── F4: USB-C 开孔 / USB-C cutout ──────────
+  - name: usb_c
+    type: rect
+    face: bottom
+    dims:
+      w: 12.0
+      h: 5.0
+    pos:
+      cx: 0.0
+    constraints:
+      - {type: on_face, value: bottom, locks: [Y]}
+      - {type: centered, plane: XZ, locks: [X]}
+      - {type: offset, axis: Z, value: side_center, locks: [Z]}
+      - {type: ordering, axis: X, sequence: [sim_tray, usb_c, speaker]}
+
+  # ────────── F5: 扬声器开孔 / Speaker cutout ──────────
+  - name: speaker
+    type: rect
+    face: bottom
+    dims:
+      w: 16.0
+      h: 3.0
+    pos:
+      cx: 18.0
+    constraints:
+      - {type: on_face, value: bottom, locks: [Y]}
+      - {type: offset, axis: X, value: 18.0, tol: 3.0, locks: [X]}
+      - {type: offset, axis: Z, value: side_center, locks: [Z]}
+      - {type: symmetric_pair, target: sim_tray, plane: YZ, tol: 3.0}
+
+  # ────────── F6: SIM 卡槽开孔 / SIM tray cutout ──────────
+  - name: sim_tray
+    type: rect
+    face: bottom
+    dims:
+      w: 12.0
+      h: 2.5
+    pos:
+      cx: -18.0
+    constraints:
+      - {type: on_face, value: bottom, locks: [Y]}
+      - {type: offset, axis: X, value: -18.0, tol: 3.0, locks: [X]}
+      - {type: offset, axis: Z, value: side_center, locks: [Z]}
+      - {type: same_face, target: usb_c}
+
+  # ────────── F7: 红外开孔 / IR blaster cutout ──────────
+  - name: ir_blaster
+    type: circle
+    face: top
+    dims:
+      d: 4.0
+    pos:
+      cx: 0.0
+    constraints:
+      - {type: on_face, value: top, locks: [Y]}
+      - {type: centered, plane: XZ, locks: [X]}
+      - {type: offset, axis: Z, value: side_center, locks: [Z]}
+
+# 参数映射：合同字段 ↔ 代码变量名
+# Parameter mapping: contract fields ↔ code variable names
+param_map:
+  camera_cutout.w: CAM_W
+  camera_cutout.h: CAM_H
+  camera_cutout.r: CAM_R
+  camera_cutout.cx: CAM_CX
+  camera_cutout.cy: CAM_CY
+  volume_btn.w: VOL_LEN
+  volume_btn.from_top: VOL_DY
+  power_btn.w: PWR_LEN
+  power_btn.from_top: PWR_DY
+  usb_c.w: USBC_W
+  usb_c.h: USBC_H
+  usb_c.cx: "0"
+  speaker.w: SPK_W
+  speaker.h: SPK_H
+  speaker.cx: SPK_CX
+  sim_tray.w: SIM_W
+  sim_tray.h: SIM_H
+  sim_tray.cx: SIM_CX
+  ir_blaster.d: IR_D
+
+# 变体覆盖 / Variant overrides
+variants:
+  V1_slim:
+    overrides:
+      globals.wall_t: 1.2
+      globals.lip_h: 1.0
+      globals.shell_r: 1.5
+  V2_standard: {}     # 默认值 / default
+  V3_rugged:
+    overrides:
+      globals.wall_t: 2.0
+      globals.lip_h: 2.0
+      globals.shell_r: 3.0
+      globals.airbag: 1.0

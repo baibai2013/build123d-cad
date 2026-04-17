@@ -171,7 +171,133 @@ print("✅ 验证通过")
 
 ---
 
-## 6. 装配验证补充
+## 6. Layer 0/1 参数合同验证（参考物建模专用）
+
+> 当建模目标是**已存在的真实产品**（手机壳/配件/安装座）时，除了上述通用验证外，还需要参数合同验证。
+
+### 验证流程
+
+```
+params.md → contract.yaml(Layer 0) → 建模 → Layer 1 验证
+```
+
+- **Layer 0（合同）**：从 params.md 自动生成机器可读的参数合同，包含特征尺寸、绝对定位、空间约束（每特征 ≥ 3 条，覆盖 XYZ 三轴）。详见 `layer0-contract.md`。
+- **Layer 1（验证）**：建模后自动跑 4 阶段流水线——Stage A 基础体检 → Stage B 尺寸指纹 → Stage C 空间约束 → Stage D STEP 精度。详见 `layer1-verification.md`。
+
+### 使用工具
+
+```bash
+# 静态检查合同（不需要模型）
+python3 scripts/validate/contract_verify.py --contract contract.yaml --check-only
+
+# 运行时验证（含参数比对）
+python3 scripts/validate/contract_verify.py --contract contract.yaml --params params.json
+```
+
+示例合同：`references/verify/examples/k70-contract.yaml`
+
+### 核心约束类型
+
+| 类别 | 约束 | 作用 |
+|------|------|------|
+| 定位 | on_face, offset, edge_dist, centered | 锁定 XYZ 位置 |
+| 朝向 | normal, parallel | 锁定方向 |
+| 特征间 | ordering, colinear, inter_dist, symmetric_pair, same_face | 验证相对关系 |
+| 比例 | ratio, size_range | 验证形状合理性 |
+
+### 约束完备性
+
+每个特征至少 3 条约束，覆盖 X/Y/Z 三轴（源自 CAD 3-2-1 定位原则）。
+
+---
+
+## 7. Layer 2 视觉比对验证
+
+> Layer 1 验约束，**Layer 2 回答"看起来对不对？"** 捕获无法写成约束但一眼能看出的问题。
+
+详见 `layer2-visual.md`。
+
+### 运行模式（自动降级）
+
+| 优先级 | 模式 | 依赖 | 精度 |
+|:---:|------|------|:---:|
+| 1 | ai_vision | Anthropic Vision API | 高 |
+| 2 | opencv | OpenCV (cv2) | 中 |
+| 3 | manual | OCP + PIL | 人工 |
+| 4 | skip | — | — |
+
+### 使用工具
+
+```bash
+# 自动模式比对（需要已有截图或运行中的 OCP Viewer）
+python3 scripts/validate/visual_compare.py --contract contract.yaml --ref-dir refs/ --output-dir out/
+
+# 强制 OpenCV 模式
+python3 scripts/validate/visual_compare.py --contract contract.yaml --ref-dir refs/ --output-dir out/ --mode opencv
+```
+
+### 判定阈值
+
+| avg_score | 判定 | 动作 |
+|-----------|------|------|
+| >= 80 | PASS | 进入变体选择 |
+| 60~79 | WARN | 列出问题，用户决定 |
+| < 60 | FAIL | 触发反馈闭环 |
+
+---
+
+## 8. 反馈闭环：验证失败诊断与修复
+
+> 验证失败后最关键的问题：**错在哪一层？** 数据源不对？合同写错？还是代码实现错？
+
+详见 `feedback-diagnosis.md`。
+
+### 三种根因
+
+| 根因 | 含义 | 修复对象 |
+|:---:|------|---------|
+| A | 数据源错误 | params.md 数值 |
+| B | 合同错误 | contract.yaml 约束 |
+| C | 建模错误 | 代码实现 |
+
+### 修复次数上限
+
+L1 x3 + L2 x2 + 跨层 x2 = 总计 <= 5 轮。超限后输出诊断报告，交人工决策。
+
+### 关键洞察
+
+> **Layer 2 失败但 Layer 1 通过 → 大概率根因 A（数据源）或 B（约束太松）。**
+
+---
+
+## 9. 完整三层验证流程
+
+```
+params.md → contract.yaml(Layer 0) → 建模代码
+    ↓
+╔═ Layer 1 (参数验证) ════════╗
+║ Stage A: BRep + 单体 + bbox  ║
+║ Stage B: 尺寸指纹            ║
+║ Stage C: 空间约束 (>=3/特征) ║
+║ Stage D: STEP 精度           ║
+╚═════════════════════════════╝
+    ↓ PASS
+╔═ Layer 2 (视觉验证) ════════╗
+║ V1: 多角度截图 (7视角)       ║
+║ V2: 参考图 <-> 模型比对      ║
+║ V3: 特征逐项核验            ║
+║ V4: 偏差报告                ║
+╚═════════════════════════════╝
+    ↓ PASS
+用户选择变体 → 导出 STEP
+
+验证失败 → 诊断根因(A/B/C) → 路由修复 → 重新验证
+修复上限 5 轮，超限人工介入
+```
+
+---
+
+## 10. 装配验证补充
 
 装配体除了单件验证，还需要：
 
