@@ -111,6 +111,22 @@ AI 输出搜索计划，等用户确认：
 
 ---
 
+### Step R2.7 — 参考图现实对齐检查（v3 新增）
+
+任何要用于 Layer 2 视觉对比的参考图都是**实拍或营销图**，不是干净的正交视图。
+进入 Layer 2 前必须走：
+
+1. 判断图源类型：官方三视图 / 营销图 / 电商实拍 / 拆机视频截帧（不同置信度）
+2. 跑 `preprocess_reference.py` 得到 `{stem}_cropped.png` + `{stem}_scale.json`
+3. 为本部件写 `part_face_mapping.yaml`（template: `references/verify/part-face-mapping-template.yaml`）
+4. 确定 visual_compare 的使用档位（ortho 正交 / iso 3/4 角度 / 手动匹配实拍）
+
+**未经预处理的图不得进入 Layer 2** — 否则 IoU / 边缘对比毫无物理意义。
+
+详见 `references/verify/reference-image-preprocessing.md` 和 `references/verify/multi-view-protocol.md`。
+
+---
+
 ### Step R3 — 生成 params.md（建模直接输入）
 
 ```markdown
