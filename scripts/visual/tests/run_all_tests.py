@@ -7,6 +7,9 @@ import sys
 from pathlib import Path
 
 THIS_DIR = Path(__file__).parent
+SKILL_ROOT = THIS_DIR.parent.parent.parent  # scripts/visual/tests -> skill root
+if str(SKILL_ROOT) not in sys.path:
+    sys.path.insert(0, str(SKILL_ROOT))
 
 def main() -> int:
     loader = unittest.TestLoader()
