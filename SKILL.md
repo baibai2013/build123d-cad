@@ -197,6 +197,33 @@ python3 /Users/liyijiang/.agents/skills/cad-vision-verify/scripts/verify_loop.py
 # Legacy (deprecated): python3 scripts/validate/visual_compare.py ...
 ```
 
+#### Layer 2 视觉验证标准工具链（v3 / test 13 沉淀）
+
+Layer 2 比对前，**参考图必须预处理过**（见 `references/verify/reference-image-preprocessing.md`）。
+
+标准三步：
+
+```bash
+# 1) 7 视图 + skybox（需要 part_face_mapping.yaml）
+python3 scripts/visual/multi_view_screenshot.py <step> --mode ortho --face-mapping <yaml>
+python3 scripts/visual/skybox_unfold.py <step>
+
+# 2) 参考图预处理
+python3 scripts/visual/preprocess_reference.py <photo> \
+    --bbox "x,y,w,h" --physical-length "160mm" --physical-axis height \
+    --output-dir refs/clean/
+
+# 3) 边缘对比
+python3 scripts/visual/visual_compare.py \
+    output/{part}_FRONT.png refs/clean/{photo}_cropped.png \
+    --reference-scale refs/clean/{photo}_scale.json \
+    --rendered-scale auto \
+    --mode edge_overlay \
+    --output output/compare_{view}.png
+```
+
+判定阈值见 `references/verify/edge-comparison.md`。
+
 **验证失败反馈闭环**（详见 `references/verify/feedback-diagnosis.md`）：
 - 根因 A（数据源错）→ 回 R2/R3 重新搜集
 - 根因 B（合同错）→ 回 R3.5 修改 contract.yaml
