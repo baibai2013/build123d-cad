@@ -1,0 +1,28 @@
+{
+  "phone_length_mm": 160.0,
+  "phone_width_mm": 75.0,
+  "px_per_mm": 5.0,
+  "bbox_pad_px": 40,
+  "front_bbox_px": [
+    40,
+    40,
+    375,
+    800
+  ],
+  "back_bbox_px": [
+    40,
+    40,
+    375,
+    800
+  ],
+  "front_camera_center_px": [
+    228,
+    80
+  ],
+  "back_camera_bbox_px": [
+    80,
+    80,
+    175,
+    175
+  ]
+}
