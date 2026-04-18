@@ -41,6 +41,26 @@
 **前置**：
 - [x] 用户需求中明确提到一个具体产品型号
 
+**前置检索（进 R1 第一件事，写 `search_plan.md` 之前必须完成）**：
+
+1. 从需求抽 `<slug>`（kebab-case 产品短名）和 `<category>`（Appendix A 白名单里最接近的一个）
+2. 精确匹配：`glob experience/*/<slug>.md` → 命中则完整读入，把"关键参数"/"踩过的坑"/"复用片段"三节注入 R1 上下文
+3. 未精确命中 → 同类匹配：`glob experience/<category>/*.md` → 挑 `confidence >= 3` 且 `tags` 最接近的 ≤2 条完整读入
+4. 都没命中 → 正常走 R1，不加载任何经验
+
+**过期提醒**：命中条目 frontmatter 的 `last_updated` 距今 > 90 天时，状态降级为 `[partial]` 并在产出报告里显式提醒「⚠ 经验写于 X 天前，建议核实」。
+
+**命中对 `search_plan.md` 内容的影响**：
+- 「已知参数」节直接填经验里的数，**每条带来源注释**（形如 `（来自 experience/phone-case/redmi-k80-pro.md）`）
+- 「预期坑」节把经验「踩过的坑」原样贴进去（带来源）
+- 用户确认 `search_plan.md` 时若当场说「这次重测 X」→ AI 在本次 params.md 里记，**不改经验文件**；R5 时再决定是否回写经验
+
+**R1 产出报告里必须显式上报检索结果**，用以下状态之一（不允许静默加载）：
+- `[hit] experience/<category>/<slug>.md` — 精确命中
+- `[partial] experience/<category>/*.md` — 同类命中若干条，列出路径
+- `[miss] experience/<category>/*` — 全无
+- `[skip] reason=<用户明说不查/敏感项目>` — 显式跳过
+
 **本步产出（必须全部存在才允许进入下一步）**：
 - `references/<slug>/search_plan.md`（列出 3~4 个待查来源 + 预期获取的资料类型）
 
@@ -67,9 +87,13 @@ EOF
 **AI 回报契约（完成后必须在回复里输出）**：
 ```
 Step R1 产出报告
-- [x] references/<slug>/search_plan.md  (4 来源，待用户确认)
+- [x] references/<slug>/search_plan.md              (4 来源，待用户确认)
+- [hit] experience/phone-case/redmi-k80-pro.md     (精确命中，预加载 10 参数 + 4 坑)
+- [miss] experience/phone-case/*                    (无其它同类条目)
 下一步：等用户确认 → Step R2
 ```
+
+（示例为「精确命中」场景；无命中时写 `[miss]`，同类命中时写 `[partial]`。）
 
 **确认门 ✋** 用户确认后进入 R2。
 
