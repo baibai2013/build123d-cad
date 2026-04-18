@@ -304,3 +304,57 @@ Step R3 产出报告
 ```
 
 **确认门 ✋** 用户确认后进入 R3.5。
+
+---
+
+## Step R3.5 — 生成 Layer 0 参数合同（contract.yaml）
+
+**前置**：
+- [x] Step R3 `params.md` 已用户确认
+
+**本步产出（必须全部存在才允许进入下一步）**：
+- `tests/<test>/contract.yaml`，结构必须包含：`meta` / `features` / `param_map`
+
+**模板**：
+```yaml
+meta:
+  product: "<产品名>"
+  body_ref: {L: 162.2, W: 74.9, T: 8.9}
+
+features:
+  - name: camera_module
+    type: rounded_rect
+    face: back
+    dims: {w: 38.0, h: 38.0, r: 8.0}
+    pos: {cx: -13.0, cy: 55.0}
+    constraints:
+      - {type: on_face, value: back, locks: [Z]}
+      - {type: edge_dist, ref: top, value: 26.4, tol: 2.0, locks: [Y]}
+      - {type: edge_dist, ref: left, value: 24.9, tol: 2.0, locks: [X]}
+
+param_map:
+  camera_module.pos.cx: CAMERA_CX
+  camera_module.pos.cy: CAMERA_CY
+```
+
+**要求**：
+- 每个 feature 至少 3 条 constraints（覆盖 X / Y / Z 三轴）
+- `_ratios` 归一化比例字段可选，但一旦填写须与绝对值一致
+
+**静态检查**：
+```bash
+python3 /Users/liyijiang/.agents/skills/build123d-cad/scripts/validate/contract_verify.py \
+  --contract tests/<test>/contract.yaml --check-only
+```
+期望：exit code 0 + "contract complete and consistent"。
+
+**AI 回报契约**：
+```
+Step R3.5 产出报告
+- [x] tests/<test>/contract.yaml           (3 features, 9 constraints, 静态检查通过)
+下一步：等用户确认 → Step R4
+```
+
+**参考**：`references/verify/layer0-contract.md`
+
+**确认门 ✋** 用户确认合同无误后进入 R4。
