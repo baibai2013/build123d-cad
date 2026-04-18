@@ -32,3 +32,42 @@
 - `<slug>` = 产品短名（kebab-case），如 `redmi-k80-pro`
 - `<test>` = 测试目录名，如 `14-xiaomi-k70-case`
 - `<part>` = 部件脚本名，如 `xiaomi_k70_case`
+
+---
+
+## Step R1 — 识别 + 生成搜索计划
+
+**前置**：
+- [x] 用户需求中明确提到一个具体产品型号
+
+**本步产出（必须全部存在才允许进入下一步）**：
+- `references/<slug>/search_plan.md`（列出 3~4 个待查来源 + 预期获取的资料类型）
+
+**命令模板**：
+```bash
+SLUG=<kebab-case-product-name>
+mkdir -p references/$SLUG
+cat > references/$SLUG/search_plan.md <<'EOF'
+# 搜索计划：<产品名>
+
+## 目标
+- 获取产品尺寸（长/宽/厚 + 关键特征位置）
+- 获取官方产品图（至少正面 + 背面）
+- 尝试获取 STEP 模型
+
+## 搜索来源
+1. 官网规格页 — <品牌官网 URL>
+2. GSMArena / 电商规格 — <URL>
+3. GrabCAD / Printables — STEP 模型搜索
+4. iFixit / B 站拆解视频（兜底）
+EOF
+```
+
+**AI 回报契约（完成后必须在回复里输出）**：
+```
+Step R1 产出报告
+- [x] references/<slug>/search_plan.md  (4 来源，待用户确认)
+下一步：等用户确认 → Step R2
+```
+
+**确认门 ✋** 用户确认后进入 R2。
