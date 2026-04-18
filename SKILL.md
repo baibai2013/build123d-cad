@@ -62,28 +62,15 @@ description: |
 
 ---
 
-## 参考物建模流程（Reference-Product Protocol）
+## 参考物建模流程
 
-**触发条件**：需求中包含已存在的具体产品型号，例如：
-「做红米 K80 的手机壳」「给树莓派 4B 做散热壳」「SG90 舵机安装座」
+**触发**：需求含已存在产品型号（红米 K80、树莓派 4B、SG90 舵机…）。
 
-**执行方式**：进入 `references/protocols/reference-product-playbook.md` 按 checklist 走完 R1~R5。
-Playbook 里的"执行契约"对本次对话强制生效——**每步必须在回复中输出产出报告，禁止静默跳步**。
+**唯一执行路径**：立即 Read `references/protocols/reference-product-playbook.md`，按 Playbook 的 R1~R5 执行。
 
-**R1~R5 产出物总表**（详细契约见 Playbook）：
+**SKILL.md 本文件不含 R1~R5 细节**——凭记忆走视为违规，必须回补 Read + Quote-back。
 
-| Step | 必须产出 | 允许跳过？ |
-|---|---|---|
-| R1 识别 + 搜索计划 | `references/<slug>/search_plan.md` | 否 |
-| R2 执行搜集 | `references/<slug>/raw_specs.md` + `images/*` | 否 |
-| R2.5 无 STEP 反推 | `references/<slug>/clean/*_scale.json` + `measurements.csv` | 仅 R2 已产出 `model.step` 时可 skip |
-| R2.7 参考图现实对齐 | `references/<slug>/clean/*_cropped.png` + `part_face_mapping.yaml` | 否（Layer 2 必做） |
-| R3 params.md | `references/<slug>/params.md`（带置信度） | 否 |
-| R3.5 contract.yaml | `tests/<test>/contract.yaml` | 否 |
-| R4 建模 | `tests/<test>/<part>.py` + 自动预览 | 否 |
-| R5 收尾 | 回复中输出完成汇总块 | 否 |
-
-**分叉规则**：R2 完成后，有 `model.step` → R3（或 R2.7 若做 Layer 2）；无 `model.step` → R2.5 → R2.7 → R3。
+**Quote-back 强制**：每个 Step 产出报告第一行引用 Playbook 原文（格式见 Playbook §执行契约）。
 
 ---
 
