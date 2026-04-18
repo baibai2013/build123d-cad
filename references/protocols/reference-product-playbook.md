@@ -138,3 +138,59 @@ Step R2 产出报告
 - 需要 + 有 STEP → R2.7 → R3（skip R2.5）
 - 不需要 + 有 STEP → R3（skip R2.5 + R2.7）
 - 不需要 + 无 STEP → R2.5（仍需反推尺寸） → R3（skip R2.7）
+
+---
+
+## Step R2.5 — 无 STEP 时反推尺寸
+
+**前置**：
+- [x] Step R2 已产出 `references/<slug>/images/`
+- [x] `references/<slug>/model.step` 不存在
+
+**本步产出（必须全部存在才允许进入下一步）**：
+- `references/<slug>/clean/<stem>_scale.json`（每张要测量的图 × 1）
+- `references/<slug>/clean/<stem>_cropped.png`（同上）
+- `references/<slug>/measurements.csv`（≥ 1 条关键特征测量值）
+
+**命令模板**：
+```bash
+SKILL=/Users/liyijiang/.agents/skills/build123d-cad
+SLUG=<your-slug>
+STEM=official_01_back   # 对每张要测量的图都跑一次
+
+# 1) 获取 bbox（首次：用 matplotlib ginput 手动标定左上+右下）
+python3 -c "
+from PIL import Image; import matplotlib.pyplot as plt
+img = Image.open('references/$SLUG/images/$STEM.jpg')
+plt.imshow(img); pts = plt.ginput(2)
+x0,y0 = map(int, pts[0]); x1,y1 = map(int, pts[1])
+print(f'--bbox {x0},{y0},{x1-x0},{y1-y0}')
+"
+
+# 2) 预处理：裁边 + 建 scale
+python3 $SKILL/scripts/visual/preprocess_reference.py \
+  references/$SLUG/images/$STEM.jpg \
+  --bbox "<paste-from-step-1>" \
+  --physical-length "<真实物理长度，如 162.2mm>" \
+  --physical-axis <height 或 width> \
+  --output-dir references/$SLUG/clean/
+
+# 3) 像素测量关键点（原点 = 部件中心）
+python3 $SKILL/scripts/visual/pixel_measure.py \
+  references/$SLUG/clean/${STEM}_cropped.png \
+  --scale references/$SLUG/clean/${STEM}_scale.json \
+  --points "<x1,y1;x2,y2;x3,y3>" \
+  --origin center \
+  --output references/$SLUG/measurements.csv
+```
+
+**AI 回报契约**：
+```
+Step R2.5 产出报告
+- [x] references/<slug>/clean/official_01_back_scale.json   (mm_per_px=0.26)
+- [x] references/<slug>/clean/official_01_back_cropped.png
+- [x] references/<slug>/measurements.csv                     (3 条：摄像头中心/主相机/电源键)
+下一步：Step R2.7
+```
+
+**参考**：`references/reference-product/reverse-engineering.md`（5 种手段 A~E 的应用边界）
