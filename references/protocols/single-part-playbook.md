@@ -16,6 +16,7 @@
 7. **每个 Step 产出报告第一行必须是 Quote-back**。
    格式：引自 single-part-playbook.md §Step S<n> / <小标题>："<原文一行>"
    缺 Quote-back、引错 Step、原文捏造 = 违规，必须回补。
+8. **每个确认门必须遵守 SKILL.md §确认门执行契约**（halt 前三项自检 + `[halt-for-user]` 硬字段 + 同轮不得推进）；违规 = FM-1。
 
 ---
 
@@ -157,7 +158,13 @@ AI **同时输出文字说明**，标注每个视图的几何意图：
 [ ✅ 确认，进入建模 ] 或 [ ❌ 第N视图不对：___ ]
 ```
 
-**确认门** 用户确认草图正确后，才进入建模策略。
+> 发 [halt-for-user] 前必过 SKILL.md §确认门执行契约 的三项自检。
+
+**确认门 ✋** 用户确认草图正确后，才进入建模策略。
+
+```
+[halt-for-user] ✋ 确认 3 视图草图形状符合预期，回 "OK" 进建模 / 或指出哪视图需修改
+```
 
 ### 方案 B：OCP 快速原型（Bounding Box Proxy）
 
@@ -323,9 +330,13 @@ for name, part in [("V1", v1_original), ("V2", v2_original), ("V3", v3_original)
 
 ### 确认门
 
+> 发 [halt-for-user] 前必过 SKILL.md §确认门执行契约 的三项自检。
+
 ```
 请选择变体：[ V1 ] [ V2（推荐）] [ V3 ]
 或告诉我调整参数，我重新生成。
+
+[halt-for-user] ✋ 选定变体编号（V1/V2/V3），或给调整参数
 ```
 
 **AI 回报契约**：
@@ -373,4 +384,10 @@ Step S4 产出报告
 
 ## 常见失败模式
 
-（初版留空，等 test 沉淀。跨 Playbook 通用的 Quote-back 违规见 protocols/README.md。）
+跨 Playbook 通用的 Quote-back 违规见 `protocols/README.md`。以下为单部件流程专属：
+
+### FM-1：越权通过确认门
+
+**诊断**：single-part-playbook §Step S2（草图确认）或 §Step S3/S4（变体选定）的确认门要求 `[halt-for-user]`，AI 同一轮回复里发了 halt 又继续推进（给最终建模代码 / 写导出代码 / 直接进下一 Step）。典型诱因：用户说"直接给代码""不要太啰嗦"导致 AI 跳过 S2 草图 halt。
+
+**修复**：删除 halt 之后的所有推进内容；保留 halt，重出该轮回报；等用户下一轮真实回执（OK / 修改 / 提问）才决定如何进下一 Step。
