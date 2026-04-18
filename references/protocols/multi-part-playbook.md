@@ -279,6 +279,15 @@ variants: []                         # 整机不做变体
 
 #### Step 2e.c — 用户确认门 ✋
 
+**发出确认门前的硬自检**（任一未过，**直接回 Step 2e.a 修复，不得进 ✋、不等用户指出**）：
+
+- [ ] `parts.length ≥ 2`（少于 2 回 single-part-playbook）
+- [ ] `cross_refs.length ≥ 1`（零跨部件关系 ≠ 多部件场景）
+- [ ] `cross_refs.length ≥ P1 拆解装配关系数`（不齐 → 主动触发 **FM-12** 回 2e.a 逐条补齐）
+- [ ] 每条 `cross_refs.type ∈ {inter_dist, ordering, colinear, same_face, symmetric_pair, concentric}`（不合法 → 回 2e.a 改 type）
+
+FM-12 必须由 AI **主动**触发，用户提示才发现 = 漏自检。
+
 **AI 回报契约**：
 
 ```
@@ -287,6 +296,7 @@ Step 2e 产出报告
   "Step 2e 末尾必须等用户确认 assembly_contract.yaml 和 precheck_bbox.md"
 - [x] tests/<test>/assembly_contract.yaml（parts: N，cross_refs: M）
 - [x] tests/<test>/precheck_bbox.md（疑似碰撞 K 处）
+- [x] 自检：parts N≥2 ✓ | cross_refs M≥1 ✓ | M≥P1 装配关系 K ✓ | types 全合法 ✓
 请 review 两份产物，回：
   - "ok 进 P3"：继续装配
   - "改 <具体>"：回 P2 对应 Step 调整
@@ -544,6 +554,6 @@ Phase P4 产出报告
 
 ### FM-12：cross_refs 覆盖不全
 
-**诊断**：P1 需求拆解报告列的装配关系条数 > `assembly_contract.cross_refs` 条数，存在漏翻译。
+**诊断**：P1 需求拆解报告列的装配关系条数 > `assembly_contract.cross_refs` 条数，存在漏翻译。**应由 AI 在 Step 2e.c 自检清单时主动发现**，用户提示才发现 = 漏自检（自身已是 FM-12 亚型）。
 
-**修复**：回 Step 2e.a 对齐 P1 拆解报告逐条补齐 cross_refs；硬下限 `cross_refs` ≥ 1 条，且 ≥ P1 拆解装配关系数。
+**修复**：回 Step 2e.a 对齐 P1 拆解报告逐条补齐 cross_refs；硬下限 `cross_refs` ≥ 1 条，且 ≥ P1 拆解装配关系数。修复后重跑 Step 2e.c 自检清单 → 通过再发确认门。
