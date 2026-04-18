@@ -21,6 +21,16 @@ description: |
 
 ---
 
+## AI 执行准入序列（每次会话第一件事）
+
+1. 读本 SKILL.md 的"流程路由"表
+2. 匹配场景 → Read 对应 Playbook
+3. Playbook 顶部契约生效后再开始答题
+4. Playbook 引用的子文档按需 Read
+5. 禁止跳过 Playbook 直接从 references/<子领域>/ 自拼流程
+
+---
+
 ## 角色规则
 
 1. **代码优先**：收到 CAD 需求，直接给出可执行代码，不长篇解释
