@@ -450,8 +450,22 @@ Step R4 产出报告
 **前置**：
 - [x] Step R4 建模完成且 Layer 1 / Layer 2 通过（或已按反馈闭环修复完成）
 
-**本步产出**（注意：R5 的产出是**当次回复里的一段文字**，不落盘）：
-- 在回复末尾输出"完成汇总"块
+**本步产出**：
+
+1. **完成汇总块**（当次回复里的一段文字，不落盘）——Layer 0/1/2 状态 + 置信度统计 + 后续建议
+2. **Experience Draft 块**（当次回复里的一段文字）——按下方模板自动起草，供用户 review
+3. **用户 review 决策落盘**：
+   - 用户说「保存」/「ok」/「yes」→ 落盘 `experience/<category>/<slug>.md`，回报 `[saved]`
+   - 用户提增删改 → AI 更新 draft 重输出，再等确认
+   - 用户说「不保存」/「skip」→ 回报 `[skip] experience reason=...`，不写盘
+4. **落盘行为**：
+   - 新条目 → `Write` 工具直接写
+   - 已存在（精确 slug 命中，R1 `[hit]` 过的情况）→ 读旧文件 → diff 呈现 → 用户选：
+     - `merge`（默认推荐）：参数按 slug+name 去重（新值覆盖，`confidence` 取高）；"踩过的坑"和"复用片段"一律 **append 不去重**
+     - `overwrite`：整文件覆盖
+     - `keep-old`：不动旧文件
+
+**关键规则**：draft 和 saved/skip 必须都在回报里显式上报；**未经用户 review 不得自动写盘**。
 
 **完成汇总块模板**：
 
@@ -479,12 +493,45 @@ Step R4 产出报告
 - <未出现异常 → 可进入 3D 打印 / CNC 流程>
 ```
 
+**Experience Draft 模板**（AI 自动起草，填值规则见各字段注释）：
+
+````markdown
+## Experience Draft（请 review，确认后保存到 `experience/<category>/<slug>.md`）
+
+```yaml
+slug: <kebab-case 产品短名，与 references/<slug>/ 对齐>
+category: <Appendix A 白名单里最接近的>
+tags: [<3~5 个类别词，从 raw_specs.md 摘屏幕尺寸/芯片/接口等>]
+confidence: <本次 params.md 所有 ★ 行的中位数，整数>
+last_updated: <今天的 ISO 日期>
+related_tests:
+  - tests/<test>
+source_model: <step / reverse-engineered / mixed>
+```
+
+## 关键参数（下次直接用）
+<从 references/<slug>/params.md 提 ★ ≥ 3 的行；每行末尾保留来源>
+
+## 踩过的坑
+<从本次对话摘：用户纠正节点 / AI 回退节点 / 修了几轮的 Layer 2 偏差 / 单位搞错等>
+
+**若本节为空**，AI 必须显式问用户「本次没发现坑对吗？确认后保存」——避免垃圾经验污染后续检索。
+
+## 下次直接复用（copy-paste 片段）
+<从 tests/<test>/<part>.py 提前 ~20 行关键尺寸常量声明段，封装成 code block>
+
+## 未解决 / 待验证（可选）
+<本次置信度 ★ ≤ 2 的尺寸 / Layer 2 未覆盖的特征 / 用户承诺回测的条目>
+````
+
 **AI 回报契约**：
 ```
 Step R5 产出报告
 - [x] 完成汇总块已输出（上方）
+- [x] Experience Draft 已输出（上方），等用户 review
+- [ ] experience/<category>/<slug>.md    (等用户确认后补 [saved] 或 [skip])
 - [ask] references/<slug>/ 保留 or 删除？
-参考物建模协议 R1~R5 完成。
+参考物建模协议 R1~R5 完成（经验落盘待用户 review）。
 ```
 
 ---
