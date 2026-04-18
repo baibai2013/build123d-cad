@@ -358,3 +358,62 @@ Step R3.5 产出报告
 **参考**：`references/verify/layer0-contract.md`
 
 **确认门 ✋** 用户确认合同无误后进入 R4。
+
+---
+
+## Step R4 — 进入标准建模流程
+
+**前置**：
+- [x] Step R3.5 `contract.yaml` 已用户确认
+
+**本步产出（必须全部存在才允许进入下一步）**：
+- `tests/<test>/<part>.py`（建模脚本，末尾带 OCP 自动预览块）
+- OCP Viewer 实际打开并显示模型（可用截图或 `get_ports()` 的输出作为证据）
+
+**路由**：
+- 单个配件 → 走 `SKILL.md` "单部件简化流程（Single-Part Protocol）" Step 1~4（含 3 变体 OCP 对比）
+- 多部件 → 走 `SKILL.md` "多部件 4 阶段流程（Multi-Part Protocol）" Phase 1~4
+
+**建模完成后自动触发 Layer 1/2 验证链**：
+
+```bash
+SKILL=/Users/liyijiang/.agents/skills/build123d-cad
+
+# Layer 1 合同运行时验证
+python3 $SKILL/scripts/validate/contract_verify.py \
+  --contract tests/<test>/contract.yaml \
+  --params tests/<test>/params.json
+
+# Layer 2 视觉对比（需要 R2.7 产出的 part_face_mapping.yaml）
+python3 $SKILL/scripts/visual/multi_view_screenshot.py \
+  tests/<test>/<part>.step \
+  --mode ortho \
+  --face-mapping references/<slug>/part_face_mapping.yaml
+
+python3 $SKILL/scripts/visual/visual_compare.py \
+  output/<part>_FRONT.png references/<slug>/clean/official_front_cropped.png \
+  --reference-scale references/<slug>/clean/official_front_scale.json \
+  --rendered-scale auto \
+  --mode edge_overlay \
+  --output output/compare_front.png
+```
+
+**AI 回报契约**：
+```
+Step R4 产出报告
+- [x] tests/<test>/<part>.py              (Layer 1 pass)
+- [x] OCP Viewer 预览已打开               (端口 3939)
+- [x] Layer 2 edge_overlay: IoU=0.87     (≥0.85 阈值，pass)
+下一步：Step R5
+```
+
+**Layer 2 失败反馈**：若 IoU < 0.85，按 `references/verify/feedback-diagnosis.md` 分根因回退：
+- 根因 A（数据源错）→ 回补 R2/R3
+- 根因 B（合同错）→ 回 R3.5 改 contract.yaml
+- 根因 C（代码错）→ 修改建模代码
+- 修复上限：L1×3 + L2×2 + 跨层×2 = 总计 ≤ 5 轮
+
+**参考**：
+- Layer 1：`references/verify/layer1-verification.md`
+- Layer 2：`references/verify/layer2-visual.md` + `references/verify/edge-comparison.md`
+- 反馈闭环：`references/verify/feedback-diagnosis.md`
