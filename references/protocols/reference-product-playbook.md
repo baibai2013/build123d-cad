@@ -608,6 +608,15 @@ python3 -c "from PIL import Image; print(Image.open('<img>').size)"
 **诊断**：R2.7 产出报告缺失但 Layer 2 分叉仍走下去；或 `part_face_mapping.yaml` 未生成
 **修复**：强制回 R2.7 补产；在 R1 产出报告里把命中的"坑"标明「本次仍需 Layer 2 验证」
 
+### FM-9：Quote-back 伪造
+**现象**：AI 写了 Quote-back 但原文在 Playbook 里 grep 不到
+**根因**：AI 没真 Read，凭记忆拼了一句"像 Playbook 的话"
+**诊断**：
+```bash
+grep -F "<被引用的原文>" references/protocols/reference-product-playbook.md
+```
+**修复**：要求 AI 重新 Read 对应 Step 原文，重出产出报告；多次违规视为必须降级重跑本 Step
+
 ---
 
 ## Appendix A — category 白名单
