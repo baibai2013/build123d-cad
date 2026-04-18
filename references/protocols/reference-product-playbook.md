@@ -589,3 +589,23 @@ python3 -c "from PIL import Image; print(Image.open('<img>').size)"
 **诊断**：R2.7 产出报告缺失但 Layer 2 分叉仍走下去；或 `part_face_mapping.yaml` 未生成
 **修复**：强制回 R2.7 补产；在 R1 产出报告里把命中的"坑"标明「本次仍需 Layer 2 验证」
 
+---
+
+## Appendix A — category 白名单
+
+AI 在 R1 前置检索时，`<category>` 必须从下面 25 个中取**最接近的一个**，不自造。同类词（如 `手机壳` / `case` / `phone case`）一律映射到白名单词（`phone-case`）。
+
+```
+phone-case         servo-mount       enclosure         pcb-holder
+heat-sink          bracket           knob              gear
+clip               hinge             adapter           mount-plate
+standoff           cable-gland       handle            cap
+bushing            spacer            fixture           jig
+housing            shell             cover             tray
+frame
+```
+
+**边界情况**：
+- 产品介于两类之间（如「舵机外壳」介于 `servo-mount` 和 `enclosure`）→ 以**主结构**决定，外壳占比大 → `enclosure`；安装位占比大 → `servo-mount`
+- 白名单里找不到合适的 → 不新增词，临时用 `fixture` 或 `jig` 兜底；**连续 3 个条目都走 fixture 时**，在该 skill 仓提 issue 考虑扩充白名单
+
