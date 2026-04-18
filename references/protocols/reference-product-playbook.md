@@ -18,16 +18,16 @@
 
 ## R1~R5 Step 总表
 
-| Step | 必须产出 | 允许跳过？ | 下一步分叉 |
-|---|---|---|---|
-| R1 识别 + 搜索计划 | `references/<slug>/search_plan.md` | 否 | → R2 |
-| R2 执行搜集 | `references/<slug>/raw_specs.md` + `images/*` | 否 | 有 `model.step` → R3/R2.7；无 → R2.5 |
-| R2.5 无 STEP 反推 | `references/<slug>/clean/*_scale.json` + `measurements.csv` | 仅 R2 已产出 `model.step` 时可 skip | → R2.7 |
-| R2.7 参考图现实对齐 | `references/<slug>/clean/*_cropped.png` + `part_face_mapping.yaml` | 否（Layer 2 必做）；仅 "有 STEP + 不做视觉对比" 可 skip | → R3 |
-| R3 生成 params.md | `references/<slug>/params.md`（含 ★ 置信度） | 否 | → R3.5 |
-| R3.5 生成 contract.yaml | `tests/<test>/contract.yaml` | 否 | → R4 |
-| R4 建模 | `tests/<test>/<part>.py` + OCP 自动预览 | 否 | → R5 |
-| R5 收尾提示 | 回复中输出"完成汇总"块 | 否 | （终态） |
+| Step | 必须产出 | 允许跳过？ | 经验交互 | 下一步分叉 |
+|---|---|---|---|---|
+| R1 识别 + 搜索计划 | `references/<slug>/search_plan.md` | 否 | **读** `experience/`（`[hit]`/`[partial]`/`[miss]` 必报） | → R2 |
+| R2 执行搜集 | `references/<slug>/raw_specs.md` + `images/*` | 否 | — | 有 `model.step` → R3/R2.7；无 → R2.5 |
+| R2.5 无 STEP 反推 | `references/<slug>/clean/*_scale.json` + `measurements.csv` | 仅 R2 已产出 `model.step` 时可 skip | — | → R2.7 |
+| R2.7 参考图现实对齐 | `references/<slug>/clean/*_cropped.png` + `part_face_mapping.yaml` | 否（Layer 2 必做）；仅 "有 STEP + 不做视觉对比" 可 skip | — | → R3 |
+| R3 生成 params.md | `references/<slug>/params.md`（含 ★ 置信度） | 否 | 参考命中经验的参数星级，可上调本次置信度 | → R3.5 |
+| R3.5 生成 contract.yaml | `tests/<test>/contract.yaml` | 否 | — | → R4 |
+| R4 建模 | `tests/<test>/<part>.py` + OCP 自动预览 | 否 | 若命中经验有"复用片段"，优先引用 | → R5 |
+| R5 收尾提示 | 回复中输出"完成汇总"块 + Experience Draft | 否 | **写** Experience Draft → 用户 review → 落盘（或 `[skip]`） | （终态） |
 
 **术语**：
 - `<slug>` = 产品短名（kebab-case），如 `redmi-k80-pro`
