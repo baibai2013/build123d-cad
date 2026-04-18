@@ -1,0 +1,376 @@
+# 单部件流程 Playbook（Single-Part Protocol）
+
+> **何时进入此 Playbook**：用户需求是 1 个独立实体，无装配关系。
+> 入口由 `SKILL.md` 的"流程路由"表触发。
+
+---
+
+## 执行契约（进入此 Playbook 后对本次对话强制生效）
+
+1. 每个 Step 完成后，**必须在当次回复里输出"产出报告"块**。
+2. 产出报告里每一条必须是 `[x]`（已产出）或 `[skip] reason=...`（显式跳过）。
+3. **没写产出报告的 Step 视为未完成**，禁止进入下一步。
+4. **跳步必须声明理由**，静默跳过视为违规。
+5. **Artifact 是硬约束**——用户接管某步也不例外。
+6. 遇本步 artifact 缺失：回到本步补产，禁止写 `[x]` 骗过。
+7. **每个 Step 产出报告第一行必须是 Quote-back**。
+   格式：引自 single-part-playbook.md §Step S<n> / <小标题>："<原文一行>"
+   缺 Quote-back、引错 Step、原文捏造 = 违规，必须回补。
+
+---
+
+## S1~S4 Step 总表
+
+| Step | 必须产出 | 允许跳过？ | 下一步分叉 |
+|---|---|---|---|
+| S1 需求分析 | 需求分析表 + 参考问询 | 否 | → S2 |
+| S2 几何对齐（默认含 3 视图草图） | concept_sketch.png（自动打开）或用户 skip 声明 | 用户明说"跳过草图" | → S3 |
+| S3 建模实现 | `<part>.py` + OCP 自动预览 + 3 变体对比（若用户启用变体） | 否 | → S4 |
+| S4 导出 + 工艺提示 | `<part>.step`/`.stl` + 工艺约束清单 | 否 | （终态） |
+
+---
+
+## Step S1 — 需求分析
+
+**前置**：
+- [x] 用户需求进入，SKILL.md 路由判定为单部件
+
+**本步产出**：
+- 需求分析表（4 要素：几何 / 关键尺寸 / 操作序列 / 导出格式 / 用途）
+- 参考资料问询（"是否有参考图、参考链接或参考描述？"）
+
+**命令模板**：
+
+收到需求后识别：
+
+| 要素 | 问题 | 示例 |
+|------|------|------|
+| **几何形状** | 基本形状是什么？ | 圆柱、长方体、旋转体 |
+| **关键尺寸** | 哪些已给出？哪些缺失？ | 长×宽×高，孔径，壁厚 |
+| **操作序列** | 机械师会按什么顺序加工？ | 先车外圆 → 再打孔 → 再切键槽 |
+| **导出格式** | STEP / STL / BREP？ | 默认 STEP |
+| **用途** | 3D打印？CNC？激光切割？ | 影响公差和格式选择 |
+
+**缺失关键尺寸时**：先询问，不要自行假设关键参数（如螺纹规格、配合尺寸）。
+非关键尺寸（如圆角半径）可给合理默认值并标注。
+
+**需求分析结束前必须询问**：
+
+```
+在开始建模之前，请问你是否有参考图、参考链接或参考描述？
+（有的话发给我，我会根据参考来建模并标注符合度）
+```
+
+**AI 回报契约**：
+
+```
+Step S1 产出报告
+引自 single-part-playbook.md §Step S1 / 本步产出：
+  "需求分析表（4 要素：几何 / 关键尺寸 / 操作序列 / 导出格式 / 用途）"
+- [x] 需求分析表已输出（见上方）
+- [x] 已询问参考资料
+下一步：Step S2（等用户回复参考资料）
+```
+
+---
+
+## Step S2 — 几何对齐（默认含 3 视图草图，方案 A 默认触发）
+
+**前置**：
+- [x] S1 需求分析完成且用户已回复参考资料
+
+**本步产出**：
+- `concept_sketch.png`（自动保存并打开），或 `[skip] reason=用户说"跳过草图"`
+
+**命令模板**：
+
+> **核心目的**：在建 3D 模型之前，确认 AI 理解的形状和用户脑子里的形状是同一个东西。
+> **原则**：**方案 A（3视图草图）默认自动执行**，无需用户开口。用户说「跳过草图」/「直接建模」才跳过。其余4种方案（B/C/D/E）仍需用户主动触发。
+
+### 方案 A：3视图草图（默认自动执行）
+
+**默认触发**：收到任何建模需求后，在建模策略之前自动生成。
+**跳过触发词**：「跳过草图」「不需要草图」「直接建模」「skip sketch」
+
+用 Matplotlib 生成正视图 / 侧视图 / 俯视图 PNG，保存后**自动打开**让用户直接看到：
+
+````python
+import matplotlib.pyplot as plt
+import matplotlib.patches as patches
+import subprocess, sys, os
+
+fig, axes = plt.subplots(1, 3, figsize=(14, 5))
+fig.suptitle("Concept Sketch / 概念草图", fontsize=13, fontweight='bold')
+
+for ax, title in zip(axes, ["Front View / 正视图", "Side View / 侧视图", "Top View / 俯视图"]):
+    ax.set_title(title, fontsize=10)
+    ax.set_aspect('equal')
+    ax.grid(True, alpha=0.3)
+    ax.axhline(0, color='lightgray', linewidth=0.8, linestyle='--')
+    ax.axvline(0, color='lightgray', linewidth=0.8, linestyle='--')
+    ax.set_xlabel('mm')
+    ax.set_ylabel('mm')
+
+# ── 根据部件形状在对应 ax 绘制轮廓 + 尺寸标注 ──
+# 正视图：主轮廓 + 总长×总高尺寸线 / Front: main outline + overall dimensions
+axes[0].add_patch(patches.Rectangle((-20, -25), 40, 50,
+                  fill=False, edgecolor='black', linewidth=1.5))
+axes[0].annotate('', xy=(22, -25), xytext=(22, 25),
+                 arrowprops=dict(arrowstyle='<->', color='red', lw=1.2))
+axes[0].text(25, 0, '50mm', color='red', fontsize=8, va='center')
+axes[0].annotate('', xy=(-20, -28), xytext=(20, -28),
+                 arrowprops=dict(arrowstyle='<->', color='blue', lw=1.2))
+axes[0].text(0, -32, '40mm', color='blue', fontsize=8, ha='center')
+
+# 侧视图：壁厚 / Side: wall thickness
+# 俯视图：孔位 / Top: hole pattern
+# （根据实际部件几何填充各视图内容）
+
+plt.tight_layout()
+
+# ===== 保存 + 自动打开 =====
+sketch_path = os.path.join(output_dir, "concept_sketch.png")
+plt.savefig(sketch_path, dpi=130, bbox_inches='tight')
+plt.close()
+
+# 自动用系统查看器打开（macOS: open, Windows: start, Linux: xdg-open）
+if sys.platform == "darwin":
+    subprocess.Popen(["open", sketch_path])
+elif sys.platform == "win32":
+    os.startfile(sketch_path)
+else:
+    subprocess.Popen(["xdg-open", sketch_path])
+
+print(f"概念草图已生成并打开 / Concept sketch opened: {sketch_path}")
+````
+
+AI **同时输出文字说明**，标注每个视图的几何意图：
+
+```
+## 概念草图说明
+
+正视图：主轮廓 + 中心线，总长×总高，关键台阶位置
+侧视图：截面形状，壁厚/圆角/槽深
+俯视图：孔位分布，PCD/间距/阵列
+
+图已自动打开，请确认形状是否符合预期？
+[ ✅ 确认，进入建模 ] 或 [ ❌ 第N视图不对：___ ]
+```
+
+**确认门** 用户确认草图正确后，才进入建模策略。
+
+### 方案 B：OCP 快速原型（Bounding Box Proxy）
+
+**触发词**：「先看比例」「先预览比例」「占位块」「proxy」「先看看大概」
+用 `Box` / `Cylinder` 代替真实部件，在 OCP 中展示3D比例和装配位置。
+**最适合**：多部件装配，先对齐整体比例再逐部件精建。
+
+### 方案 C：关键截面草图（Profile Sketch）
+
+**触发词**：「画截面」「截面轮廓」「旋转轮廓」「profile」「扫掠截面」「revolve截面」
+专为 **Revolve / Sweep** 零件——用 Matplotlib 画2D截面轮廓，用户确认截面后再建实体。
+**最适合**：阶梯轴、弯管、有机外壳等旋转体和扫掠件。
+
+### 方案 D：参考图标注
+
+**触发词**：「解读一下图」「标注图」「图里xxx是什么」「你怎么理解这张图的」「有参考图」
+用户提供参考图时，AI 用纯文字标注自己对图的解读，让用户纠错。
+**最适合**：用户有参考图、AI 可能看错局部细节时，零代码开销。
+
+### 方案 E：参数约束表
+
+**触发词**：「先确认参数」「列出参数」「参数合同」「先列尺寸」「把参数给我看看」
+建模前列出所有关键参数，用户逐行确认，形成「参数合同」。
+**最适合**：有精度要求的配合件、尺寸需要精确匹配时。
+
+### 5种方案选择速查
+
+| 方案 | 对齐的是什么 | 生成开销 | 最适合场景 |
+|------|------------|---------|-----------|
+| A 3视图草图 | 整体形状 | 中（Matplotlib） | 复杂单体，无参考图 |
+| B OCP快速原型 | 3D比例+装配位置 | 快（build123d） | 多部件装配 |
+| C 关键截面草图 | 截面轮廓 | 中（Matplotlib） | Revolve / Sweep 件 |
+| D 参考图标注 | AI对图的理解 | 极快（纯文字） | 有参考图时 |
+| E 参数约束表 | 关键尺寸数值 | 极快（表格） | 精度配合件 |
+
+> **可组合**：多部件设计推荐 B（整体比例）+ D（参考图理解）+ E（参数锁定）三连。
+
+**AI 回报契约**：
+
+```
+Step S2 产出报告
+引自 single-part-playbook.md §Step S2 / 本步产出：
+  "concept_sketch.png（自动保存并打开）"
+- [x] concept_sketch.png  (已自动打开查看)
+下一步：Step S3
+```
+
+**跳过声明**：若用户说"跳过草图"/"直接建模"：
+
+```
+Step S2 产出报告
+引自 single-part-playbook.md §Step S2 / 本步产出：
+  "concept_sketch.png（自动保存并打开）"
+- [skip] concept_sketch.png  (reason: 用户说"跳过草图")
+下一步：Step S3
+```
+
+---
+
+## Step S3 — 建模实现
+
+**前置**：
+- [x] S2 几何对齐完成（草图或 skip 声明）
+
+**本步产出**：
+- `<part>.py`（含 OCP 自动预览块）
+- OCP Viewer 实际打开
+- 3 变体对比（若用户启用变体讨论）
+
+**命令模板**：
+
+### 选择建模策略
+
+| 情况 | 策略 |
+|------|------|
+| 简单零件（<5特征） | 直接 Builder Mode |
+| 旋转体 | `revolve()` + `BuildSketch(Plane.XZ)` |
+| 管道/异形 | `sweep()` + `BuildLine()` 路径 |
+| 薄壁件 | `offset(amount=-t, openings=face)` 抽壳 |
+| 阵列特征 | `GridLocations` / `PolarLocations` |
+| 快速组合 | Algebra Mode（`+`, `-`, `&`） |
+| **有机曲面/流线型** | **Loft 多截面放样 + Sweep 扭转**（见 `references/parts/surface-modeling.md`） |
+| **复杂轮廓（齿轮/凸轮）** | **根实体 + 逐特征 Algebra Mode 融合** |
+
+完整代码模板见 `references/parts/patterns.md`，可运行示例见 `assets/` 目录。
+
+### 生成3个变体 + OCP 并排对比
+
+> **无论单部件还是多部件，建模时必须生成3个变体，OCP 并排展示，用户选定后才导出最终 STEP。**
+
+````python
+from build123d import *
+from ocp_vscode import show, set_port, Camera
+from ocp_vscode.comms import port_check
+from ocp_vscode.state import get_ports
+
+# ===== 参数（3个变体共用基础参数，各自差异化一个维度）=====
+# V1 保守：尺寸偏小/偏薄，适合轻量化 / conservative: smaller/thinner
+# V2 参考：最贴合参考图，标准工艺（推荐）/ reference: closest to spec (recommended)
+# V3 加强：关键截面加宽/加厚，承载优先 / reinforced: wider/thicker key sections
+
+def make_v1(): ...   # 保守方案
+def make_v2(): ...   # 参考方案（推荐）
+def make_v3(): ...   # 加强方案
+
+v1 = make_v1()
+v2 = make_v2()
+v3 = make_v3()
+
+# 并排偏移：X方向间隔 1.5× 部件最大宽度 / side-by-side offset
+offset = max(v1.bounding_box().size.X,
+             v2.bounding_box().size.X,
+             v3.bounding_box().size.X) * 1.5
+v2 = v2.move(Location((offset, 0, 0)))
+v3 = v3.move(Location((offset * 2, 0, 0)))
+
+# ===== OCP 并排预览 =====
+try:
+    active_port = next((int(p) for p in get_ports() if port_check(int(p))), None)
+    if active_port:
+        set_port(active_port)
+        show(v1, v2, v3,
+             names=["V1_conservative", "V2_reference", "V3_reinforced"],
+             colors=["steelblue", "orange", "green"],
+             reset_camera=Camera.ISO)
+        print("OCP Viewer: 3变体并排展示 ✓")
+    else:
+        print("OCP Viewer: 未检测到 Viewer，请启动 OCP CAD Viewer 扩展")
+except Exception as e:
+    print(f"OCP 预览跳过: {e}")
+````
+
+### AI 比对分析（必须输出，参考图优先）
+
+```
+## 变体对比分析
+
+| 变体 | 对应参考图位置       | 尺寸符合度 | 建模特点         | 推荐工艺 |
+|------|---------------------|-----------|------------------|---------|
+| V1   | 图中xxx区域，偏细    | ~85%      | 轻量，腰部偏细   | 3D打印  |
+| V2   | 图中xxx区域，最接近  | ~97%      | 标准CNC铝板截面  | CNC     |
+| V3   | 图中xxx区域，偏厚    | ~80%      | 端部加宽，略重   | CNC     |
+
+推荐：V2（最贴合参考图，符合工艺约束）
+
+（无参考图时：V2 为行业标准尺寸，V1/V3 为轻量化/加强化方向）
+```
+
+### 自动断言（三项全过才可选）
+
+````python
+for name, part in [("V1", v1_original), ("V2", v2_original), ("V3", v3_original)]:
+    ok = []
+    ok.append("✅ BRep有效" if part.is_valid else "❌ BRep无效")
+    vol = part.volume
+    ok.append("✅ 体积合理" if lower < vol < upper else f"❌ 体积超范围({vol:.0f})")
+    export_step(part, f"/tmp/{name}.step")
+    ri = import_step(f"/tmp/{name}.step")
+    diff = abs(ri.volume - vol) / vol
+    ok.append("✅ STEP精度" if diff < 0.001 else f"❌ STEP精度损失({diff:.3%})")
+    print(f"{name}: {' '.join(ok)}")
+````
+
+### 确认门
+
+```
+请选择变体：[ V1 ] [ V2（推荐）] [ V3 ]
+或告诉我调整参数，我重新生成。
+```
+
+**AI 回报契约**：
+
+```
+Step S3 产出报告
+引自 single-part-playbook.md §Step S3 / 本步产出：
+  "<part>.py（含 OCP 自动预览块）"
+- [x] <part>.py
+- [x] OCP Viewer 预览已打开
+下一步：Step S4
+```
+
+---
+
+## Step S4 — 导出 + 工艺提示
+
+**前置**：
+- [x] S3 建模完成且 OCP 预览通过
+
+**本步产出**：
+- `<part>.step` 或 `<part>.stl`（按用途选格式）
+- 工艺约束清单（3D 打印 / CNC / 激光，按用户场景挑一个）
+
+**命令模板**：
+
+用户选定变体后：
+
+1. 导出选定变体的 STEP 文件存档
+2. 输出：操作序列说明（3-5行）+ 调参指引
+3. 告知用户「已选 Vn，STEP 已导出，OCP 中显示的即为最终版本」
+
+**AI 回报契约**：
+
+```
+Step S4 产出报告
+引自 single-part-playbook.md §Step S4 / 本步产出：
+  "<part>.step 或 <part>.stl + 工艺约束清单"
+- [x] <part>.step
+- [x] 工艺约束清单（3D 打印：壁厚 1.2mm 最小 / 悬臂 ≤45°）
+单部件流程 S1~S4 完成。
+```
+
+---
+
+## 常见失败模式
+
+（初版留空，等 test 沉淀。跨 Playbook 通用的 Quote-back 违规见 protocols/README.md。）
