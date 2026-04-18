@@ -90,6 +90,8 @@ EOF
 **AI 回报契约（完成后必须在回复里输出）**：
 ```
 Step R1 产出报告
+引自 reference-product-playbook.md §Step R1 / 本步产出：
+  "references/<slug>/search_plan.md（列出 3~4 个待查来源 + 预期获取的资料类型）"
 - [x] references/<slug>/search_plan.md              (4 来源，待用户确认)
 - [hit] experience/phone-case/redmi-k80-pro.md     (精确命中，预加载 10 参数 + 4 坑)
 - [miss] experience/phone-case/*                    (无其它同类条目)
@@ -137,6 +139,8 @@ curl -sL <step-url> -o references/$SLUG/model.step
 场景 1：无 STEP
 ```
 Step R2 产出报告
+引自 reference-product-playbook.md §Step R2 / 本步产出：
+  "references/<slug>/raw_specs.md（官网/电商文本规格，含尺寸关键数字）"
 - [x] references/<slug>/raw_specs.md   (官网 + GSMArena 规格合并)
 - [x] references/<slug>/images/        (3 张：正/背/侧)
 - [skip] references/<slug>/model.step  (reason: GrabCAD 无收录)
@@ -215,6 +219,8 @@ python3 $SKILL/scripts/visual/pixel_measure.py \
 **AI 回报契约**：
 ```
 Step R2.5 产出报告
+引自 reference-product-playbook.md §Step R2.5 / 本步产出：
+  "references/<slug>/measurements.csv（≥ 1 条关键特征测量值）"
 - [x] references/<slug>/clean/official_01_back_scale.json   (mm_per_px=0.26)
 - [x] references/<slug>/clean/official_01_back_cropped.png
 - [x] references/<slug>/measurements.csv                     (3 条：摄像头中心/主相机/电源键)
@@ -261,6 +267,8 @@ cp $SKILL/references/verify/part-face-mapping-template.yaml \
 **AI 回报契约**：
 ```
 Step R2.7 产出报告
+引自 reference-product-playbook.md §Step R2.7 / 本步产出：
+  "references/<slug>/part_face_mapping.yaml（语义面 → OCP Camera 枚举映射）"
 - [x] references/<slug>/clean/official_02_front_cropped.png
 - [x] references/<slug>/clean/official_02_front_scale.json
 - [x] references/<slug>/part_face_mapping.yaml            (6 face mappings，coord: screen -Y)
@@ -327,6 +335,8 @@ Step R2.7 产出报告
 **AI 回报契约**：
 ```
 Step R3 产出报告
+引自 reference-product-playbook.md §Step R3 / 本步产出：
+  "references/<slug>/params.md，结构必须包含：## 数据来源 段 / ## 产品尺寸（建模直接使用）表 / ## 配件建模参数建议 表"
 - [x] references/<slug>/params.md  (8 行尺寸表：5 项 ★★★★★ / 2 项 ★★★★ / 1 项 ★★)
 下一步：等用户确认 → Step R3.5
 ```
@@ -379,6 +389,8 @@ python3 /Users/liyijiang/.agents/skills/build123d-cad/scripts/validate/contract_
 **AI 回报契约**：
 ```
 Step R3.5 产出报告
+引自 reference-product-playbook.md §Step R3.5 / 本步产出：
+  "tests/<test>/contract.yaml，结构必须包含：meta / features / param_map"
 - [x] tests/<test>/contract.yaml           (3 features, 9 constraints, 静态检查通过)
 下一步：等用户确认 → Step R4
 ```
@@ -429,6 +441,8 @@ python3 $SKILL/scripts/visual/visual_compare.py \
 **AI 回报契约**：
 ```
 Step R4 产出报告
+引自 reference-product-playbook.md §Step R4 / 本步产出：
+  "tests/<test>/<part>.py（建模脚本，末尾带 OCP 自动预览块）"
 - [x] tests/<test>/<part>.py              (Layer 1 pass)
 - [x] OCP Viewer 预览已打开               (端口 3939)
 - [x] Layer 2 edge_overlay: IoU=0.87     (≥0.85 阈值，pass)
@@ -530,6 +544,8 @@ source_model: <step / reverse-engineered / mixed>
 **AI 回报契约**：
 ```
 Step R5 产出报告
+引自 reference-product-playbook.md §Step R5 / 本步产出：
+  "完成汇总块（当次回复里的一段文字，不落盘）——Layer 0/1/2 状态 + 置信度统计 + 后续建议"
 - [x] 完成汇总块已输出（上方）
 - [x] Experience Draft 已输出（上方），等用户 review
 - [ ] experience/<category>/<slug>.md    (等用户确认后补 [saved] 或 [skip])
