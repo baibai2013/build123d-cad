@@ -263,3 +263,52 @@ Static check: PASS (7/7 features, 29 constraints, 0 conflicts)
 验证算法见 `references/verify/layer1-verification.md`。
 
 验证脚本见 `scripts/validate/contract_verify.py`。
+
+---
+
+## Appendix B: 整机扩展字段（多部件专用）
+
+以下两节为 `multi-part-playbook.md` §Phase P2 Step 2e 使用，Single-Part / 参考物流程可缺省。两者均为 **顶层可选字段**，不影响现有 Schema（§2 YAML Schema）。
+
+### parts（顶层，可选数组）
+
+每条装配部件一项：
+
+| 字段 | 必填 | 含义 |
+|---|---|---|
+| `slug` | 是 | 短名，与 `<part>.py` 文件 stem 对齐 |
+| `file` | 是 | `.py` 相对路径（相对 test 仓根） |
+| `bbox` | 是 | `{x, y, z}` 三轴包围盒尺寸（最终变体粗估即可，单位 mm） |
+| `placement` | 是 | `{anchor: str, offset: [x, y, z]}`，P1 拆解里的大致装配位 |
+
+示例：
+
+```yaml
+parts:
+  - slug: arm
+    file: arm.py
+    bbox: {x: 80, y: 20, z: 8}
+    placement:
+      anchor: "底座 servo horn 中心"
+      offset: [0, 0, 6]
+```
+
+### cross_refs（顶层，可选数组）
+
+跨部件约束，**类型限定为 Layer 1 Stage C 已支持的 6 种**（见 §5c / `references/verify/layer1-verification.md §Stage C`）：
+`inter_dist` / `ordering` / `colinear` / `same_face` / `symmetric_pair` / `concentric`
+
+每条字段参考 §5c 对应 constraint 定义，多一个必填字段 `parts: [slug, slug]` 指明参与约束的部件。
+
+示例：
+
+```yaml
+cross_refs:
+  - id: axle_center_match
+    type: concentric
+    parts: [arm, horn]
+    feature: "axle_hole"
+    tolerance: 0.1
+```
+
+**硬规则**：多部件装配 `cross_refs` 条数 ≥ 1；零跨部件关系 = 不应走多部件流程。
