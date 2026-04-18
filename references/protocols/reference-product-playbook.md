@@ -461,3 +461,46 @@ Step R5 产出报告
 - [ask] references/<slug>/ 保留 or 删除？
 参考物建模协议 R1~R5 完成。
 ```
+
+---
+
+## 常见失败模式（test 13 / 14 沉淀）
+
+### FM-1：bbox 越界
+**现象**：`preprocess_reference.py` 报 `bbox out of image range`
+**根因**：误以为图是竖版（height 主轴），实际是横版（width 主轴）；或直接复用他图的 bbox 数字
+**诊断**：
+```bash
+python3 -c "from PIL import Image; print(Image.open('<img>').size)"
+```
+**修复**：根据实际 size 切换 `--physical-axis width` 或 `height` + 重新标 bbox
+
+### FM-2：mm/px 反算
+**现象**：测量值数量级异常（单位看起来像 µm 或 km）
+**根因**：`--physical-length` 填成了图上像素数，而非真实物理长度
+**诊断**：检查 `*_scale.json` 里 `mm_per_px`，合理区间通常是 0.05 ~ 1.0
+**修复**：用真实物理长度（如 `162.2mm`）重跑 preprocess
+
+### FM-3：face_mapping 写反
+**现象**：Layer 2 每个面都 IoU < 0.3，整体对不上
+**根因**：`part_face_mapping.yaml` 的 FRONT/BACK 与 OCP `Camera.FRONT/BACK` 的法线方向搞反
+**诊断**：检查 `coordinate_system.screen_normal`，再逐条核对 `face_mapping` 条目
+**修复**：参考实战样本 `tests/14-xiaomi-k70-case/part_face_mapping.yaml`，明确"屏幕朝 -Y → FRONT→BACK"的等价关系
+
+### FM-4：R2.7 偷懒跳过
+**现象**：AI 有 STEP 模型就直接跳 R3，后续 Layer 2 失败时才发现缺 `part_face_mapping.yaml`
+**根因**：错误等同"有 STEP = R2.7 可跳"，忽略"做 Layer 2 就必做 R2.7"
+**诊断**：在 R2 产出报告里必须显式答复"本次是否做 Layer 2"
+**修复**：是 → R2.7 必做（只跳 R2.5）；否 → skip R2.7 + reason
+
+### FM-5：置信度伪造
+**现象**：params.md 里反推尺寸被标 ★★★★★
+**根因**：AI 为了让验证通过，把低置信度尺寸标高
+**诊断**：交叉检查 params.md "数据来源"段：若来自"反推/拆机/推断"，置信度不得 ≥ ★★★★
+**修复**：如实填写置信度。允许 ★★ 尺寸进入下游建模，但 R5 完成汇总里要提醒用户实测
+
+### FM-6：产出报告漏写
+**现象**：AI 直接开始做下一步，没有先输出产出报告
+**根因**：遗忘"执行契约"第 1 条
+**诊断**：用户注意到回复里没有 `Step Rn 产出报告` 块
+**修复**：立刻补一条产出报告，回补漏的 artifact，再继续
