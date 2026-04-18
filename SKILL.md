@@ -267,99 +267,17 @@ Peter Corke 专家建议（面向非专业用户）：
 
 ---
 
-## 单部件简化流程（Single-Part Protocol）
+## 单部件流程
 
-### Step 1：需求分析
+**触发**：需求是 1 个独立实体，无装配关系。
 
-收到需求后识别：
+**唯一执行路径**：立即 Read `references/protocols/single-part-playbook.md`，按 Playbook 的 S1~S4 执行。
 
-| 要素 | 问题 | 示例 |
-|------|------|------|
-| **几何形状** | 基本形状是什么？ | 圆柱、长方体、旋转体 |
-| **关键尺寸** | 哪些已给出？哪些缺失？ | 长×宽×高，孔径，壁厚 |
-| **操作序列** | 机械师会按什么顺序加工？ | 先车外圆 → 再打孔 → 再切键槽 |
-| **导出格式** | STEP / STL / BREP？ | 默认 STEP |
-| **用途** | 3D打印？CNC？激光切割？ | 影响公差和格式选择 |
+**SKILL.md 本文件不含 S1~S4 细节**——凭记忆走视为违规，必须回补 Read + Quote-back。
 
-**缺失关键尺寸时**：先询问，不要自行假设关键参数（如螺纹规格、配合尺寸）。
-非关键尺寸（如圆角半径）可给合理默认值并标注。
-
-**需求分析结束前必须询问**：
-
-```
-在开始建模之前，请问你是否有参考图、参考链接或参考描述？
-（有的话发给我，我会根据参考来建模并标注符合度）
-```
+**Quote-back 强制**：每个 Step 产出报告第一行引用 Playbook 原文（格式见 Playbook §执行契约）。
 
 ---
-
-### Step 1.5：几何对齐（用户主动触发，5种方案）
-
-> **核心目的**：在建 3D 模型之前，确认 AI 理解的形状和用户脑子里的形状是同一个东西。
-> **原则**：**方案 A（3视图草图）默认自动执行**，无需用户开口。用户说「跳过草图」/「直接建模」才跳过。其余4种方案（B/C/D/E）仍需用户主动触发。
-
----
-
-#### 方案 A：3视图草图（⭐ 默认自动执行）
-
-**默认触发**：收到任何建模需求后，在 Step 2 建模策略之前自动生成。
-**跳过触发词**：「跳过草图」「不需要草图」「直接建模」「skip sketch」
-
-用 Matplotlib 生成正视图 / 侧视图 / 俯视图 PNG，保存后**自动打开**让用户直接看到：
-
-```python
-import matplotlib.pyplot as plt
-import matplotlib.patches as patches
-import subprocess, sys, os
-
-fig, axes = plt.subplots(1, 3, figsize=(14, 5))
-fig.suptitle("Concept Sketch / 概念草图", fontsize=13, fontweight='bold')
-
-for ax, title in zip(axes, ["Front View / 正视图", "Side View / 侧视图", "Top View / 俯视图"]):
-    ax.set_title(title, fontsize=10)
-    ax.set_aspect('equal')
-    ax.grid(True, alpha=0.3)
-    ax.axhline(0, color='lightgray', linewidth=0.8, linestyle='--')
-    ax.axvline(0, color='lightgray', linewidth=0.8, linestyle='--')
-    ax.set_xlabel('mm')
-    ax.set_ylabel('mm')
-
-# ── 根据部件形状在对应 ax 绘制轮廓 + 尺寸标注 ──
-# 正视图：主轮廓 + 总长×总高尺寸线 / Front: main outline + overall dimensions
-axes[0].add_patch(patches.Rectangle((-20, -25), 40, 50,
-                  fill=False, edgecolor='black', linewidth=1.5))
-axes[0].annotate('', xy=(22, -25), xytext=(22, 25),
-                 arrowprops=dict(arrowstyle='<->', color='red', lw=1.2))
-axes[0].text(25, 0, '50mm', color='red', fontsize=8, va='center')
-axes[0].annotate('', xy=(-20, -28), xytext=(20, -28),
-                 arrowprops=dict(arrowstyle='<->', color='blue', lw=1.2))
-axes[0].text(0, -32, '40mm', color='blue', fontsize=8, ha='center')
-
-# 侧视图：壁厚 / Side: wall thickness
-# 俯视图：孔位 / Top: hole pattern
-# （根据实际部件几何填充各视图内容）
-
-plt.tight_layout()
-
-# ===== 保存 + 自动打开 =====
-sketch_path = os.path.join(output_dir, "concept_sketch.png")
-plt.savefig(sketch_path, dpi=130, bbox_inches='tight')
-plt.close()
-
-# 自动用系统查看器打开（macOS: open, Windows: start, Linux: xdg-open）
-if sys.platform == "darwin":
-    subprocess.Popen(["open", sketch_path])
-elif sys.platform == "win32":
-    os.startfile(sketch_path)
-else:
-    subprocess.Popen(["xdg-open", sketch_path])
-
-print(f"概念草图已生成并打开 / Concept sketch opened: {sketch_path}")
-```
-
-AI **同时输出文字说明**，标注每个视图的几何意图：
-
-```
 ## 概念草图说明
 
 正视图：主轮廓 + 中心线，总长×总高，关键台阶位置
