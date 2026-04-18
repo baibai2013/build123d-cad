@@ -12,6 +12,7 @@
 3. **跳步必须声明理由**，格式 `[skip] <step-id> reason=<具体理由>`。静默略过视为违规。
 4. **Artifact 是硬约束**——用户接管某步也不例外（例如用户直接给 contract，AI 仍必须把内容落盘到约定路径）。
 5. 遇到本步 artifact 缺失：回到本步补产，禁止写 `[x]` 骗过。发现上游缺失：在回复里明写 "回补 Step Rx" 并执行，禁止下行。
+6. **R1 开始前必须查 `experience/`，R5 结束前必须输出 Experience Draft**（状态用 `[hit]`/`[partial]`/`[miss]`/`[skip]`/`[saved]`，详见 R1 / R5 Step 定义）。
 
 ---
 
