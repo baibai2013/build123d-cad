@@ -71,3 +71,70 @@ Step R1 产出报告
 ```
 
 **确认门 ✋** 用户确认后进入 R2。
+
+---
+
+## Step R2 — 执行搜集
+
+**前置**：
+- [x] `references/<slug>/search_plan.md` 已写入并经用户确认
+
+**本步产出（必须全部存在才允许进入下一步）**：
+- `references/<slug>/raw_specs.md`（官网/电商文本规格，含尺寸关键数字）
+- `references/<slug>/images/*.{jpg,png}`（至少 1 张产品图，建议正+背+侧各 1）
+- （可选）`references/<slug>/model.step`（GrabCAD / 官网下载到的 3D 模型）
+
+**命令模板**：
+```bash
+SLUG=<your-slug>
+mkdir -p references/$SLUG/images
+
+# 1) 抓取官网规格文本 → raw_specs.md（用 WebFetch 或 curl，精炼后写入）
+# references/$SLUG/raw_specs.md 内容建议包含：
+#   - 产品全名 + 发布年份
+#   - 三围尺寸（长/宽/厚）
+#   - 重量
+#   - 摄像头/按键/接口位置（文字描述）
+
+# 2) 下载官方图
+curl -sL <img-url-1> -o references/$SLUG/images/official_01_front.jpg
+curl -sL <img-url-2> -o references/$SLUG/images/official_02_back.jpg
+
+# 3) 若 GrabCAD/官网有 STEP：
+curl -sL <step-url> -o references/$SLUG/model.step
+```
+
+**AI 回报契约**（三种典型场景）：
+
+场景 1：无 STEP
+```
+Step R2 产出报告
+- [x] references/<slug>/raw_specs.md   (官网 + GSMArena 规格合并)
+- [x] references/<slug>/images/        (3 张：正/背/侧)
+- [skip] references/<slug>/model.step  (reason: GrabCAD 无收录)
+下一步：Step R2.5（model.step 缺失 → 反推）
+```
+
+场景 2：有 STEP + 不做 Layer 2
+```
+Step R2 产出报告
+- [x] references/<slug>/raw_specs.md
+- [x] references/<slug>/images/
+- [x] references/<slug>/model.step     (来源：GrabCAD)
+下一步：Step R3（有 STEP + 不做视觉对比，[skip] R2.5 reason=已有 model.step，[skip] R2.7 reason=不做 Layer 2 视觉对比）
+```
+
+场景 3：有 STEP + 要做 Layer 2
+```
+Step R2 产出报告
+- [x] references/<slug>/raw_specs.md
+- [x] references/<slug>/images/
+- [x] references/<slug>/model.step
+下一步：Step R2.7（[skip] R2.5 reason=已有 model.step，但 R2.7 必做以支持 Layer 2）
+```
+
+**分叉判定**：R2 结束时 AI 必须向用户确认"本次是否需要 Layer 2 视觉对比"。
+- 需要 + 无 STEP → R2.5 → R2.7 → R3
+- 需要 + 有 STEP → R2.7 → R3（skip R2.5）
+- 不需要 + 有 STEP → R3（skip R2.5 + R2.7）
+- 不需要 + 无 STEP → R2.5（仍需反推尺寸） → R3（skip R2.7）
