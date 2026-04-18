@@ -16,6 +16,7 @@
 7. 每个 Phase 产出报告第一行必须是 Quote-back，格式：
    引自 multi-part-playbook.md §Phase P<n> / <小标题>："<原文一行>"
    缺 Quote-back、引错 Phase、原文与文件不符 = 违规，必须回补 Read + 重出产出报告。
+8. **每个确认门必须遵守 SKILL.md §确认门执行契约**（halt 前三项自检 + `[halt-for-user]` 硬字段 + 同轮不得推进）；违规 = FM-13。
 
 ---
 
@@ -82,6 +83,8 @@ Peter Corke 角度：___
 
 AI 不主动触发，必须用户开口要求。
 
+> 发 `[halt-for-user]` 前必过 SKILL.md §确认门执行契约 的三项自检。
+
 **确认门 ✋** 用户回复「OK」或修改部件清单后，才进入 Phase P2。
 
 **AI 回报契约**（完成后必须在回复里输出）：
@@ -92,7 +95,7 @@ Phase P1 产出报告
   "需求拆解报告（部件清单 + 装配关系 + 工艺确认 + 仿真需求 + 可选专家意见）"
 - [x] 需求拆解报告已输出（部件清单 3 项 / 装配链 2 个关节 / 工艺=3D打印）
 - [x] 已询问参考图（用户提供 1 张正视图）
-- [ask] 用户确认继续进 P2？
+- [halt-for-user] ✋ 确认部件清单和装配关系正确，回 "OK" 进 P2 / 或指出修改项
 下一步：等用户确认 → Phase P2
 ```
 
@@ -160,6 +163,8 @@ V2: ✅ BRep有效  ✅ 体积合理  ✅ STEP精度  → 可选（推荐）
 V3: ✅ BRep有效  ❌ 体积过大(偏差>20%)    → 不可选
 ```
 
+> 发 `[halt-for-user]` 前必过 SKILL.md §确认门执行契约 的三项自检。
+
 ### Step 2d — 确认门 ✋
 
 ```
@@ -177,9 +182,11 @@ Phase P2 产出报告
 - [x] part_B_v1.py / part_B_v2.py / part_B_v3.py   (V3 体积超标，用户选 V1)
 - [x] tests/<test>/exports/part_A_v2.step           (选定版本 STEP 存档)
 - [x] tests/<test>/exports/part_B_v1.step
-- [ask] 全部部件已选定，进入 Step 2e 汇总？
+- [halt-for-user] ✋ 全部部件已选定，回 "OK" 进 Step 2e 汇总 / 或调整变体
 下一步：Step 2e 整机合同化 + bbox 预检
 ```
+
+> 发 `[halt-for-user]` 前必过 SKILL.md §确认门执行契约 的三项自检。
 
 ### Step 2e — 整机合同化 + bbox 预检 + 用户确认门 ✋
 
@@ -277,6 +284,8 @@ variants: []                         # 整机不做变体
 
 **疑似碰撞不阻断**——标注即可。P3 装配后由 `do_children_intersect()` 做权威判定；FM-11 要求 P3 `joint_to_crossref.md` 回应每条 ⚠。
 
+> 本 Step 2e.c 的硬自检等价于 SKILL.md §确认门执行契约 的三项自检，此处更细化为 Step 2e.c 专属（parts/cross_refs/type 静态检查）。
+
 #### Step 2e.c — 用户确认门 ✋
 
 **发出确认门前的硬自检**（任一未过，**直接回 Step 2e.a 修复，不得进 ✋、不等用户指出**）：
@@ -300,7 +309,8 @@ Step 2e 产出报告
 请 review 两份产物，回：
   - "ok 进 P3"：继续装配
   - "改 <具体>"：回 P2 对应 Step 调整
-下一步：等用户回执
+
+[halt-for-user] ✋ review assembly_contract.yaml + precheck_bbox.md，回 "ok 进 P3" 或 "改 <具体>"
 ```
 
 ---
@@ -361,7 +371,11 @@ mindmap
 ```
 ````
 
+> 发 `[halt-for-user]` 前必过 SKILL.md §确认门执行契约 的三项自检。
+
 **确认门 ✋** 用户看脑图后回复「OK」或指出修改节点，才写装配代码执行。
+
+[halt-for-user] ✋ 确认装配脑图关节链 + 帧对齐方案正确，回 "OK" 进 Step 3b 装配代码 / 或指出修改节点
 
 ### Step 3b — 装配执行
 
@@ -412,7 +426,11 @@ Peter Corke 专家建议（面向非专业用户）：
 [ ] 方案1+2 — 先做动画，再加运动学
 ```
 
+> 发 `[halt-for-user]` 前必过 SKILL.md §确认门执行契约 的三项自检。
+
 **确认门 ✋** 用户选择后，AI 说明该方案具体实现步骤（DH参数表 / 步态相位表 / URDF 计划），再次确认才生成仿真代码。
+
+[halt-for-user] ✋ 选方案编号（1/2/3/1+2），或回 "无需仿真"
 
 **AI 回报契约**：
 
@@ -557,3 +575,9 @@ Phase P4 产出报告
 **诊断**：P1 需求拆解报告列的装配关系条数 > `assembly_contract.cross_refs` 条数，存在漏翻译。**应由 AI 在 Step 2e.c 自检清单时主动发现**，用户提示才发现 = 漏自检（自身已是 FM-12 亚型）。
 
 **修复**：回 Step 2e.a 对齐 P1 拆解报告逐条补齐 cross_refs；硬下限 `cross_refs` ≥ 1 条，且 ≥ P1 拆解装配关系数。修复后重跑 Step 2e.c 自检清单 → 通过再发确认门。
+
+### FM-13：越权通过确认门
+
+**诊断**：multi-part-playbook §P1 末尾 / Step 2d / Step 2e.c / Step 3a 脑图 / Step 3c 仿真方案 的确认门要求 `[halt-for-user]`，AI 同一轮回复里发了 halt 又继续推进（给装配代码 / 进下一 Step / 直接写最终产物）。典型诱因：用户说"时间紧""Phase 简化"导致 AI 跳 P1 拆解 halt 或 Step 2e 合同 halt。
+
+**修复**：删除 halt 之后的所有推进内容；保留 halt，重出该轮回报；等用户下一轮真实回执（OK / 修改 / 提问）才决定如何进下一 Step。
