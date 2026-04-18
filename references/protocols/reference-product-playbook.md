@@ -16,6 +16,7 @@
 7. **每个 Step 产出报告第一行必须是 Quote-back**。
    格式：引自 reference-product-playbook.md §Step R<n> / <小标题>："<原文一行>"
    缺 Quote-back、引错 Step、原文与文件不符 = 违规，必须回补 Read + 重出报告。
+8. 每个确认门必须遵守 SKILL.md §确认门执行契约；违规 = FM-10。
 
 ---
 
@@ -100,7 +101,11 @@ Step R1 产出报告
 
 （示例为「精确命中」场景；无命中时写 `[miss]`，同类命中时写 `[partial]`。）
 
+> 发 `[halt-for-user]` 前必过 SKILL.md §确认门执行契约 的三项自检。
+
 **确认门 ✋** 用户确认后进入 R2。
+
+[halt-for-user] ✋ 确认参数表准确性，回 "OK" 进 R2 / 或指出修改项
 
 ---
 
@@ -341,7 +346,11 @@ Step R3 产出报告
 下一步：等用户确认 → Step R3.5
 ```
 
+> 发 `[halt-for-user]` 前必过 SKILL.md §确认门执行契约 的三项自检。
+
 **确认门 ✋** 用户确认后进入 R3.5。
+
+[halt-for-user] ✋ 确认 params.md 置信度分档合理，回 "OK" 进 R3.5 / 或指出需重测的参数
 
 ---
 
@@ -397,7 +406,11 @@ Step R3.5 产出报告
 
 **参考**：`references/verify/layer0-contract.md`
 
+> 发 `[halt-for-user]` 前必过 SKILL.md §确认门执行契约 的三项自检。
+
 **确认门 ✋** 用户确认合同无误后进入 R4。
+
+[halt-for-user] ✋ 确认 contract.yaml 特征 / 约束 / 公差准确，回 "OK" 进 R4 / 或指出修改项
 
 ---
 
@@ -549,7 +562,7 @@ Step R5 产出报告
 - [x] 完成汇总块已输出（上方）
 - [x] Experience Draft 已输出（上方），等用户 review
 - [ ] experience/<category>/<slug>.md    (等用户确认后补 [saved] 或 [skip])
-- [ask] references/<slug>/ 保留 or 删除？
+[halt-for-user] ✋ references/<slug>/ 保留 or 删除？
 参考物建模协议 R1~R5 完成（经验落盘待用户 review）。
 ```
 
@@ -616,6 +629,12 @@ python3 -c "from PIL import Image; print(Image.open('<img>').size)"
 grep -F "<被引用的原文>" references/protocols/reference-product-playbook.md
 ```
 **修复**：要求 AI 重新 Read 对应 Step 原文，重出产出报告；多次违规视为必须降级重跑本 Step
+
+### FM-10：越权通过确认门
+
+**诊断**：Playbook §R1 参数表 / R3 params.md / R3.5 contract.yaml / R5 收尾 的确认门要求 `[halt-for-user]`，AI 同一轮回复里发了 halt 又继续推进（给代码 / 进下一 Step / 直接写最终产物）。
+
+**修复**：删除 halt 之后的所有推进内容；保留 halt，重出该轮回报；等用户下一轮真实回执（OK / 修改 / 提问）才决定如何进下一 Step。
 
 ---
 
