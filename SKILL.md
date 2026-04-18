@@ -54,226 +54,26 @@ description: |
 
 ## 参考物建模流程（Reference-Product Protocol）
 
-> **触发条件**：需求中包含已存在的具体产品型号，例如：
-> 「帮我做红米 K80 的手机壳」「给树莓派 4B 做散热壳」「SG90 舵机安装座」
->
-> **核心思路**：先收集真实产品尺寸，反推建模参数，再走标准建模流程。
+**触发条件**：需求中包含已存在的具体产品型号，例如：
+「做红米 K80 的手机壳」「给树莓派 4B 做散热壳」「SG90 舵机安装座」
 
-### Step R1 — 识别 + 生成搜索计划（先告知，不执行）
+**执行方式**：进入 `references/protocols/reference-product-playbook.md` 按 checklist 走完 R1~R5。
+Playbook 里的"执行契约"对本次对话强制生效——**每步必须在回复中输出产出报告，禁止静默跳步**。
 
-AI 输出搜索计划，等用户确认：
+**R1~R5 产出物总表**（详细契约见 Playbook）：
 
-```
-检测到目标产品：「<产品名>」
-将按以下顺序收集参考资料：
+| Step | 必须产出 | 允许跳过？ |
+|---|---|---|
+| R1 识别 + 搜索计划 | `references/<slug>/search_plan.md` | 否 |
+| R2 执行搜集 | `references/<slug>/raw_specs.md` + `images/*` | 否 |
+| R2.5 无 STEP 反推 | `references/<slug>/clean/*_scale.json` + `measurements.csv` | 仅 R2 已产出 `model.step` 时可 skip |
+| R2.7 参考图现实对齐 | `references/<slug>/clean/*_cropped.png` + `part_face_mapping.yaml` | 否（Layer 2 必做） |
+| R3 params.md | `references/<slug>/params.md`（带置信度） | 否 |
+| R3.5 contract.yaml | `tests/<test>/contract.yaml` | 否 |
+| R4 建模 | `tests/<test>/<part>.py` + 自动预览 | 否 |
+| R5 收尾 | 回复中输出完成汇总块 | 否 |
 
-📌 来源 1 — 官网规格页
-  → <品牌>官网 <产品名> 产品页（尺寸 / 重量 / 摄像头 / 按键位置…）
-
-📌 来源 2 — 购物平台
-  → 京东「<产品名>」商品参数页
-  → 淘宝「<产品名> 手机壳/配件」同类产品标注尺寸
-
-📌 来源 3 — 3D 模型库
-  → GrabCAD 搜索「<产品名>」
-  → Printables 搜索「<产品名> case」
-
-收集完成后保存至：references/<product-slug>/
-并生成 params.md 参数汇总表。
-
-[ 确认开始搜集 ] [ 我来提供资料 ]
-```
-
----
-
-### Step R2 — 执行搜集（用户确认后）
-
-按以下规则保存到 `references/<product-slug>/`：
-
-| 资料类型 | 操作 | 文件命名 |
-|---------|------|---------|
-| 官网文本规格 | 抓取并写入 | `raw_specs.md` |
-| 官方图片 | 下载到文件夹 | `official_01.png`, `official_02.png`... |
-| 购物平台图片 | 下载到文件夹 | `shopping_01.png`, `shopping_02.png`... |
-| STEP / STL 模型 | 下载保存 | `model.step` / `model.stl` |
-
-**找到 STEP 模型时**：用 `import_step()` 加载，通过 `bounding_box()` 和关键边提取实际尺寸。
-
-**兜底（找不到资料时）**：
-
-```
-未能找到「<产品名>」的完整尺寸资料。
-请提供以下任意一种：
-  [ ] 产品三视图（正/侧/背面照片）
-  [ ] 官方规格截图
-  [ ] 手动测量值（需要的话我提供测量位置清单）
-```
-
----
-
-### Step R2.5 — 没有 STEP 模型时的反推流程（v3 新增）
-
-官网未提供 STEP 且 GrabCAD 未收录时，按以下置信度顺序尝试：
-
-1. **手段 B**（三视图比例反推）— 成本最低，官方三视图存在时首选
-2. **手段 C**（已知基准测量）— 用电商实拍图补关键特征
-3. **手段 E**（拆解视频截帧）— iFixit / B 站有拆机时
-4. **手段 D**（特征比例推断）— 兜底，置信度 ★★，务必标注
-5. **用户实测**——上面全部不可用时
-
-反推完成后，`params.md` 的置信度列必须**如实填写**。禁止伪造 ★★★★★。
-
-完整流程与 CLI 命令见 `references/reference-product/reverse-engineering.md`。
-标注规范见 `references/reference-product/photo-annotation.md`。
-
----
-
-### Step R2.7 — 参考图现实对齐检查（v3 新增）
-
-任何要用于 Layer 2 视觉对比的参考图都是**实拍或营销图**，不是干净的正交视图。
-进入 Layer 2 前必须走：
-
-1. 判断图源类型：官方三视图 / 营销图 / 电商实拍 / 拆机视频截帧（不同置信度）
-2. 跑 `preprocess_reference.py` 得到 `{stem}_cropped.png` + `{stem}_scale.json`
-3. 为本部件写 `part_face_mapping.yaml`（template: `references/verify/part-face-mapping-template.yaml`）
-4. 确定 visual_compare 的使用档位（ortho 正交 / iso 3/4 角度 / 手动匹配实拍）
-
-**未经预处理的图不得进入 Layer 2** — 否则 IoU / 边缘对比毫无物理意义。
-
-详见 `references/verify/reference-image-preprocessing.md` 和 `references/verify/multi-view-protocol.md`。
-
----
-
-### Step R3 — 生成 params.md（建模直接输入）
-
-```markdown
-# 参数表：<产品名> 配件建模参考
-
-## 数据来源
-- 官网：<url>  ✅ 高置信度
-- 购物平台：京东商品参数  ✅ 中置信度
-- 3D模型：GrabCAD - <产品名>  ✅ 高置信度（已下载 model.step）
-
-## 产品尺寸（建模直接使用）
-| 参数       | 数值    | 来源     | 置信度 |
-|-----------|--------|----------|--------|
-| 长度       | ???mm  | 官网     | ★★★★★ |
-| 宽度       | ???mm  | 官网     | ★★★★★ |
-| 厚度       | ???mm  | 购物平台 | ★★★★  |
-| 关键特征尺寸 | ???mm | 3D模型   | ★★★   |
-
-## 配件建模参数建议
-| 参数         | 推荐值  | 说明 |
-|-------------|--------|------|
-| 壁厚         | 1.2mm  | FDM 打印最小可靠壁厚 |
-| 配合间隙（单侧）| +0.3mm | 确保装入顺畅 |
-| 开孔余量（单侧）| +0.5mm | 防止遮挡关键接口 |
-```
-
-**确认门 ✋** 用户确认参数表无误后，进入合同生成。
-
----
-
-### Step R3.5 — 生成 Layer 0 参数合同（contract.yaml）
-
-从 params.md 自动派生机器可读合同，补充空间约束。详见 `references/verify/layer0-contract.md`。
-
-合同包含三块：
-- **dims**：特征自身尺寸（绝对值 + 归一化比例）
-- **pos**：特征绝对定位（偏移量 + 边距）
-- **constraints**：空间约束（每特征 ≥ 3 条，覆盖 XYZ 三轴）
-
-```yaml
-# 合同结构概要
-meta:
-  product: "产品名"
-  body_ref: {L: 长, W: 宽, T: 厚}
-features:
-  - name: feature_name
-    type: rounded_rect | rect | circle | ...
-    face: back | right | bottom | top | ...
-    dims: {w: 38.0, h: 38.0, r: 8.0, _ratios: {...}}
-    pos: {cx: -13.0, cy: 55.0}
-    constraints:
-      - {type: on_face, value: back, locks: [Z]}
-      - {type: edge_dist, ref: top, value: 26.4, tol: 2.0, locks: [Y]}
-      - {type: edge_dist, ref: left, value: 24.9, tol: 2.0, locks: [X]}
-param_map:
-  feature.field: CODE_VARIABLE
-```
-
-AI 生成合同后自动跑静态检查（完备性 + 矛盾检测），通过后提交用户确认。
-
-**确认门 ✋** 用户确认合同无误后，进入建模。
-
----
-
-### Step R4 — 进入标准建模流程
-
-以 `params.md` + `contract.yaml` 为参数输入，根据部件数量路由：
-- 单个配件 → 单部件 Step 1~4（含3变体OCP对比）
-- 多部件配件 → 多部件 Phase 1~4
-
-建模完成后自动跑 **Layer 1 合同验证**（Stage A~D），详见 `references/verify/layer1-verification.md`。验证不通过时进入自动修复循环（最多 3 轮）。
-
-```bash
-# Layer 0 静态检查 / Layer 1 运行时验证
-python3 scripts/validate/contract_verify.py --contract contract.yaml --check-only
-python3 scripts/validate/contract_verify.py --contract contract.yaml --params params.json
-```
-
-Layer 1 通过后自动进入 **Layer 2 视觉比对验证**，详见 `references/verify/layer2-visual.md`。后端自动降级：ai_vision → opencv → manual → skip。
-
-```bash
-# Layer 2 视觉比对 (via cad-vision-verify skill)
-python3 /Users/liyijiang/.agents/skills/cad-vision-verify/scripts/verify_loop.py --contract contract.yaml --ref-dir references/<product>/images --output-dir output/visual
-# Legacy (deprecated): python3 scripts/validate/visual_compare.py ...
-```
-
-#### Layer 2 视觉验证标准工具链（v3 / test 13 沉淀）
-
-Layer 2 比对前，**参考图必须预处理过**（见 `references/verify/reference-image-preprocessing.md`）。
-
-标准三步：
-
-```bash
-# 1) 7 视图 + skybox（需要 part_face_mapping.yaml）
-python3 scripts/visual/multi_view_screenshot.py <step> --mode ortho --face-mapping <yaml>
-python3 scripts/visual/skybox_unfold.py <step>
-
-# 2) 参考图预处理
-python3 scripts/visual/preprocess_reference.py <photo> \
-    --bbox "x,y,w,h" --physical-length "160mm" --physical-axis height \
-    --output-dir refs/clean/
-
-# 3) 边缘对比
-python3 scripts/visual/visual_compare.py \
-    output/{part}_FRONT.png refs/clean/{photo}_cropped.png \
-    --reference-scale refs/clean/{photo}_scale.json \
-    --rendered-scale auto \
-    --mode edge_overlay \
-    --output output/compare_{view}.png
-```
-
-判定阈值见 `references/verify/edge-comparison.md`。
-
-**验证失败反馈闭环**（详见 `references/verify/feedback-diagnosis.md`）：
-- 根因 A（数据源错）→ 回 R2/R3 重新搜集
-- 根因 B（合同错）→ 回 R3.5 修改 contract.yaml
-- 根因 C（代码错）→ 修改建模代码
-- 修复上限：L1×3 + L2×2 + 跨层×2 = 总计 ≤ 5 轮，超限人工介入
-
----
-
-### Step R5 — 收尾提示
-
-建模完成后输出：
-
-```
-配件建模完成。
-参考资料 references/<product-slug>/ 已完成使命，是否删除？
-[ 删除 ] [ 保留作为设计依据 ]
-```
+**分叉规则**：R2 完成后，有 `model.step` → R3（或 R2.7 若做 Layer 2）；无 `model.step` → R2.5 → R2.7 → R3。
 
 ---
 
