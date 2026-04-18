@@ -24,9 +24,9 @@
 | Phase | 本步产出 | 允许跳过？ | 下一步 |
 |---|---|---|---|
 | P1 需求拆解 + 专家咨询 | 需求拆解报告 + 确认门 ✋ | 否 | → P2 |
-| P2 部件级建模（每部件 3 变体） | 每部件 3 变体（V1/V2/V3）+ OCP 并排对比 + 自动断言 + 用户选定 | 否 | → P3 |
-| P3 装配 / 关节 | `<asm>.py` + Joint 方案（mindmap 先讨论）+ OCP 预览（`render_joints=True`）+ 碰撞检测 + 爆炸动画 | 否 | → P4 |
-| P4 导出 + Layer 1/2 验证 | `<asm>.step`/`.stl` + Layer 1 几何验证 + （可选）Layer 2 装配体视觉验证 | Layer 2 可在"非参考物型装配"时 `[skip]` | （终态） |
+| P2 部件级建模（每部件 3 变体） | 每部件 3 变体 + 用户选定 + **Step 2e：整机 `assembly_contract.yaml` + `precheck_bbox.md` + 用户确认门 ✋** | 否 | → P3 |
+| P3 装配 / 关节 | `<asm>.py` + Joint 方案（mindmap 先讨论）+ OCP 预览（`render_joints=True`）+ 碰撞检测 + 爆炸动画 + **`joint_to_crossref.md` 映射表** | 否 | → P4 |
+| P4 导出 + Layer 1/2 验证 | `<asm>.step`/`.stl` + Layer 1 几何验证 + **Step 4.3 整机 Stage C 跑 cross_refs** + （可选）Layer 2 装配体视觉验证 | Layer 2 可在"非参考物型装配"时 `[skip]` | （终态） |
 
 ---
 
@@ -177,8 +177,120 @@ Phase P2 产出报告
 - [x] part_B_v1.py / part_B_v2.py / part_B_v3.py   (V3 体积超标，用户选 V1)
 - [x] tests/<test>/exports/part_A_v2.step           (选定版本 STEP 存档)
 - [x] tests/<test>/exports/part_B_v1.step
-- [ask] 全部部件已选定，继续进 P3？
-下一步：等用户确认 → Phase P3
+- [ask] 全部部件已选定，进入 Step 2e 汇总？
+下一步：Step 2e 整机合同化 + bbox 预检
+```
+
+### Step 2e — 整机合同化 + bbox 预检 + 用户确认门 ✋
+
+**前置**：Step 2a~2d 所有部件各自选定变体并导出 STEP。
+
+**本步产出**：
+- `tests/<test>/assembly_contract.yaml`（含顶层 `parts` + `cross_refs`，schema 见 `references/verify/layer0-contract.md §Appendix B`）
+- `tests/<test>/precheck_bbox.md`（两两 AABB 重叠检查）
+- 用户 review 两份产物后决定 "ok 进 P3" 或 "改 <具体>"（未确认前不得进 P3）
+
+#### Step 2e.a — 汇总 `assembly_contract.yaml`
+
+**输入**：每个部件最终变体的 `<part>.py`（取 bbox + 关键参数）+ P1 需求拆解报告里的"部件间关系"段。
+
+**产出骨架**（扩展 layer0-contract schema，所有新增字段顶层可选）：
+
+```yaml
+version: "1.0"
+meta:
+  name: <asm_name>
+  source: multi-part-playbook P2 Step 2e
+  date: 2026-04-18
+
+globals:
+  unit: mm
+
+parts:                               # 顶层可选数组，多部件必填
+  - slug: arm
+    file: arm.py
+    bbox: {x: 80, y: 20, z: 8}       # 最终变体的 bbox（粗估 OK）
+    placement:
+      anchor: "底座 servo horn 中心"
+      offset: [0, 0, 6]
+  - slug: horn
+    file: horn.py
+    bbox: {x: 20, y: 20, z: 5}
+    placement:
+      anchor: "servo 轴"
+      offset: [0, 0, 0]
+
+cross_refs:                          # 顶层可选数组，多部件硬下限 ≥1
+  - id: arm_above_horn
+    type: ordering
+    parts: [arm, horn]
+    axis: z
+    direction: "arm > horn"
+    tolerance: 0.5
+  - id: axle_center_match
+    type: concentric
+    parts: [arm, horn]
+    feature: "axle_hole"
+    tolerance: 0.1
+
+features: []                         # 多部件整机合同可空
+param_map: {}
+variants: []                         # 整机不做变体
+```
+
+**规则**：
+- `parts` 每条对应一个 `<part>.py`
+- `cross_refs.type` 限定 Stage C 已支持的 6 种：`inter_dist` / `ordering` / `colinear` / `same_face` / `symmetric_pair` / `concentric`
+- `cross_refs` 条数 ≥ P1 拆解报告列的装配关系数（不得漏条，漏条 = FM-12）
+- 硬下限：**≥1 条**（零跨部件关系 = 不该走多部件流程）
+
+#### Step 2e.b — bbox 预检
+
+**算法**：AABB 重叠，对 `parts` 节每对 (i, j) 按三轴检查：
+
+```
+三轴重叠 = (bbox_i.x + bbox_j.x)/2 > |placement_i.offset.x - placement_j.offset.x|
+         AND 同理 y AND 同理 z
+```
+
+- 任一轴不重叠 → ✅ 无碰撞风险
+- 三轴都重叠 → ⚠ 疑似碰撞（不阻断，只标注）
+
+**产出** `precheck_bbox.md` 模板：
+
+```markdown
+# P2 bbox 预检（简化 AABB）
+
+配对数：N
+疑似碰撞：K
+
+## arm ↔ horn
+- placement 距离：(0, 0, 6)
+- 三轴重叠：x ✓  y ✓  z ✗
+- 结论：✅ 无碰撞风险
+
+## horn ↔ base
+- placement 距离：(0, 0, 8)
+- 三轴重叠：x ✓  y ✓  z ✓
+- 结论：⚠ 疑似碰撞，P3 装配时检查是否 horn 应埋进 base
+```
+
+**疑似碰撞不阻断**——标注即可。P3 装配后由 `do_children_intersect()` 做权威判定；FM-11 要求 P3 `joint_to_crossref.md` 回应每条 ⚠。
+
+#### Step 2e.c — 用户确认门 ✋
+
+**AI 回报契约**：
+
+```
+Step 2e 产出报告
+引自 multi-part-playbook.md §Phase P2 / Step 2e：
+  "Step 2e 末尾必须等用户确认 assembly_contract.yaml 和 precheck_bbox.md"
+- [x] tests/<test>/assembly_contract.yaml（parts: N，cross_refs: M）
+- [x] tests/<test>/precheck_bbox.md（疑似碰撞 K 处）
+请 review 两份产物，回：
+  - "ok 进 P3"：继续装配
+  - "改 <具体>"：回 P2 对应 Step 调整
+下一步：等用户回执
 ```
 
 ---
@@ -187,6 +299,7 @@ Phase P2 产出报告
 
 **前置**：
 - [x] P2 所有部件已各自选定变体并导出 STEP
+- [x] `tests/<test>/assembly_contract.yaml` 已通过 Step 2e 用户确认门（内含 cross_refs）
 
 **本步产出**：
 - 装配方案脑图（Mermaid mindmap，先讨论不写代码）
@@ -194,7 +307,19 @@ Phase P2 产出报告
 - Joint 方案（RigidJoint / RevoluteJoint / FixedJoint 等 + 帧对齐补偿）
 - OCP 装配预览触发（`render_joints=True`）
 - 碰撞检测（`do_children_intersect()`）
+- `tests/<test>/joint_to_crossref.md`（Joint 与 `assembly_contract.cross_refs` 对齐映射表）
 - 爆炸动画（可选，便于用户直观看到装配关系）
+
+**cross_refs 对齐规则**：P3 装配设计 Joint 时，先 Read `assembly_contract.yaml` 的 `cross_refs` 节。每条 cross_ref 对应一个装配约束目标，Joint 方案需对齐：
+
+| cross_ref.type | Joint 实现方向 |
+|---|---|
+| `concentric` | `RigidJoint.concentric(part_a.hole, part_b.axle)` 或同轴 `RevoluteJoint` |
+| `inter_dist(d)` | `RigidJoint` offset 包含该距离，或 `LinearJoint` 行程覆盖 |
+| `ordering(axis, dir)` | Joint 装配后沿 axis 的先后顺序与 direction 一致 |
+| `colinear` | 两部件特征法向沿同轴（`Location` 姿态对齐） |
+| `same_face` | `RigidJoint` 贴合同一平面（offset 沿法向=0） |
+| `symmetric_pair` | 成对 Joint 关于平面镜像 |
 
 **命令模板**：
 
@@ -289,9 +414,19 @@ Phase P3 产出报告
 - [x] tests/<test>/<asm>.py                      (RigidJoint ×1 + RevoluteJoint ×2)
 - [x] OCP 装配预览已打开（端口 3939，render_joints=True）
 - [x] do_children_intersect() = False            (无碰撞)
+- [x] tests/<test>/joint_to_crossref.md          (Joint 方案覆盖 cross_refs 全部 N 条)
 - [skip] 爆炸动画                                (reason: 仅 3 部件，装配关系已直观可见)
 - [skip] Step 3c 仿真规划                        (reason: P1 勾选"无需仿真")
 下一步：Phase P4
+
+**`joint_to_crossref.md` 模板**（简单映射表，非严格 schema）：
+
+```markdown
+| cross_ref.id | Joint 实现 |
+|---|---|
+| arm_above_horn | RigidJoint(arm, offset=Location((0,0,6))) |
+| axle_center_match | RigidJoint.concentric(arm.hole, horn.axle) |
+```
 ```
 
 ---
@@ -332,6 +467,18 @@ diff = abs(reimported.volume - asm_compound.volume) / asm_compound.volume
 assert diff < 0.001, f"STEP 精度损失 {diff:.3%}"
 ```
 
+### Step 4.3 — 整机 Stage C 验证（对装配体跑 cross_refs）
+
+对装配体运行 `assembly_contract.cross_refs`，Stage C 执行器已支持全部 6 种类型（`inter_dist` / `ordering` / `colinear` / `same_face` / `symmetric_pair` / `concentric`）。
+
+- **输入**：装配体（Compound）+ `tests/<test>/assembly_contract.yaml`
+- **执行**：对每条 cross_ref 提取对应 part 的 face/edge/point，按 type 跑 Stage C
+- **输出**：`tests/<test>/output/stage_c_assembly.md`（PASS/FAIL per cross_ref）
+
+**硬规则**：
+- 任一 cross_ref FAIL → P4 不通过，回 P3 调 Joint 或回 Step 2e 调 cross_refs
+- `do_children_intersect()` 仍保留（几何侵入是 Stage A/B 层，cross_refs 是语义约束层，互补不替代）
+
 ### Step 4c — （可选）Layer 2 视觉验证
 
 仅当装配体为"已知产品/已知参考图"（即走参考物 Playbook 路径）时执行：
@@ -367,6 +514,7 @@ Phase P4 产出报告
 - [x] tests/<test>/<asm>.step              (总体积 12 430 mm³，回读精度 0.02%)
 - [x] tests/<test>/<asm>.stl               (tolerance=0.05)
 - [x] Layer 1: BRep 有效 / 体积合理 / STEP 精度 全过
+- [x] Step 4.3 整机 Stage C: cross_refs N 条全部 PASS (stage_c_assembly.md)
 - [skip] Layer 2 视觉验证                  (reason: 非参考物型装配)
 多部件流程 P1~P4 完成。
 ```
@@ -380,4 +528,22 @@ Phase P4 产出报告
 
 ## 常见失败模式
 
-（等 test 沉淀 / TBD。跨 Playbook 通用的 Quote-back 违规见 `protocols/README.md`。）
+跨 Playbook 通用的 Quote-back 违规见 `protocols/README.md`。以下为多部件流程专属：
+
+### FM-10：缺 assembly_contract
+
+**诊断**：P2 末尾没产出 `tests/<test>/assembly_contract.yaml` 就进 P3；或 P3 装配脚本在 Step 2e 用户确认门未通过前已经开始写。
+
+**修复**：回 P2 Step 2e 补齐 `assembly_contract.yaml` + `precheck_bbox.md`，重走确认门 ✋ 后才进 P3。
+
+### FM-11：bbox 预检疑似碰撞未记录
+
+**诊断**：`precheck_bbox.md` 标了 ⚠ 疑似碰撞，但 P3 的 `joint_to_crossref.md` 对该对部件没有回应（既没加 `concentric` / `inter_dist` cross_ref 下限约束，也没在装配后单独跑 `do_children_intersect()` 验证）。
+
+**修复**：P3 装配后针对该对部件跑 `do_children_intersect()`，或在 `assembly_contract.cross_refs` 里补一条对应 `inter_dist` 约束下限，并在 `joint_to_crossref.md` 映射表上明确回应。
+
+### FM-12：cross_refs 覆盖不全
+
+**诊断**：P1 需求拆解报告列的装配关系条数 > `assembly_contract.cross_refs` 条数，存在漏翻译。
+
+**修复**：回 Step 2e.a 对齐 P1 拆解报告逐条补齐 cross_refs；硬下限 `cross_refs` ≥ 1 条，且 ≥ P1 拆解装配关系数。
