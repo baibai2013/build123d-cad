@@ -194,3 +194,56 @@ Step R2.5 产出报告
 ```
 
 **参考**：`references/reference-product/reverse-engineering.md`（5 种手段 A~E 的应用边界）
+
+---
+
+## Step R2.7 — 参考图现实对齐检查
+
+**前置**：
+- [x] Step R2 已产出 `references/<slug>/images/`
+- [x] 本次要做 Layer 2 视觉对比（若不做视觉对比 + 有 STEP，可 skip）
+
+**本步产出（必须全部存在才允许进入下一步）**：
+- `references/<slug>/clean/<stem>_cropped.png`（每张要进 Layer 2 的参考图，若 R2.5 已跑过可复用）
+- `references/<slug>/clean/<stem>_scale.json`（同上）
+- `references/<slug>/part_face_mapping.yaml`（语义面 → OCP Camera 枚举映射）
+
+**命令模板**：
+```bash
+SKILL=/Users/liyijiang/.agents/skills/build123d-cad
+SLUG=<your-slug>
+
+# 1) 预处理每张要进 Layer 2 的参考图（若 R2.5 已跑过同图可跳过）
+python3 $SKILL/scripts/visual/preprocess_reference.py \
+  references/$SLUG/images/official_02_front.jpg \
+  --bbox "<x,y,w,h>" --physical-length "<162.2mm>" --physical-axis height \
+  --output-dir references/$SLUG/clean/
+
+# 2) 基于模板写 part_face_mapping.yaml
+cp $SKILL/references/verify/part-face-mapping-template.yaml \
+   references/$SLUG/part_face_mapping.yaml
+# 编辑内容：
+#   - part: <产品 slug>
+#   - coordinate_system.screen_normal: -Y (屏幕朝下) / +Y / ...
+#   - face_mapping: FRONT/BACK/LEFT/RIGHT/TOP/BOTTOM 各映射到 Camera 枚举
+#   - face_labels: 每面一句中文描述
+# 实战参考：tests/14-xiaomi-k70-case/part_face_mapping.yaml
+```
+
+**AI 回报契约**：
+```
+Step R2.7 产出报告
+- [x] references/<slug>/clean/official_02_front_cropped.png
+- [x] references/<slug>/clean/official_02_front_scale.json
+- [x] references/<slug>/part_face_mapping.yaml            (6 face mappings，coord: screen -Y)
+下一步：Step R3
+```
+
+**参考**：
+- `references/verify/reference-image-preprocessing.md`（预处理 6 节规范）
+- `references/verify/part-face-mapping-template.yaml`（模板）
+- `references/verify/edge-comparison.md`（下游 Layer 2 阈值）
+
+**特别提示**：
+- 只要本次要做 Layer 2 视觉对比，R2.7 就必做——哪怕 R2 有 STEP。
+- `part_face_mapping.yaml` 是 `multi_view_screenshot.py --face-mapping` 的强制输入。
