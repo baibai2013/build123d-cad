@@ -417,3 +417,47 @@ Step R4 产出报告
 - Layer 1：`references/verify/layer1-verification.md`
 - Layer 2：`references/verify/layer2-visual.md` + `references/verify/edge-comparison.md`
 - 反馈闭环：`references/verify/feedback-diagnosis.md`
+
+---
+
+## Step R5 — 收尾提示
+
+**前置**：
+- [x] Step R4 建模完成且 Layer 1 / Layer 2 通过（或已按反馈闭环修复完成）
+
+**本步产出**（注意：R5 的产出是**当次回复里的一段文字**，不落盘）：
+- 在回复末尾输出"完成汇总"块
+
+**完成汇总块模板**：
+
+```markdown
+## 完成汇总
+
+### 验证状态
+- Layer 0（合同静态检查）：✅
+- Layer 1（合同运行时验证）：✅
+- Layer 2（视觉对比）：✅ IoU=0.87
+
+### 置信度分布
+- 尺寸 ★★★★★：5 项
+- 尺寸 ★★★★：2 项
+- 尺寸 ★★：1 项（摄像头凸起高度，建议用户实测后回填）
+
+### 参考资料归档
+- `references/<slug>/` 已完成使命，是否保留？
+  - [ 保留 ]（作为设计依据，后续回改参数时复用）
+  - [ 删除 ]（本次已落入 `params.md` + `contract.yaml`，原始资料可清）
+
+### 下一步建议
+- <Layer 2 IoU 偏低 → 建议回 R2.7 检查 face_mapping>
+- <某特征置信度 ≤ ★★ → 建议用户实测后更新 params.md>
+- <未出现异常 → 可进入 3D 打印 / CNC 流程>
+```
+
+**AI 回报契约**：
+```
+Step R5 产出报告
+- [x] 完成汇总块已输出（上方）
+- [ask] references/<slug>/ 保留 or 删除？
+参考物建模协议 R1~R5 完成。
+```
