@@ -259,6 +259,67 @@ AI 理解的不确定点（需要确认）：
 
 ---
 
+#### 方案 F：AIGC 概念图 → 参数化设计图
+
+**触发词**：形态主观词命中（不需要用户主动开口）——
+
+- 视觉风格类：科技感、极简、工业风、复古、蒸汽朋克、赛博、仿 XX 风格（如"仿苹果风"）、高级感
+- 形态特征类：流畅、仿生、异形、流线型、有机、雕塑感、灵动、柔和曲面
+- 产品门类类：潮玩、角品、ID 产品、手办、艺术摆件、概念设计
+
+任一词命中 → 走方案 F。明确尺寸同时出现时仍走 F（尺寸并入 Gate F2 参数表）。词表可扩展，通过 PR 追加。
+
+**MCP 调用规范**：
+
+- 工具：`mcp__doubao-mcp-server__text_to_image`
+- 默认参数：`size=1024x1024`，`model=doubao-seedream-3-0-t2i-250415`
+- prompt 模板：`<产品类型>, <形态主观词>, industrial design concept, product rendering, 4 views composition, white background, 4k`
+- 一次 halt 循环**生成 3 张**（3 次独立调用，分别对应不同风格/视角）
+- 返回 URL → 用 Bash `curl -o` 下载到 `assets/concept/<slug>/<timestamp>-<n>.png`
+- `<slug>` 从 S1/P1 部件名 slugify 得到（例：`phone-stand`、`gripper-arm`）
+- AI 下载后用 Read 工具读图（Claude 多模态自读）供下一步视觉解读
+
+**Gate F1 回报模板**（选图 halt）：
+
+```
+[halt-for-user] ✋ AIGC 概念图 3 张已生成：
+  ① assets/concept/<slug>/<ts>-1.png  风格：<风格词>  URL：<url-1>
+  ② assets/concept/<slug>/<ts>-2.png  风格：<风格词>  URL：<url-2>
+  ③ assets/concept/<slug>/<ts>-3.png  风格：<风格词>  URL：<url-3>
+
+回 "选 ①/②/③" / "reroll <prompt 调整>" / "自己给图 <路径>"
+```
+
+> 发 `[halt-for-user]` 前必过 SKILL.md §确认门执行契约 的三项自检。
+
+**视觉解读过渡**：用户选定后，AI 用 Read 工具读选中图，拟合出：
+
+- 正/侧/俯 3 视图 ASCII（复用方案 A 模板）
+- 关键尺寸参数合同表（复用方案 E 模板）
+
+**Gate F2 回报模板**（参数确认 halt）：
+
+```
+[halt-for-user] ✋ 请确认：
+（1）3 视图拟合 AIGC 图的形态是否准确？
+（2）参数合同表每行数值是否接受？需改的直接给正确值。
+回 "OK" / "改 <参数>=<值>"
+```
+
+> 发 `[halt-for-user]` 前必过 SKILL.md §确认门执行契约 的三项自检。
+
+**降级策略**：
+
+- 触发：MCP 抛错 / 超时（>30s） / 3 次 reroll 后用户仍不满
+- 动作：AI 透明告知"AIGC 不可用 / 用户未选定，切换到方案 A"，继续方案 A 自画 3 视图路径，不阻塞
+- 例外：用户在 Gate F1 主动选"自己给图"时**不走降级**，直接跳到视觉解读
+
+**契约**：Gate F1 / Gate F2 均为 `[halt-for-user]` 硬字段，遵循 SKILL.md §确认门执行契约；违规 = single-part FM-1 / multi-part FM-13「越权通过确认门」。**不新增 FM**。
+
+**最适合**：用户描述含形态主观词、无参考图、需先定意象的单 / 多部件。
+
+---
+
 #### 5种方案选择速查
 
 | 方案 | 对齐的是什么 | 生成开销 | 最适合场景 |
