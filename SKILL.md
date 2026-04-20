@@ -81,6 +81,8 @@ Playbook 中每个 `[halt-for-user]` 硬字段是**绝对暂停点**，必须同
    - 纯格式填表（已有干净数据）→ haiku
    - cad-architect 只在多部件架构决策时启用，避免不必要的 opus 调用
 
+   **Agent 模板文件**：`assets/agents/` 目录存有4个 `.md` 模板，复制到 `~/.claude/agents/` 即可启用。
+
 ---
 
 ## 回答工作流（Agentic Protocol）
