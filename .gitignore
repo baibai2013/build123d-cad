@@ -38,3 +38,7 @@ env/
 # Cache
 .mypy_cache/
 __pycache__/
+
+# 方案 F AIGC 生成的概念图（URL 可能过期 + 仓库膨胀，不入 git）
+assets/concept/*
+!assets/concept/.gitkeep
