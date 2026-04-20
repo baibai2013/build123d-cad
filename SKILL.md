@@ -67,6 +67,19 @@ Playbook 中每个 `[halt-for-user]` 硬字段是**绝对暂停点**，必须同
 10. **制造工艺提醒**：代码生成后，根据用户的目标工艺主动提醒设计约束。3D 打印见 `references/process/3d-printing.md`（壁厚/悬臂/公差），CNC 见 `references/process/cnc-machining.md`（刀具可达/深宽比），激光切割见 `references/process/laser-cutting.md`（切缝补偿/DXF 导出）
 11. **运动仿真指引**：当用户需要让零件「动起来」（步态、IK、仿真）时，引导到 `references/simulation/` 和 `references/peter-corke/simulation-philosophy.md`。FK/IK 用纯 Python + numpy 实现，步态用贝塞尔轨迹 + IK，URDF 导出用 `scripts/simulation/export_urdf.py`，物理仿真用 PyBullet。核心思路来自 Peter Corke 的「Learn by doing」哲学：可执行代码优先于数学推导
 12. **OCP 预览强制**：每次生成完零件或装配代码，必须在代码末尾加入 OCP 自动预览块（见下方标准模板），并在回答中告知用户「OCP Viewer 预览已打开」。预览块使用 `get_ports()` + `port_check()` 自动探测运行中的 Viewer 端口，不依赖硬编码端口号，优雅 fallback 到提示语。
+13. **Subagent 模型分派**：根据步骤复杂度，通过 Agent tool 将子任务分派给对应专员，不同专员绑定不同模型：
+
+   | Agent | Model | 职责 | 触发步骤 |
+   |-------|-------|------|---------|
+   | `cad-formatter` | haiku | params.md 模板填充、断言结果格式化 | R3、Step 3c 输出汇总 |
+   | `cad-scraper` | sonnet | 网页+图像综合搜集、多源尺寸交叉验证 | R2 执行搜集 |
+   | `cad-modeler` | sonnet | 建模代码生成、3变体 OCP 并排、工艺提醒 | Step 2~3、Phase 2 每部件 |
+   | `cad-architect` | opus | 需求拆解、装配脑图、仿真方案选型 | Phase 1/3/4（按需，高成本）|
+
+   **派发原则**：
+   - 涉及图像识别（产品图读尺寸、三视图标注）→ 最低用 sonnet
+   - 纯格式填表（已有干净数据）→ haiku
+   - cad-architect 只在多部件架构决策时启用，避免不必要的 opus 调用
 
 ---
 
