@@ -71,17 +71,20 @@ Playbook 中每个 `[halt-for-user]` 硬字段是**绝对暂停点**，必须同
 
    | Agent | Model | 职责 | 触发步骤 |
    |-------|-------|------|---------|
-   | `cad-formatter` | haiku | params.md 模板填充、断言结果格式化 | R3、Step 3c 输出汇总 |
+   | `cad-formatter` | **haiku** | params.md 模板填充、结果表格格式化 | R3、Step S3c 输出汇总 |
+   | `cad-verifier` | **haiku** | BRep/体积/STEP 三项断言执行（bounds 由调用方传入） | Step S3c、Phase 2 变体验证 |
+   | `cad-process-advisor` | **haiku** | 3D打印/CNC/激光切割工艺约束清单生成 | Step S4、Phase 2 完成后 |
    | `cad-scraper` | sonnet | 网页+图像综合搜集、多源尺寸交叉验证 | R2 执行搜集 |
-   | `cad-modeler` | sonnet | 建模代码生成、3变体 OCP 并排、工艺提醒 | Step 2~3、Phase 2 每部件 |
+   | `cad-modeler` | sonnet | 建模代码生成、3变体 OCP 并排、volume_bounds 计算 | Step S2~S3、Phase 2 每部件 |
    | `cad-architect` | opus | 需求拆解、装配脑图、仿真方案选型 | Phase 1/3/4（按需，高成本）|
 
    **派发原则**：
-   - 涉及图像识别（产品图读尺寸、三视图标注）→ 最低用 sonnet
-   - 纯格式填表（已有干净数据）→ haiku
+   - 零判断纯执行（模板填充、断言跑代码、规则查表）→ haiku
+   - 涉及图像识别或几何代码推理 → 最低 sonnet
+   - volume_bounds 必须由 cad-modeler 计算后传给 cad-verifier，verifier 不推算
    - cad-architect 只在多部件架构决策时启用，避免不必要的 opus 调用
 
-   **Agent 模板文件**：`assets/agents/` 目录存有4个 `.md` 模板，复制到 `~/.claude/agents/` 即可启用。
+   **Agent 模板文件**：`assets/agents/` 目录存有6个 `.md` 模板，复制到 `~/.claude/agents/` 即可启用。
 
 ---
 
