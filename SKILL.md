@@ -65,7 +65,7 @@ Playbook 中每个 `[halt-for-user]` 硬字段是**绝对暂停点**，必须同
 8. **装配与展开提示**：当零件包含多个独立体（分离实体 / 独立 STEP / Joint 关联零件）完成后，主动提示用户是否需要生成装配预览和爆炸展开图。用户确认后，默认输出两个文件：`xxx_assembly.py`（装配预览）和 `xxx_exploded.py`（爆炸展开），用 OCP CAD Viewer 的 `show()` 展示。装配模式详见 `references/assembly/assembly-patterns.md`，爆炸动画详见 `references/assembly/exploded-animation.md`
 9. **曲面建模指引**：当用户需要有机曲面（流线型外壳、多截面过渡、扭转扫掠）时，引导到 `references/parts/surface-modeling.md`，优先使用 Loft 多截面放样和 Sweep 扭转扫掠，注意 G1/G2 曲面连续性
 10. **制造工艺提醒**：代码生成后，根据用户的目标工艺主动提醒设计约束。3D 打印见 `references/process/3d-printing.md`（壁厚/悬臂/公差），CNC 见 `references/process/cnc-machining.md`（刀具可达/深宽比），激光切割见 `references/process/laser-cutting.md`（切缝补偿/DXF 导出）
-11. **运动仿真指引**：当用户需要让零件「动起来」（步态、IK、仿真）时，引导到 `references/simulation/` 和 `references/peter-corke/simulation-philosophy.md`。FK/IK 用纯 Python + numpy 实现，步态用贝塞尔轨迹 + IK，URDF 导出用 `scripts/simulation/export_urdf.py`，物理仿真用 PyBullet。核心思路来自 Peter Corke 的「Learn by doing」哲学：可执行代码优先于数学推导
+11. **运动仿真指引**：当用户需要让零件「动起来」（步态、IK、仿真）时，引导到 `references/simulation/` 和 `references/peter-corke/simulation-philosophy.md`。FK/IK 用纯 Python + numpy 实现，步态用贝塞尔轨迹 + IK，URDF 导出用 `scripts/simulation/export_urdf.py`，物理仿真用 PyBullet。核心思路来自 Peter Corke 的「Learn by doing」哲学：可执行代码优先于数学推导。深度运动学学习路径规划 / 仿真工具选型 / 「先理论还是先代码」等教学哲学问题，可激活独立 `peter-corke-perspective` skill（6 维度 2848 行一手调研，涵盖 C1–C6 心智模型 + H1–H8 启发式）
 12. **OCP 预览强制**：每次生成完零件或装配代码，必须在代码末尾加入 OCP 自动预览块（见下方标准模板），并在回答中告知用户「OCP Viewer 预览已打开」。预览块使用 `get_ports()` + `port_check()` 自动探测运行中的 Viewer 端口，不依赖硬编码端口号，优雅 fallback 到提示语。
 13. **Subagent 模型分派**：根据步骤复杂度，通过 Agent tool 将子任务分派给对应专员，不同专员绑定不同模型：
 
@@ -1225,6 +1225,8 @@ print(f"体积: {part.part.volume:.2f} mm³")
 
 ### 7. Peter Corke 仿真哲学 (`references/peter-corke/`)
 - `simulation-philosophy.md` — 「Learn by doing」+ DH 标准 + 分层验证 + 诚实边界
+
+> 完整 Peter Corke 视角（学习路径规划 / 工具选型 / 开源哲学 / 经典 vs DL）见独立 Skill：`peter-corke-perspective`（安装：`npx skills add baibai2013/peter-corke-perspective`）
 
 ### 8. 运动仿真 (`references/simulation/`)
 - `forward-kinematics.md` — FK：DH 参数 + 齐次变换 + build123d Location 验证
