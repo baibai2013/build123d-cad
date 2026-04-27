@@ -480,13 +480,58 @@ Step R3.5 产出报告
 
 ---
 
-## Step R4 — 进入标准建模流程
+## Step R4.0 — 代码库巡查（Code Sources Lookup）
+
+> **目的**：参考物建模前先翻社区代码。产品外壳往往 cheatsheet 能搞定，但带功能组件（齿轮/卡扣/铰链）的产品需要借鉴。
 
 **前置**：
 - [x] Step R3.5 `contract.yaml` 已用户确认
 
+**本步产出**：
+- `references/<slug>/code_borrowings.md`（借鉴候选表 + halt 通过的最终借鉴清单）
+
+**执行步骤**（与 single-part S2.5 / multi-part P2 Step 2.0 共用格式）：
+
+```bash
+SKILL=/Users/liyijiang/.agents/skills/build123d-cad
+SLUG=<kebab-case-product-name>
+
+# 1) AI 根据 params.md / contract.yaml 识别产品涉及的领域
+# 2) 查领域：
+python3 $SKILL/scripts/research/code_lookup.py <domain>
+# 3) cache miss → WebSearch
+# 4) 汇总 → references/$SLUG/code_borrowings.md
+```
+
+**候选清单 + halt 交互 + skip 语法** 完全复用 `single-part-playbook.md §Step S2.5` 规格（不重复列写）。
+
+**纯产品整机跳过**（如手机壳、SBC 壳这类贴合式外壳）：
+
+```markdown
+## 借鉴候选（R4.0）
+[skip] reason=纯贴合外壳（手机壳 / SBC 壳），cheatsheet + patterns 已覆盖
+```
+
+**AI 回报契约**：
+
+```
+Step R4.0 产出报告
+引自 reference-product-playbook.md §Step R4.0 / 本步产出：
+  "references/<slug>/code_borrowings.md（借鉴候选表 + halt 通过的最终借鉴清单）"
+- [x] references/<slug>/code_borrowings.md     (0 候选 → [skip] 纯贴合外壳)
+- [halt-pass] （skip 场景 halt 也要通过）
+下一步：Step R4（进入标准建模流程）
+```
+
+---
+
+## Step R4 — 进入标准建模流程
+
+**前置**：
+- [x] Step R4.0 代码库巡查完成（借鉴清单 / skip 声明）
+
 **本步产出（必须全部存在才允许进入下一步）**：
-- `tests/<test>/<part>.py`（建模脚本，末尾带 OCP 自动预览块）
+- `tests/<test>/<part>.py`（建模脚本，末尾带 OCP 自动预览块；若 R4.0 借鉴了代码，必须显式引用来源）
 - OCP Viewer 实际打开并显示模型（可用截图或 `get_ports()` 的输出作为证据）
 
 **路由**：

@@ -26,7 +26,8 @@
 |---|---|---|---|
 | S1 需求分析 | 需求分析表 + 参考问询 | 否 | → S1.5 |
 | S1.5 标准件候选清单 | `parts_candidates.md` + `standard_parts_resolved.md` + 确认门 ✋ | 纯造型件 `[skip]` | → S2 |
-| S2 几何对齐（默认含 3 视图草图） | concept_sketch.png（自动打开）或用户 skip 声明 | 用户明说"跳过草图" | → S3 |
+| S2 几何对齐（默认含 3 视图草图） | concept_sketch.png（自动打开）或用户 skip 声明 | 用户明说"跳过草图" | → S2.5 |
+| S2.5 代码库巡查 | `code_borrowings.md` + 确认门 ✋ | cheatsheet 已覆盖时 `[skip]` | → S3 |
 | S3 建模实现 | `<part>.py` + OCP 自动预览 + 3 变体对比（若用户启用变体） | 否 | → S4 |
 | S4 导出 + 工艺提示 | `<part>.step`/`.stl` + 工艺约束清单 | 否 | （终态） |
 
@@ -341,10 +342,104 @@ Step S2 产出报告
 
 ---
 
-## Step S3 — 建模实现
+## Step S2.5 — 代码库巡查（Code Sources Lookup）
+
+> **目的**：建模前先翻社区代码，避免"闭门造车写呆板代码"。GitHub 上有成熟实现就借鉴，组合设计才留创意。
+> 解决"AI 凭训练数据写过时代码 / 重复造轮子"的问题。
 
 **前置**：
 - [x] S2 几何对齐完成（草图或 skip 声明）
+
+**本步产出**：
+- `tests/<test>/code_borrowings.md`（借鉴候选表 + 用户确认后的最终借鉴清单）
+- `[halt-for-user]` 硬字段通过
+
+**命令模板**：
+
+```bash
+SKILL=/Users/liyijiang/.agents/skills/build123d-cad
+TEST=tests/<test-dir>
+
+# 1) AI 根据 S1 需求分析，识别本次涉及的领域关键词（最多 2 个）
+#    示例：渐开线齿轮 → gears；流线型外壳 → surfaces + enclosures
+
+# 2) 查领域：
+python3 $SKILL/scripts/research/code_lookup.py gears
+# 若 cache 命中 → 复用上次摘要
+# 若 cache miss → 脚本输出 repos + websearch_prompts，AI 执行 WebSearch
+
+# 3) AI 把脚本 + WebSearch 结果汇总为"借鉴候选表"，写入 code_borrowings.md
+```
+
+**候选清单格式**：
+
+````markdown
+## 借鉴候选（S2.5）
+
+| # | 来源 | 核心技巧 | 翻译成本 | License | 推荐度 |
+|---|------|---------|---------|---------|-------|
+| 1 | gumyr/bd_warehouse@<commit> src/bd_warehouse/gear.py#L45-89 | InvoluteGear 一键调用 | 零 | Apache-2.0 ✓ | ●●● |
+| 2 | CadQuery/cadquery-contrib@<commit> examples/gears.py#L20-60 | 变位齿轮手写齿廓 | 低 | MIT ✓ | ●●○ |
+| 3 | blog.example.com/xxx | 渐开线数学推导 | 中 | 未标 ✗ | ●○○ 仅理论参考，不抄代码 |
+
+推荐度：●●●=首选、●●○=备选、●○○=理论参考（不借代码）
+````
+
+**halt 交互**：
+
+```
+[halt-for-user] ✋ 是否借鉴？
+  回 "借 #1" / "借 #1+#2" / "跳过（自写）" / "全跳"
+```
+
+> 发 `[halt-for-user]` 前必过 SKILL.md §确认门执行契约 的三项自检。
+
+**用户确认后，S3 建模时明确引用**：
+
+```python
+# 参考：gumyr/bd_warehouse@a1b2c3d src/bd_warehouse/gear.py#L45-89 (Apache-2.0)
+from bd_warehouse.gear import InvoluteGear
+```
+
+**skip 语法**（简单零件、cheatsheet 已覆盖）：
+
+```markdown
+## 借鉴候选（S2.5）
+[skip] reason=cheatsheet + patterns 已完全覆盖（Box + Hole + fillet，无冷门操作）
+```
+
+**cache 未命中时的 fallback**：若 WebSearch 无结果 → AI 明写"本次无社区参考，走原创" → 不阻塞流程。
+
+**License 纪律**（`catalog.yaml license_policy`）：
+- 🟢 MIT / BSD / Apache-2.0 / Unlicense / CC0 → 注明来源即可借鉴
+- 🟡 GPL / AGPL / LGPL → 默认禁用（传染性），除非本项目本就 GPL
+- 🔴 未标 License / 商业 → 禁止借鉴
+
+**AI 回报契约**：
+
+```
+Step S2.5 产出报告
+引自 single-part-playbook.md §Step S2.5 / 本步产出：
+  "tests/<test>/code_borrowings.md（借鉴候选表 + 用户确认后的最终借鉴清单）"
+- [x] tests/<test>/code_borrowings.md          (3 候选，用户选 #1)
+- [spec-hit] cache=gears-default (7 天内复用，age=3d)
+- [halt-pass] 用户回 "借 #1"
+下一步：Step S3（建模实现，代码里显式引用 bd_warehouse@a1b2c3d）
+```
+
+（skip 场景示例：）
+```
+Step S2.5 产出报告
+- [skip] code_borrowings.md reason=cheatsheet + patterns 已覆盖（Box + Hole）
+下一步：Step S3（直接建模）
+```
+
+---
+
+## Step S3 — 建模实现
+
+**前置**：
+- [x] S2.5 代码库巡查完成（借鉴清单 / skip 声明）
 
 **本步产出**：
 - `<part>.py`（含 OCP 自动预览块）

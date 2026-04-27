@@ -222,7 +222,8 @@ Phase P1.5 产出报告
 - [x] P1.5 标准件候选已确认（含 `[skip] 纯造型多体` 通过）
 
 **本步产出**：
-- 对每个部件 Pn 执行完整 4 步循环（Step 2a → 2b → 2c → 2d），全部通过才进入下一部件：
+- 对每个部件 Pn 执行完整 5 步循环（Step 2.0 → 2a → 2b → 2c → 2d），全部通过才进入下一部件：
+  - **Step 2.0：代码库巡查**（Pn 领域对应的社区代码借鉴清单 + halt）
   - Step 2a：3 个变体（V1 保守 / V2 参考 / V3 加强）并排展示
   - Step 2b：AI 自动比对分析（变体对比表 + 推荐）
   - Step 2c：自动断言（BRep 有效 / 体积合理 / STEP 精度）
@@ -230,6 +231,73 @@ Phase P1.5 产出报告
 - 全部部件走完后统一汇总，等用户确认再进 P3
 
 **命令模板**：
+
+### Step 2.0 — 代码库巡查（Code Sources Lookup）
+
+> **目的**：为当前部件 Pn 查社区代码。多部件各自领域不同（齿轮箱 = gears + fixtures；腿+外壳 = robotics + enclosures），每部件独立巡查。
+> 集成本 Playbook 独立于 P1.5 标准件 —— 参数库 vs 代码库，两套体系互补。
+
+**执行步骤**：
+
+```bash
+SKILL=/Users/liyijiang/.agents/skills/build123d-cad
+TEST=tests/<test-dir>
+
+# 1) AI 识别部件 Pn 的领域关键词（最多 2 个）
+# 2) 查领域：
+python3 $SKILL/scripts/research/code_lookup.py <domain>
+# 3) cache miss → AI 执行 WebSearch 用脚本返回的 prompts
+# 4) 汇总"借鉴候选表"到 $TEST/code_borrowings.md（追加新 Section，不覆盖其他部件）
+```
+
+**候选清单格式**（与 single-part Step S2.5 共用）：
+
+````markdown
+## 借鉴候选（P2 Step 2.0）— 部件 Pn：<name>
+
+| # | 来源 | 核心技巧 | 翻译成本 | License | 推荐度 |
+|---|------|---------|---------|---------|-------|
+| 1 | gumyr/bd_warehouse ... | ... | 零 | Apache-2.0 ✓ | ●●● |
+| ... |
+
+推荐度：●●●=首选、●●○=备选、●○○=理论参考
+````
+
+**halt 交互**（每部件独立一次）：
+
+```
+[halt-for-user] ✋ 部件 Pn「<name>」是否借鉴？
+  回 "借 #1" / "借 #1+#2" / "跳过（自写）" / "全跳"
+```
+
+> 发 `[halt-for-user]` 前必过 SKILL.md §确认门执行契约 的三项自检。
+
+**skip 语法**：
+
+```markdown
+## 借鉴候选（P2 Step 2.0）— 部件 Pn：<name>
+[skip] reason=cheatsheet + patterns 已覆盖（简单 Box/Cylinder 部件）
+```
+
+**用户确认后 → 立即进 Step 2a**：代码里明确引用借鉴源：
+
+```python
+# 参考：gumyr/bd_warehouse@a1b2c3d src/bd_warehouse/gear.py#L45-89 (Apache-2.0)
+from bd_warehouse.gear import InvoluteGear
+```
+
+**AI 回报契约**（每部件 Pn 一份）：
+
+```
+Phase P2 Step 2.0 产出报告 — 部件 Pn「<name>」
+引自 multi-part-playbook.md §Phase P2 / Step 2.0：
+  "代码库巡查（Pn 领域对应的社区代码借鉴清单 + halt）"
+- [x] tests/<test>/code_borrowings.md  (追加 Pn 章节，3 候选)
+- [halt-pass] 用户回 "借 #1"
+下一步：Step 2a（Pn 变体建模，代码引用 bd_warehouse@a1b2c3d）
+```
+
+---
 
 ### Step 2a — 建 3 个变体并排展示
 

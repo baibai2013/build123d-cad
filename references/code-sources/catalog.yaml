@@ -1,0 +1,159 @@
+# Code Sources Catalog —— 权威代码库白名单 + 领域映射 + WebSearch prompts
+# 用途：AI 建模前按领域查此文件 → 找 repos → 借鉴代码 → 引用来源
+# 第一原则：借鉴 > 原创（零件级实现紧跟社区；组合设计才留创意）
+
+# ============ 主力代码库白名单（5 个，高频复查）============
+
+core_repos:
+  - name: gumyr/build123d
+    url: https://github.com/gumyr/build123d
+    type: primary
+    license: Apache-2.0
+    translate_cost: none
+    coverage: [parts, surfaces, joints, assembly, export]
+    confidence: 5
+    notes: |
+      原作者主库，examples/ 和 tests/ 目录是权威用法示范。
+      任何 API 问题先翻 examples/ 找同类场景。
+    websearch_prompts:
+      - 'site:github.com/gumyr/build123d <feature>'
+      - 'site:github.com/gumyr/build123d path:examples <feature>'
+
+  - name: gumyr/bd_warehouse
+    url: https://github.com/gumyr/bd_warehouse
+    type: primary_extension
+    license: Apache-2.0
+    translate_cost: none
+    coverage: [gears, threads, fasteners, bearings, flanges, pipe, chain]
+    confidence: 5
+    notes: |
+      build123d 官方扩展库（同一作者），齿轮/螺纹/紧固件优先用它省 90% 代码。
+      直接 `pip install bd_warehouse`，导入 `from bd_warehouse.gear import InvoluteGear`。
+    websearch_prompts:
+      - 'site:github.com/gumyr/bd_warehouse <feature>'
+      - '"bd_warehouse" <feature> example'
+
+  - name: CadQuery/cadquery
+    url: https://github.com/CadQuery/cadquery
+    type: translation_source
+    license: Apache-2.0
+    translate_cost: low   # 约 80% 可机械翻译，规则见 cadquery-to-build123d.md
+    coverage: [parts, surfaces, assembly]
+    confidence: 4
+    notes: |
+      CadQuery 原库；build123d 无对应实现时参考，再走翻译。
+      API 大致对应但 DSL 风格不同——需过 cadquery-to-build123d.md 规则。
+    websearch_prompts:
+      - 'site:github.com/CadQuery/cadquery <feature> filename:*.py'
+      - '"cadquery" <feature> example'
+
+  - name: CadQuery/cadquery-contrib
+    url: https://github.com/CadQuery/cadquery-contrib
+    type: community_examples
+    license: MIT
+    translate_cost: low
+    coverage: [gears, enclosures, tutorials, contrib]
+    confidence: 3
+    notes: |
+      CadQuery 社区贡献仓：examples/ 下有齿轮、盲文生成器、参数外壳等实用脚本。
+      tutorials/ 是 Jupyter notebooks，可直接读运行。
+    websearch_prompts:
+      - 'site:github.com/CadQuery/cadquery-contrib <feature>'
+      - 'site:github.com/CadQuery/cadquery-contrib path:examples <feature>'
+
+  - name: jmwright/cadquery-stubs
+    url: https://github.com/jmwright/cadquery-stubs
+    type: reference
+    license: Apache-2.0
+    translate_cost: n/a   # 只读类型提示与 API 文档，不抄代码
+    coverage: [api-reference]
+    confidence: 5
+    notes: |
+      CadQuery 的类型 stubs 仓，快速查 API 签名和参数类型。
+      非代码借鉴对象，是"API 百科全书"。
+    websearch_prompts:
+      - 'site:github.com/jmwright/cadquery-stubs <api>'
+
+
+# ============ 领域映射（6 个主领域）============
+
+domains:
+  gears:
+    description: 齿轮 / 齿轮箱 / 渐开线 / 斜齿轮 / 行星齿轮
+    primary_repos: [gumyr/bd_warehouse]
+    fallback_repos: [CadQuery/cadquery-contrib]
+    websearch_prompts:
+      - 'site:github.com/gumyr/bd_warehouse gear'
+      - 'site:github.com/CadQuery/cadquery-contrib gear'
+      - '"build123d" OR "bd_warehouse" involute gear example'
+    local_doc: references/code-sources/gears.md
+
+  surfaces:
+    description: Loft / Sweep / NURBS / 有机曲面 / 扭转扫掠 / 多截面放样
+    primary_repos: [gumyr/build123d]
+    fallback_repos: [CadQuery/cadquery]
+    websearch_prompts:
+      - 'site:github.com/gumyr/build123d loft sweep filename:*.py'
+      - 'site:github.com/gumyr/build123d path:examples surface'
+      - '"build123d" NURBS surface example'
+    local_doc: references/code-sources/surfaces.md
+
+  enclosures:
+    description: 外壳 / 卡扣 / 抽壳 / 散热孔 / 分体式壳体
+    primary_repos: [gumyr/build123d]
+    fallback_repos: [CadQuery/cadquery-contrib]
+    websearch_prompts:
+      - '"build123d" enclosure snap-fit filename:*.py'
+      - 'site:github.com/CadQuery/cadquery-contrib enclosure'
+      - '"cadquery" parametric case example'
+    local_doc: references/code-sources/enclosures.md
+
+  robotics:
+    description: 机械臂 / 腿 / 步态 / IK / URDF
+    primary_repos: [gumyr/build123d]
+    fallback_repos: [CadQuery/cadquery]
+    websearch_prompts:
+      - '"build123d" robotic arm example site:github.com'
+      - '"build123d" quadruped OR leg site:github.com'
+    local_doc: null   # 待建：用到第一次时补 robotics.md
+
+  fixtures:
+    description: 夹具 / 支架 / 定位销 / 工装
+    primary_repos: [gumyr/build123d, gumyr/bd_warehouse]
+    fallback_repos: [CadQuery/cadquery-contrib]
+    websearch_prompts:
+      - '"build123d" jig OR fixture OR mount example'
+    local_doc: null
+
+  simulation:
+    description: PyBullet / URDF 导出 / 运动仿真 / FK/IK 可视化
+    primary_repos: [gumyr/build123d]
+    fallback_repos:
+      - ros/urdf_tutorial
+      - bulletphysics/bullet3
+    websearch_prompts:
+      - '"build123d" urdf export example'
+      - '"build123d" pybullet integration'
+    local_doc: null
+
+
+# ============ License 原则 ============
+
+license_policy:
+  safe:
+    codes: [MIT, BSD-3-Clause, BSD-2-Clause, Apache-2.0, Unlicense, CC0-1.0]
+    rule: 注明来源 repo + commit hash 即可借鉴
+    example_attribution: |
+      # 参考：gumyr/bd_warehouse@a1b2c3d gears.py#L45-89 (Apache-2.0)
+
+  caution:
+    codes: [GPL-3.0, GPL-2.0, AGPL-3.0, LGPL-3.0]
+    rule: |
+      GPL 有传染性——借鉴会污染你的项目（整个项目都必须 GPL）。
+      默认禁用，除非用户项目本就 GPL（需用户显式确认）。
+
+  blocked:
+    codes: [proprietary, no-license, custom, unknown]
+    rule: |
+      未标 License 按默认版权处理（All rights reserved），禁止借鉴。
+      遇到必须让用户联系原作者，或完全自写。

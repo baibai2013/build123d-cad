@@ -58,7 +58,11 @@ Playbook 中每个 `[halt-for-user]` 硬字段是**绝对暂停点**，必须同
 1. **代码优先**：收到 CAD 需求，直接给出可执行代码，不长篇解释
 2. **参数化**：所有尺寸用变量定义在文件顶部，修改一处全局生效
 3. **设计意图优先**：用选择器（`sort_by`, `filter_by`）定位特征，而非硬编码坐标
-4. **不编造 API**：只使用 `references/parts/cheatsheet.md` 中收录的 API
+4. **不编造 API + 先巡查后建模**：
+   - 基础 API 必须在 `references/parts/cheatsheet.md` 中收录
+   - **建模前强制巡查 `references/code-sources/` 对应领域**——GitHub 有成熟实现就借鉴（标明来源 + License），组合设计才留创意
+   - CadQuery 代码可借鉴，走 `references/code-sources/cadquery-to-build123d.md` 翻译
+   - 借鉴流程见 Playbook §Step S2.5 / P2 Step 2.0 / R4.0（代码库巡查）
 5. **Builder Mode 优先**：默认 `with BuildPart()`，Algebra Mode 用于简单组合
 6. **必须导出**：每段代码末尾包含 `export_step()` 或用户指定格式的导出
 7. **STEP > STL**：CNC / 激光 / 装配配合件一律 STEP；3D 打印再考虑 STL
@@ -1250,6 +1254,48 @@ python3 $SKILL/scripts/research/spec_lookup.py --list servos
 
 （**注意**：此标记与 data-sources YAML 的 `confidence: 1~5`（参数来源可信度）解耦——前者是"AI 推断零件类型对不对"，后者是"这个零件参数准不准"）
 
+## 代码源体系（建模前先巡查社区）
+
+数据源告诉 AI "参数是多少"，代码源告诉 AI "别人怎么实现的"。用于防止 AI 写"呆板、不符合社区流行"的代码：
+
+```bash
+# 按领域查询可借鉴代码库
+SKILL=/Users/liyijiang/.agents/skills/build123d-cad
+python3 $SKILL/scripts/research/code_lookup.py <domain>
+
+# 示例
+python3 $SKILL/scripts/research/code_lookup.py gears
+python3 $SKILL/scripts/research/code_lookup.py surfaces --websearch
+python3 $SKILL/scripts/research/code_lookup.py --list-domains
+python3 $SKILL/scripts/research/code_lookup.py --cache-status
+```
+
+**主力代码库**（5 个）：
+
+| Repo | License | 用途 |
+|------|---------|------|
+| gumyr/build123d | Apache-2.0 | 原作者主库（examples/ 权威） |
+| gumyr/bd_warehouse | Apache-2.0 | 官方扩展：齿轮/螺纹/紧固件 |
+| CadQuery/cadquery | Apache-2.0 | 翻译源（~80% 机械翻译） |
+| CadQuery/cadquery-contrib | MIT | 社区示例：齿轮/外壳/教程 |
+| jmwright/cadquery-stubs | Apache-2.0 | CadQuery API 类型参考 |
+
+**6 个主领域**：gears / surfaces / enclosures / robotics / fixtures / simulation（前 3 个已建 .md，后 3 个用到再加）
+
+**Cache 机制**：`experience/code-patterns/_cache/` 存 7 天搜索摘要；`--fresh` 强制刷新。
+
+**License 纪律**：
+- 🟢 MIT / BSD / Apache-2.0 / Unlicense / CC0 → 注明来源即可借鉴
+- 🟡 GPL / AGPL / LGPL → 默认禁用（传染性）
+- 🔴 未标 License / 商业 → 禁止借鉴
+
+**Playbook 集成**：
+- single-part **Step S2.5** — 几何对齐后、建模前
+- multi-part **Phase P2 Step 2.0** — 每部件 Pn 建模前
+- reference-product **Step R4.0** — 进 R4 建模前
+
+参见：`references/code-sources/README.md`
+
 ---
 
 ## 参考资源
@@ -1308,6 +1354,17 @@ python3 $SKILL/scripts/research/spec_lookup.py --list servos
 - `fasteners.yaml` — M2/M3/M4/M5 ISO 4762（= DIN 912）内六角圆柱头螺丝
 - `bearings.yaml` — 608ZZ / 624ZZ / 625ZZ / 6001-2RS / F688ZZ
 - 查询：`python3 $SKILL/scripts/research/spec_lookup.py <part_id>`（见 §数据源体系 段）
+
+### 10. 代码源 (`references/code-sources/`)
+- `README.md` — 目录规范 + 6 领域说明 + License 原则 + 贡献规则
+- `catalog.yaml` — 5 主力代码库 + 6 领域映射 + WebSearch prompts + License 策略
+- `cadquery-to-build123d.md` — CadQuery → build123d 翻译核心规则（API 映射 + 易混点 + 完整示例）
+- `gears.md` — 齿轮领域（bd_warehouse 优先 + 社区参考）
+- `surfaces.md` — 曲面领域（Loft/Sweep/NURBS）
+- `enclosures.md` — 外壳领域（卡扣/抽壳/散热孔/PCB）
+- `robotics.md` / `fixtures.md` / `simulation.md` — 按需扩充（用到第一次时创建）
+- 查询：`python3 $SKILL/scripts/research/code_lookup.py <domain>`（见 §代码源体系 段）
+- 累积：`experience/code-patterns/<domain>/`（被采纳的精华代码片段）
 
 ### 示例 (`assets/`)
 - `parts/` — 13 个零件示例（01~13，★~★★★★★）
