@@ -1,0 +1,119 @@
+# 紧固件参数库（Fasteners）
+# 主要覆盖 ISO 4762 内六角圆柱头螺丝（= DIN 912），这是 3D 打印/CNC 装配最常用。
+# 其它标准（ISO 7380 扁圆头 / DIN 933 外六角）用到再加。
+
+M2_ISO4762:
+  aliases: [M2, m2, M2x, M2-ISO4762, M2-DIN912, m2-socket-head]
+  category: fasteners
+  standard: "ISO 4762 / DIN 912"
+  type: hex-socket-head-cap-screw
+  thread:
+    nominal_diameter: 2.0    # 螺纹大径 d（mm）
+    pitch:            0.4    # 粗牙螺距
+    unit:             mm
+  head:
+    diameter: 3.8    # 圆柱头外径 dk
+    height:   2.0    # 头部高度 k
+    hex_key:  1.5    # 内六角对边 s
+  clearance_hole:
+    close_fit:   2.2     # H12 接近配合
+    medium_fit:  2.4     # H13 中等配合（3D 打印推荐）
+    loose_fit:   2.6     # H14 宽松配合
+  counterbore:
+    diameter: 4.0    # 沉头孔直径
+    depth:    2.2    # 沉头孔深度（略大于 head.height）
+  common_lengths_mm: [4, 5, 6, 8, 10, 12, 16, 20]
+  source:
+    primary:       https://www.bossard.com
+    datasheet:     https://www.iso.org/standard/57742.html
+    confidence:    5
+    last_verified: 2026-04-27
+  notes: M2 是微型机电产品最小常用规格；FDM 建议用 clearance_hole.medium_fit。
+
+M3_ISO4762:
+  aliases: [M3, m3, M3-ISO4762, M3-DIN912, m3-socket-head]
+  category: fasteners
+  standard: "ISO 4762 / DIN 912"
+  type: hex-socket-head-cap-screw
+  thread:
+    nominal_diameter: 3.0
+    pitch:            0.5
+    unit:             mm
+  head:
+    diameter: 5.5
+    height:   3.0
+    hex_key:  2.5
+  clearance_hole:
+    close_fit:   3.2
+    medium_fit:  3.4
+    loose_fit:   3.6
+  counterbore:
+    diameter: 6.0
+    depth:    3.3
+  threaded_insert:        # 热压铜螺母（常用 M3x5xOD4.2）
+    typical_od:      4.2
+    typical_length:  5.0
+    predrill_hole_d: 4.0
+  common_lengths_mm: [5, 6, 8, 10, 12, 14, 16, 20, 25, 30]
+  source:
+    primary:       https://www.bossard.com
+    datasheet:     https://www.iso.org/standard/57742.html
+    confidence:    5
+    last_verified: 2026-04-27
+  notes: |
+    M3 是 3D 打印界最常用规格；配热压铜螺母时建议预留 ⌀4.0 mm 预孔（热压过程铜会微张开）。
+
+M4_ISO4762:
+  aliases: [M4, m4, M4-ISO4762, M4-DIN912]
+  category: fasteners
+  standard: "ISO 4762 / DIN 912"
+  type: hex-socket-head-cap-screw
+  thread:
+    nominal_diameter: 4.0
+    pitch:            0.7
+    unit:             mm
+  head:
+    diameter: 7.0
+    height:   4.0
+    hex_key:  3.0
+  clearance_hole:
+    close_fit:   4.3
+    medium_fit:  4.5
+    loose_fit:   4.8
+  counterbore:
+    diameter: 8.0
+    depth:    4.4
+  common_lengths_mm: [6, 8, 10, 12, 16, 20, 25, 30, 40]
+  source:
+    primary:       https://www.bossard.com
+    datasheet:     https://www.iso.org/standard/57742.html
+    confidence:    5
+    last_verified: 2026-04-27
+
+M5_ISO4762:
+  aliases: [M5, m5, M5-ISO4762, M5-DIN912]
+  category: fasteners
+  standard: "ISO 4762 / DIN 912"
+  type: hex-socket-head-cap-screw
+  thread:
+    nominal_diameter: 5.0
+    pitch:            0.8
+    unit:             mm
+  head:
+    diameter: 8.5
+    height:   5.0
+    hex_key:  4.0
+  clearance_hole:
+    close_fit:   5.3
+    medium_fit:  5.5
+    loose_fit:   5.8
+  counterbore:
+    diameter: 10.0
+    depth:    5.4
+  common_lengths_mm: [8, 10, 12, 16, 20, 25, 30, 40, 50]
+  source:
+    primary:       https://www.bossard.com
+    datasheet:     https://www.iso.org/standard/57742.html
+    confidence:    5
+    last_verified: 2026-04-27
+  notes: 铝型材（2020 V-slot）T 型螺母标配是 M5。

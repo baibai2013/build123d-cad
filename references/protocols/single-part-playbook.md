@@ -24,7 +24,8 @@
 
 | Step | 必须产出 | 允许跳过？ | 下一步分叉 |
 |---|---|---|---|
-| S1 需求分析 | 需求分析表 + 参考问询 | 否 | → S2 |
+| S1 需求分析 | 需求分析表 + 参考问询 | 否 | → S1.5 |
+| S1.5 标准件候选清单 | `parts_candidates.md` + `standard_parts_resolved.md` + 确认门 ✋ | 纯造型件 `[skip]` | → S2 |
 | S2 几何对齐（默认含 3 视图草图） | concept_sketch.png（自动打开）或用户 skip 声明 | 用户明说"跳过草图" | → S3 |
 | S3 建模实现 | `<part>.py` + OCP 自动预览 + 3 变体对比（若用户启用变体） | 否 | → S4 |
 | S4 导出 + 工艺提示 | `<part>.step`/`.stl` + 工艺约束清单 | 否 | （终态） |
@@ -85,15 +86,116 @@ Step S1 产出报告
 - [x] 需求分析表已输出（见上方）
 - [x] 已询问参考资料
 - [x] 形态评估结论：<命中词列举 或"未命中">，S2 走 <方案 F / 方案 A>
-下一步：Step S2（等用户回复参考资料）
+下一步：Step S1.5（标准件候选推断，等用户回复参考资料后触发）
 ```
+
+---
+
+## Step S1.5 — 标准件候选清单（Standard-Parts Inference）
+
+> **目的**：用户说"做一个 XXX"时，AI **先推断**需求里隐含的标准件（螺丝/轴承/舵机/热压铜螺母/弹簧/垫片等），列出候选清单让用户**确认/调整**，再批量查 `data-sources/`。
+> 解决 S1「用户表达」与 data-sources「型号参数」之间的意图断层。
+
+**前置**：
+- [x] S1 需求分析完成
+- [x] 用户已回复参考资料（或明确说"无"）
+
+**本步产出**：
+- `tests/<test>/parts_candidates.md`（候选清单表格）
+- `tests/<test>/standard_parts_resolved.md`（批量 `spec_lookup` 结果 + 未命中的 websearch_prompts）
+- `[halt-for-user]` 硬字段通过
+
+**命令模板**：
+
+```bash
+SKILL=/Users/liyijiang/.agents/skills/build123d-cad
+TEST=tests/<test-dir>
+mkdir -p $TEST
+```
+
+**推断 + 写候选清单**（AI 依据 S1 的需求分析结果推断）：
+
+````markdown
+## 标准件候选清单
+
+| # | 候选型号 | 数量 | 置信度 | 用途 | data-sources 状态 |
+|---|---------|-----|-------|------|------------------|
+| 1 | SG90    | 2   | ●●●   | 左右腿髋关节驱动 | ✓ servos.yaml:SG90 |
+| 2 | M2 ISO 4762 | 8 | ●●●● | 舵机耳朵螺丝（每台 SG90 需 4 枚）| ✓ fasteners.yaml:M2_ISO4762 |
+| 3 | 608ZZ   | 2   | ●●○   | 膝关节旋转支撑 | ✓ bearings.yaml:608ZZ |
+| 4 | 3D 打印结构件 | - | - | 骨架（本次建模主体，无标准件参数）| — |
+
+> 置信度：●●●●●=需求明确指定，●●●●=通用方案强推荐，●●●=合理推断，●●○=备选，●○○=冷门可能
+````
+
+**halt 交互**：
+
+```
+[halt-for-user] ✋ 请确认标准件清单：
+  回 "OK" / "删 #3" / "改 #2 数量=6" / "加 M3×2 电池仓盖" / "换 #1 为 MG996R"
+```
+
+> 发 `[halt-for-user]` 前必过 SKILL.md §确认门执行契约 的三项自检。
+
+**用户确认后的批量 lookup**：
+
+```bash
+SKILL=/Users/liyijiang/.agents/skills/build123d-cad
+TEST=tests/<test-dir>
+{
+  echo "# 标准件参数解析 (standard_parts_resolved)"
+  echo ""
+  for p in SG90 M2 608ZZ; do   # 用户确认后的最终清单
+    echo "## === $p ==="
+    python3 $SKILL/scripts/research/spec_lookup.py "$p"
+    echo ""
+  done
+} > $TEST/standard_parts_resolved.md
+```
+
+**未命中分叉**：
+- 若 `standard_parts_resolved.md` 中出现 `[spec-miss]` → 在文件末尾追加 `## 待 WebSearch` 节，把脚本回落的 `websearch_prompts` 列出来
+- 下一 Step（S2 或 S3）开始前 AI 应执行这些 WebSearch 补齐参数
+
+**纯造型件跳过语法**：
+
+```markdown
+## 标准件候选清单
+[skip] reason=纯造型件（花瓶/雕塑/手办/潮玩等），无标准件需求
+```
+
+skip 后直接过 halt 进 S2，**无 lookup**，**无 WebSearch**。
+
+**AI 回报契约**（完成后必须在回复里输出）：
+
+```
+Step S1.5 产出报告
+引自 single-part-playbook.md §Step S1.5 / 本步产出：
+  "tests/<test>/parts_candidates.md（候选清单表格）"
+- [x] tests/<test>/parts_candidates.md               (3 候选，全部 data-sources 命中)
+- [x] tests/<test>/standard_parts_resolved.md       (SG90+M2+608ZZ lookup 结果)
+- [halt-for-user] ✋ 请确认标准件清单，回 "OK" / 修订指令
+下一步：等用户确认 → Step S2
+```
+
+（纯造型件场景示例：）
+```
+Step S1.5 产出报告
+- [skip] parts_candidates.md reason=纯造型件（八角花瓶），无标准件需求
+- [skip] standard_parts_resolved.md reason=同上
+下一步：直接进 Step S2
+```
+
+**halt 通过 → 更新 parts_candidates.md**：
+- 用户回 "OK" → 原表格保持，标注 `## 确认状态：已通过`
+- 用户修订 → AI 修改对应行后重出回报 + 重发 halt（同轮不得推进，见 SKILL.md §确认门执行契约）
 
 ---
 
 ## Step S2 — 几何对齐（默认含 3 视图草图，方案 A 默认触发）
 
 **前置**：
-- [x] S1 需求分析完成且用户已回复参考资料
+- [x] S1.5 标准件候选已确认（含 `[skip] 纯造型件` 通过）
 
 **本步产出**：
 - `concept_sketch.png`（自动保存并打开），或 `[skip] reason=用户说"跳过草图"`

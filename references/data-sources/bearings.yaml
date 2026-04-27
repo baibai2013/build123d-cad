@@ -1,0 +1,98 @@
+# 轴承参数库（Bearings）
+# 微型深沟球轴承（Deep Groove Ball Bearing），ISO 15 标准。
+# 代号规则：前两位或前一位 = 系列；后两位 × 5 = 内径（mm）。
+# 例：608 = 6 系列，内径 8mm；6001 = 60 系列，内径 12mm。
+
+608ZZ:
+  aliases: [608zz, 608-zz, 608-2z, 608zz-bearing, skateboard-bearing]
+  category: bearings
+  type: deep-groove-ball-bearing
+  shielding: 2Z     # 双面金属防尘盖
+  dimensions:
+    inner_diameter: 8.0   # d
+    outer_diameter: 22.0  # D
+    width:          7.0   # B
+    unit:           mm
+  load:
+    dynamic_c_n:  3350    # 动载荷 N
+    static_c0_n:  1370    # 静载荷 N
+    max_rpm_grease: 32000
+  weight_g: 11.0
+  source:
+    primary:       https://www.skf.com/group/products/rolling-bearings/ball-bearings/deep-groove-ball-bearings/productid-608-2Z
+    confidence:    5
+    last_verified: 2026-04-27
+  notes: |
+    也是滑板/溜冰鞋标准轴承，民用极其常见，义乌市场常见代号 608ZZ / 608-2RS（2RS = 橡胶密封）。
+    3D 打印压入孔推荐 ⌀21.8 mm（过盈 0.2mm）。
+
+624ZZ:
+  aliases: [624zz, 624-zz, 624-2z]
+  category: bearings
+  type: deep-groove-ball-bearing
+  shielding: 2Z
+  dimensions:
+    inner_diameter: 4.0
+    outer_diameter: 13.0
+    width:          5.0
+    unit:           mm
+  weight_g: 2.0
+  source:
+    primary:       https://www.skf.com/group/products/rolling-bearings/ball-bearings/deep-groove-ball-bearings/productid-624-2Z
+    confidence:    5
+    last_verified: 2026-04-27
+  notes: 微型设备常用（3D 打印机 X 轴、小型机械臂肘关节）。
+
+625ZZ:
+  aliases: [625zz, 625-zz, 625-2z]
+  category: bearings
+  type: deep-groove-ball-bearing
+  shielding: 2Z
+  dimensions:
+    inner_diameter: 5.0
+    outer_diameter: 16.0
+    width:          5.0
+    unit:           mm
+  source:
+    primary:       https://www.skf.com/group/products/rolling-bearings/ball-bearings/deep-groove-ball-bearings/productid-625-2Z
+    confidence:    5
+    last_verified: 2026-04-27
+  notes: 常用于 CoreXY 打印机的空转轮。
+
+6001-2RS:
+  aliases: [6001-2rs, 6001_2rs, 6001rs, 6001, 6001-2rs1]
+  category: bearings
+  type: deep-groove-ball-bearing
+  shielding: 2RS    # 双面橡胶密封
+  dimensions:
+    inner_diameter: 12.0
+    outer_diameter: 28.0
+    width:          8.0
+    unit:           mm
+  load:
+    dynamic_c_n:  5400
+    static_c0_n:  2360
+    max_rpm_grease: 22000
+  source:
+    primary:       https://www.skf.com/group/products/rolling-bearings/ball-bearings/deep-groove-ball-bearings/productid-6001-2RS1
+    confidence:    5
+    last_verified: 2026-04-27
+  notes: 常用于自行车花鼓、小型电机输出端。
+
+F688ZZ:
+  aliases: [f688zz, f688-zz, f688-2z, flanged-688]
+  category: bearings
+  type: flanged-deep-groove-ball-bearing
+  shielding: 2Z
+  dimensions:
+    inner_diameter: 8.0
+    outer_diameter: 16.0
+    flange_diameter: 17.5
+    width:          5.0
+    flange_thickness: 1.0
+    unit:           mm
+  source:
+    primary:       https://www.nmbtc.com
+    confidence:    4
+    last_verified: 2026-04-27
+  notes: 带法兰微型轴承，常用于 3D 打印机 Bowden 送料机构。

@@ -1,0 +1,111 @@
+# 舵机参数库（Servos）
+# 数据来源于 references/assembly/mounting-experience.md §1.1，已结构化。
+# 置信度约定见 README.md。
+
+SG90:
+  aliases: [sg90, tower-pro-sg90, tower_pro_sg90, mini-servo-9g, 9g-servo]
+  category: servos
+  body:
+    length: 22.8   # X 方向（主体长）
+    width:  12.2   # Y 方向（主体窄边）
+    height: 22.7   # Z 方向（主体不含输出轴）
+    unit:   mm
+  mount:
+    ear_width_total: 32.2   # 含两侧耳朵的总宽
+    ear_thickness:    2.5   # 耳朵厚度
+    ear_z_offset:    15.5   # 耳朵中面到舵机底部的距离
+    screw_hole_d:     2.0   # 耳朵上 M2 安装孔直径
+    screw_pitch:     28.0   # 两侧耳朵安装孔中心距
+  output:
+    shaft_height_from_body_top: 5.0   # 输出轴顶距主体顶面
+    total_height: 27.7                 # 含输出轴总高
+    spline: "25T"                      # 25 齿花键
+  torque_kg_cm: 1.2
+  weight_g: 9.0
+  cable:
+    wire_count: 3
+    wire_gauge_awg: 26
+  source:
+    primary:       https://servodatabase.com/servo/towerpro/sg-90
+    datasheet:     ""
+    confidence:    4
+    last_verified: 2026-04-27
+  notes: |
+    量产公差 ±0.3mm；塑料齿轮；
+    FDM 打印安装腔建议每侧 +0.2~0.3mm 间隙，SLA +0.1mm。
+
+MG90S:
+  aliases: [mg90s, mg90-s, metal-gear-9g]
+  category: servos
+  body:
+    length: 22.8
+    width:  12.2
+    height: 28.5   # 比 SG90 高（金属齿轮箱）
+    unit:   mm
+  mount:
+    ear_width_total: 32.2
+    ear_thickness:    2.5
+    ear_z_offset:    15.5
+    screw_hole_d:     2.0
+    screw_pitch:     28.0
+  output:
+    shaft_height_from_body_top: 2.5
+    total_height: 31.0
+    spline: "25T"
+  torque_kg_cm: 1.8
+  weight_g: 13.4
+  source:
+    primary:       https://servodatabase.com/servo/towerpro/mg90s
+    confidence:    4
+    last_verified: 2026-04-27
+  notes: 金属齿轮版 SG90；安装耳朵和孔位与 SG90 完全兼容。
+
+MG996R:
+  aliases: [mg996r, mg996]
+  category: servos
+  body:
+    length: 40.7
+    width:  19.7
+    height: 42.9
+    unit:   mm
+  mount:
+    ear_width_total: 54.0
+    ear_thickness:    4.0
+    ear_z_offset:    27.8
+    screw_hole_d:     4.0
+    screw_pitch:     49.5
+  output:
+    total_height: 48.5
+    spline: "25T"
+  torque_kg_cm: 13.0
+  weight_g: 55.0
+  source:
+    primary:       https://servodatabase.com/servo/towerpro/mg996r
+    confidence:    4
+    last_verified: 2026-04-27
+  notes: 中扭矩通用舵机，金属齿轮，双滚珠轴承。
+
+DS3218:
+  aliases: [ds3218, dsservo-3218]
+  category: servos
+  body:
+    length: 40.0
+    width:  20.0
+    height: 40.5
+    unit:   mm
+  mount:
+    ear_width_total: 54.0
+    ear_thickness:    4.0
+    ear_z_offset:    27.0
+    screw_hole_d:     4.2
+    screw_pitch:     49.5
+  output:
+    total_height: 45.0
+    spline: "25T"
+  torque_kg_cm: 21.5
+  weight_g: 60.0
+  source:
+    primary:       https://www.dsservo.com/en/d_file/DS3218.pdf
+    confidence:    4
+    last_verified: 2026-04-27
+  notes: 大扭矩舵机，常用于四足/机械臂。实际扭矩在 6V / 7.4V 下差别大，控制器侧注意。

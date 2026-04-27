@@ -48,9 +48,43 @@
 **前置检索（进 R1 第一件事，写 `search_plan.md` 之前必须完成）**：
 
 1. 从需求抽 `<slug>`（kebab-case 产品短名）和 `<category>`（Appendix A 白名单里最接近的一个）
-2. 精确匹配：`glob experience/*/<slug>.md` → 命中则完整读入，把"关键参数"/"踩过的坑"/"复用片段"三节注入 R1 上下文
-3. 未精确命中 → 同类匹配：`glob experience/<category>/*.md` → 挑 `confidence >= 3` 且 `tags` 最接近的 ≤2 条完整读入
-4. 都没命中 → 正常走 R1，不加载任何经验
+2. **标准件候选清单（显式 + 推断统一流程）** — 对**所有**包含或可能涉及标准件的需求都执行（纯产品外壳可显式 `[skip]`）：
+
+   **步骤 2a：AI 生成候选清单** — 合并两类来源
+   - 2a-i **显式型号**：扫描需求里的具体型号（SG90/M3/608ZZ 等）→ 进清单，置信度 ●●●●●
+   - 2a-ii **推断候选**：基于需求推断隐含标准件（"给 ESP32 做个外壳" → M2 自攻丝×4、热压铜螺母×4）→ 进清单，置信度 ●●●●/●●●/●●○
+   - 2a-iii 合并为 `references/<slug>/parts_candidates.md`（格式同 `single-part-playbook.md §Step S1.5` 的候选清单表）
+
+   **步骤 2b：halt-for-user 确认标准件清单**（独立 halt，不与 search_plan halt 合并）
+   ```
+   [halt-for-user] ✋ 请确认 <slug> 的标准件清单：
+     回 "OK" / "删 #3" / "改 #2 数量=6" / "加 M3×2" / "换 #1 为 MG996R"
+   ```
+
+   **步骤 2c：确认后批量 lookup**
+   ```bash
+   SKILL=/Users/liyijiang/.agents/skills/build123d-cad
+   {
+     for p in <用户确认后的零件列表>; do
+       echo "=== $p ==="
+       python3 $SKILL/scripts/research/spec_lookup.py "$p"
+     done
+   } > references/<slug>/standard_parts_resolved.md
+   ```
+
+   **步骤 2d：写回 search_plan.md**
+   - `[spec-hit]` 条目 → 直接填入 `search_plan.md` §已知参数 节，标注 `（来自 data-sources/<file>.yaml:<id>）`
+   - `[spec-miss]` 条目 → 把脚本返回的 `websearch_prompts` 抄进 `search_plan.md` §搜索来源 节
+
+   **纯产品整机跳过**（手机壳/手办/SBC 外壳仅贴合整机，无独立标准件）：
+   ```markdown
+   ## 标准件候选清单
+   [skip] reason=纯产品外壳（贴合整机，无独立标准件）
+   ```
+   skip 后直接过 halt，不 lookup 不 WebSearch。
+3. 精确匹配 experience：`glob experience/*/<slug>.md` → 命中则完整读入，把"关键参数"/"踩过的坑"/"复用片段"三节注入 R1 上下文
+4. 未精确命中 → 同类匹配：`glob experience/<category>/*.md` → 挑 `confidence >= 3` 且 `tags` 最接近的 ≤2 条完整读入
+5. 都没命中 → 正常走 R1，不加载任何经验
 
 **过期提醒**：命中条目 frontmatter 的 `last_updated` 距今 > 90 天时，状态降级为 `[partial]` 并在产出报告里显式提醒「⚠ 经验写于 X 天前，建议核实」。
 
@@ -60,6 +94,16 @@
 - 用户确认 `search_plan.md` 时若当场说「这次重测 X」→ AI 在本次 params.md 里记，**不改经验文件**；R5 时再决定是否回写经验
 
 **R1 产出报告里必须显式上报检索结果**，用以下状态之一（不允许静默加载）：
+
+标准件候选清单（第 2 步，**双 halt 设计**：先 halt 清单，再 halt search_plan.md）：
+- `[x] references/<slug>/parts_candidates.md` — 已生成（含 N 个候选）
+- `[x] references/<slug>/standard_parts_resolved.md` — 已批量 lookup
+- `[spec-hit] data-sources/<file>.yaml:<part_id>` — 某条候选命中，附 `confidence=N`
+- `[spec-miss] <part_id>` — 某条候选未命中，已把 websearch_prompt 追加到 search_plan.md
+- `[skip] parts_candidates.md reason=纯产品外壳` — 整机类场景显式跳过
+- `[halt-pass] parts_candidates` — 用户已通过第一个 halt（标准件清单）
+
+experience 检索：
 - `[hit] experience/<category>/<slug>.md` — 精确命中
 - `[partial] experience/<category>/*.md` — 同类命中若干条，列出路径
 - `[miss] experience/<category>/*` — 全无
@@ -70,8 +114,14 @@
 
 **命令模板**：
 ```bash
+SKILL=/Users/liyijiang/.agents/skills/build123d-cad
 SLUG=<kebab-case-product-name>
 mkdir -p references/$SLUG
+
+# 若需求含标准件，先跑：
+# python3 $SKILL/scripts/research/spec_lookup.py <part_id>
+# 把输出贴到下面的「已知参数」节，未命中则把 websearch_prompts 抄到「搜索来源」节
+
 cat > references/$SLUG/search_plan.md <<'EOF'
 # 搜索计划：<产品名>
 
@@ -80,7 +130,13 @@ cat > references/$SLUG/search_plan.md <<'EOF'
 - 获取官方产品图（至少正面 + 背面）
 - 尝试获取 STEP 模型
 
+## 已知参数（来自 data-sources/ 或 experience/）
+<若 spec_lookup.py 命中，列在这里；每条带来源注释>
+<无命中留空>
+
 ## 搜索来源
+<优先：若 spec_lookup.py 返回了 websearch_prompts，直接抄到这里>
+<兜底：若无标准件，按产品类别列：>
 1. 官网规格页 — <品牌官网 URL>
 2. GSMArena / 电商规格 — <URL>
 3. GrabCAD / Printables — STEP 模型搜索
@@ -93,11 +149,21 @@ EOF
 Step R1 产出报告
 引自 reference-product-playbook.md §Step R1 / 本步产出：
   "references/<slug>/search_plan.md（列出 3~4 个待查来源 + 预期获取的资料类型）"
-- [x] references/<slug>/search_plan.md              (4 来源，待用户确认)
+- [x] references/<slug>/parts_candidates.md        (3 候选，全部 data-sources 命中)
+- [x] references/<slug>/standard_parts_resolved.md (SG90 + M2 + 608ZZ)
+- [halt-pass] parts_candidates                     (用户回 "改 #2 数量=6"，已更新)
+- [spec-hit] data-sources/servos.yaml:SG90         (confidence=4)
+- [spec-hit] data-sources/fasteners.yaml:M2_ISO4762 (confidence=5)
+- [spec-hit] data-sources/bearings.yaml:608ZZ      (confidence=5)
+- [x] references/<slug>/search_plan.md              (已知参数节已预填；搜索来源节为空)
 - [hit] experience/phone-case/redmi-k80-pro.md     (精确命中，预加载 10 参数 + 4 坑)
 - [miss] experience/phone-case/*                    (无其它同类条目)
-下一步：等用户确认 → Step R2
+下一步：等用户确认 search_plan.md → Step R2
 ```
+
+**双 halt 顺序**：
+1. 先 halt `parts_candidates.md`（本 Step 第 2b 子步）
+2. 用户确认后，AI 补全 search_plan.md 并再发一次 halt（确认整份 search_plan.md）
 
 （示例为「精确命中」场景；无命中时写 `[miss]`，同类命中时写 `[partial]`。）
 

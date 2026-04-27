@@ -24,7 +24,8 @@
 
 | Phase | 本步产出 | 允许跳过？ | 下一步 |
 |---|---|---|---|
-| P1 需求拆解 + 专家咨询 | 需求拆解报告 + 确认门 ✋ | 否 | → P2 |
+| P1 需求拆解 + 专家咨询 | 需求拆解报告 + 确认门 ✋ | 否 | → P1.5 |
+| P1.5 标准件候选清单 | `parts_candidates.md` + `standard_parts_resolved.md` + 确认门 ✋ | 纯造型件 `[skip]` | → P2 |
 | P2 部件级建模（每部件 3 变体） | 每部件 3 变体 + 用户选定 + **Step 2e：整机 `assembly_contract.yaml` + `precheck_bbox.md` + 用户确认门 ✋** | 否 | → P3 |
 | P3 装配 / 关节 | `<asm>.py` + Joint 方案（mindmap 先讨论）+ OCP 预览（`render_joints=True`）+ 碰撞检测 + 爆炸动画 + **`joint_to_crossref.md` 映射表** | 否 | → P4 |
 | P4 导出 + Layer 1/2 验证 | `<asm>.step`/`.stl` + Layer 1 几何验证 + **Step 4.3 整机 Stage C 跑 cross_refs** + （可选）Layer 2 装配体视觉验证 | Layer 2 可在"非参考物型装配"时 `[skip]` | （终态） |
@@ -110,8 +111,107 @@ Phase P1 产出报告
 - [x] 需求拆解报告已输出（部件清单 3 项 / 装配链 2 个关节 / 工艺=3D打印）
 - [x] 已询问参考图（用户提供 1 张正视图）
 - [x] 形态评估结论：<命中词列举 或"未命中">，P2 走 <方案 F / 方案 A>
-- [halt-for-user] ✋ 确认部件清单和装配关系正确，回 "OK" 进 P2 / 或指出修改项
+- [halt-for-user] ✋ 确认部件清单和装配关系正确，回 "OK" 进 P1.5 / 或指出修改项
+下一步：等用户确认 → Phase P1.5
+```
+
+---
+
+## Phase P1.5: 标准件候选清单（Standard-Parts Inference）
+
+> **目的**：P1 拆解出 P1/P2/P3... 抽象部件清单，但**这些部件之间靠什么连接？**——螺丝、轴承、舵机、热压铜螺母等**标准件**。本 Phase 让 AI 基于 P1 的装配关系**推断所需标准件清单**，halt 让用户确认，再批量查 `data-sources/` 参数。
+> 解决多部件装配"抽象部件清单"与"真实标准件参数"之间的意图断层。
+
+**前置**：
+- [x] P1 需求拆解报告已经用户确认（部件清单 + 装配关系）
+
+**本步产出**：
+- `tests/<test>/parts_candidates.md`（候选清单表格，与 S1.5 共用格式）
+- `tests/<test>/standard_parts_resolved.md`（批量 lookup 结果 + 未命中 websearch_prompts）
+- `[halt-for-user]` 硬字段通过
+
+**推断依据**：
+- P1 装配关系里的关节类型 → 舵机/轴承/合页等（RevoluteJoint → 舵机或铰链，BallJoint → 球头）
+- P1 部件材质/工艺 → 紧固件选型（3D 打印 → 热压铜螺母 + M3；铝板 CNC → 通孔 + 螺母）
+- P1 明确型号词（SG90/ESP32/树莓派...）→ 置信度 ●●●●●
+- P1 装配意图（"挂墙"/"手持"/"户外"）→ 附件件（墙塞/胶垫/防水垫圈）
+
+**命令模板**：
+
+```bash
+SKILL=/Users/liyijiang/.agents/skills/build123d-cad
+TEST=tests/<test-dir>
+mkdir -p $TEST
+```
+
+**候选清单格式**（与 `single-part-playbook.md §Step S1.5` 共用）：
+
+````markdown
+## 标准件候选清单（P1.5）
+
+| # | 候选型号 | 数量 | 置信度 | 用途（链接到 P1 的哪个部件/关节） | data-sources 状态 |
+|---|---------|-----|-------|-----------------------------|------------------|
+| 1 | MG996R  | 2   | ●●●●  | P1 髋关节 + P1 膝关节的 RevoluteJoint 驱动 | ✓ servos.yaml:MG996R |
+| 2 | M3 ISO 4762 | 12 | ●●●● | P1↔P2 + P2↔P3 螺栓连接（每处 4 枚）| ✓ fasteners.yaml:M3_ISO4762 |
+| 3 | 热压铜螺母 M3x5-OD4.2 | 12 | ●●●● | 3D 打印件里的 M3 螺纹孔 | ✗ miss（需 WebSearch） |
+| 4 | 608ZZ   | 2   | ●●○   | 膝关节备选支撑轴承 | ✓ bearings.yaml:608ZZ |
+
+> 置信度同 S1.5：●●●●●=明确指定，●●●●=通用方案强推荐，●●●=合理推断，●●○=备选，●○○=冷门可能
+````
+
+**halt 交互**：
+
+```
+[halt-for-user] ✋ 请确认标准件清单（P1.5）：
+  回 "OK" / "删 #4" / "改 #1 为 SG90 数量=4" / "加 M2×8 传感器安装" / "合并 #3 到 #2"
+```
+
+> 发 `[halt-for-user]` 前必过 SKILL.md §确认门执行契约 的三项自检。
+> 本 halt **独立于 P1 的 halt**——P1 halt 确认"部件架构"，P1.5 halt 确认"标准件细目"，两者不得合并（耦合太深用户反而看不清）。
+
+**批量 lookup**：
+
+```bash
+SKILL=/Users/liyijiang/.agents/skills/build123d-cad
+TEST=tests/<test-dir>
+{
+  echo "# 标准件参数解析（P1.5 standard_parts_resolved）"
+  echo ""
+  for p in MG996R M3 608ZZ; do   # 用户确认后的最终清单
+    echo "## === $p ==="
+    python3 $SKILL/scripts/research/spec_lookup.py "$p"
+    echo ""
+  done
+} > $TEST/standard_parts_resolved.md
+```
+
+**未命中分叉**：`[spec-miss]` 条目 → 追加 `## 待 WebSearch` 节，收集 `websearch_prompts`，P2 建模前先跑这些搜索补齐参数。
+
+**纯造型件跳过**（多部件场景较罕见，但可能——如多段组合的雕塑）：
+
+```markdown
+## 标准件候选清单（P1.5）
+[skip] reason=纯造型多体（雕塑分段/艺术摆件），部件之间只靠榫卯/胶粘，无标准件
+```
+
+**AI 回报契约**（完成后必须在回复里输出）：
+
+```
+Phase P1.5 产出报告
+引自 multi-part-playbook.md §Phase P1.5 / 本步产出：
+  "tests/<test>/parts_candidates.md（候选清单表格，与 S1.5 共用格式）"
+- [x] tests/<test>/parts_candidates.md            (4 候选：2 MG996R + 12 M3 + 12 热压螺母 + 2 608ZZ)
+- [x] tests/<test>/standard_parts_resolved.md    (3 命中 + 1 miss=热压螺母 → websearch_prompts 已抛给 P2)
+- [halt-for-user] ✋ 请确认标准件清单（P1.5），回 "OK" / 修订指令
 下一步：等用户确认 → Phase P2
+```
+
+（纯造型件场景示例：）
+```
+Phase P1.5 产出报告
+- [skip] parts_candidates.md reason=纯造型多体（雕塑分段），无标准件
+- [skip] standard_parts_resolved.md reason=同上
+下一步：直接进 Phase P2
 ```
 
 ---
@@ -119,7 +219,7 @@ Phase P1 产出报告
 ## Phase P2: 部件级建模（每部件 3 变体对比）
 
 **前置**：
-- [x] P1 需求拆解报告已经用户确认
+- [x] P1.5 标准件候选已确认（含 `[skip] 纯造型多体` 通过）
 
 **本步产出**：
 - 对每个部件 Pn 执行完整 4 步循环（Step 2a → 2b → 2c → 2d），全部通过才进入下一部件：

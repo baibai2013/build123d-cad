@@ -1,0 +1,151 @@
+# Authoritative Sources Catalog —— 按类别整理的权威数据源 + WebSearch prompt 模板
+# 查询脚本未命中具体条目时，回落到此文件的对应类别，输出 priority_sources 和 websearch_prompt。
+
+fasteners:
+  description: 螺丝、螺母、垫片、热压铜螺母等紧固件
+  priority_sources:
+    - name: McMaster-Carr
+      url: https://www.mcmaster.com
+      why: 带 CAD 下载 + 工程级尺寸表，紧固件金标准
+      confidence_if_cited: 5
+    - name: ISO / DIN 官方标准
+      url: https://www.iso.org
+      why: 螺纹规格与公差的最终权威
+      confidence_if_cited: 5
+    - name: Bossard Product Catalog
+      url: https://www.bossard.com
+      why: 欧规紧固件全表，PDF 可下载
+      confidence_if_cited: 4
+  fallback_sources:
+    - fastenal.com
+    - mcmaster.com 的 "Product Detail" 页通常带 CAD download button
+  websearch_prompts:
+    - 'site:mcmaster.com <part> dimensions'
+    - '"ISO 4762" M3 hex socket head cap screw dimensions'
+    - '<part> DIN 912 head diameter head height hex key'
+
+bearings:
+  description: 深沟球轴承 / 推力轴承 / 滚针轴承
+  priority_sources:
+    - name: SKF 官网
+      url: https://www.skf.com
+      why: 全球一线品牌，尺寸表 + CAD 下载
+      confidence_if_cited: 5
+    - name: NSK 官网
+      url: https://www.nsk.com
+      why: 同上
+      confidence_if_cited: 5
+    - name: GrabCAD
+      url: https://grabcad.com
+      why: 社区 STEP 模型，命名通常为 608ZZ / 6001-2RS 等标准代号
+      confidence_if_cited: 3
+  fallback_sources:
+    - bearingworks.com
+    - 立式国产轴承（HCH、NKB）的 taobao 店铺尺寸页（confidence ≤ 2）
+  websearch_prompts:
+    - 'site:skf.com OR site:nsk.com <model> dimensions datasheet filetype:pdf'
+    - '<model> deep groove ball bearing ID OD width'
+
+servos:
+  description: 模型舵机（DC/Coreless）
+  priority_sources:
+    - name: ServoDatabase
+      url: https://servodatabase.com
+      why: 独立运营数据库，覆盖主流舵机厂
+      confidence_if_cited: 4
+    - name: 厂商 datasheet
+      url: (TowerPro / Hitec / Savox / Savöx / KST 官网)
+      why: 一手资料
+      confidence_if_cited: 5
+    - name: Pololu / Adafruit 产品页
+      url: https://www.pololu.com | https://www.adafruit.com
+      why: 转售电商通常给三视图 + 标注
+      confidence_if_cited: 4
+  fallback_sources:
+    - GrabCAD 社区 STEP（可量取）
+    - RC 论坛（rcgroups.com）的用户实测
+  websearch_prompts:
+    - '<model> servo dimensions datasheet filetype:pdf'
+    - 'site:servodatabase.com <model>'
+    - 'site:pololu.com OR site:adafruit.com <model> servo mechanical drawing'
+
+motors:
+  description: 步进电机 / 无刷电机 / 直流电机
+  priority_sources:
+    - name: 厂商 datasheet（StepperOnline、Nanotec、Moons'）
+      why: 一手 torque-speed + 机械尺寸
+      confidence_if_cited: 5
+    - name: NEMA 标准
+      why: NEMA 17/23 外形尺寸有通用表（尾长除外）
+      confidence_if_cited: 4
+  websearch_prompts:
+    - '"NEMA 17" stepper motor dimensions frame size datasheet'
+    - '<model> brushless motor dimensions filetype:pdf'
+
+electronic_modules:
+  description: PCB 模块 / 开发板 / 传感器 / 显示屏
+  priority_sources:
+    - name: DigiKey
+      url: https://www.digikey.com
+      why: Mechanical Drawings Tab 通常有三视图 PDF
+      confidence_if_cited: 5
+    - name: Mouser
+      url: https://www.mouser.com
+      why: 同上
+      confidence_if_cited: 5
+    - name: Adafruit / SparkFun 产品页
+      url: https://www.adafruit.com | https://www.sparkfun.com
+      why: 开源硬件产品页含 EagleCAD/KiCad + 孔位图
+      confidence_if_cited: 4
+  websearch_prompts:
+    - 'site:digikey.com <part> mechanical dimensions'
+    - 'site:adafruit.com OR site:sparkfun.com <board> dimensions mounting holes'
+
+connectors:
+  description: 机械接插件（XT30/XT60/杜邦/USB/Type-C）
+  priority_sources:
+    - name: Amass 官网（XT 系列原厂）
+      confidence_if_cited: 5
+    - name: USB-IF 规范
+      why: USB-C receptacle 尺寸有标准
+      confidence_if_cited: 5
+    - name: Molex / JST / TE 官网
+      confidence_if_cited: 5
+  websearch_prompts:
+    - '<connector> datasheet mechanical drawing filetype:pdf'
+    - 'site:molex.com OR site:te.com <part-number>'
+
+extrusions:
+  description: 铝型材 / 工业结构件
+  priority_sources:
+    - name: Misumi / Bosch Rexroth / Item 官网
+      confidence_if_cited: 5
+    - name: OpenBuilds
+      url: https://openbuilds.com
+      confidence_if_cited: 4
+  websearch_prompts:
+    - '"2020 V-slot" aluminum extrusion profile dimensions'
+    - 'site:misumi.com <profile> dimensions'
+
+# ====== 通用建模代码搜索 ======
+# 当需要找"build123d 怎么写这种结构"时，用以下搜索策略
+build123d_code_search:
+  description: 查 build123d / CadQuery 代码范式（非参数，是代码）
+  priority_sources:
+    - name: gumyr/build123d GitHub
+      url: https://github.com/gumyr/build123d
+      why: 原作者 repo，examples/ 目录和 tests/ 都是权威用法
+    - name: build123d 官方文档
+      url: https://build123d.readthedocs.io
+      why: API 准确率最高
+    - name: CadQuery GitHub（译参考）
+      url: https://github.com/CadQuery/cadquery
+      why: CadQuery 的例子 80% 可以机械翻译到 build123d
+  websearch_prompts:
+    - 'site:github.com/gumyr/build123d <feature>'
+    - 'site:build123d.readthedocs.io <feature>'
+    - '"build123d" <feature> example'
+    - '"cadquery" <feature> example   (如 build123d 无结果可退而求其次)'
+  notes: |
+    Claude Code 内置 WebSearch 足够；如配置了 Exa MCP，可用 get_code_context_exa
+    深度抓 GitHub/文档，效果更好（可选增强，不强制）。

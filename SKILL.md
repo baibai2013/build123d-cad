@@ -1186,6 +1186,72 @@ print(f"体积: {part.part.volume:.2f} mm³")
 
 ---
 
+## 数据源体系（标准件参数先查本地）
+
+遇到 **标准件**（螺丝 / 轴承 / 舵机 / 连接器 / 电子模块等通用零件）时，**先走本地权威数据源目录**，命中直接取参数；未命中再走 WebSearch/WebFetch。
+
+```bash
+# 一键查询（SKILL 变量与 R2 等步骤保持一致）
+SKILL=/Users/liyijiang/.agents/skills/build123d-cad
+python3 $SKILL/scripts/research/spec_lookup.py <part_id>
+
+# 示例
+python3 $SKILL/scripts/research/spec_lookup.py SG90         # → servos.yaml:SG90
+python3 $SKILL/scripts/research/spec_lookup.py M3           # → fasteners.yaml:M3_ISO4762
+python3 $SKILL/scripts/research/spec_lookup.py 608ZZ        # → bearings.yaml:608ZZ
+
+# 列出已收录条目
+python3 $SKILL/scripts/research/spec_lookup.py --list-categories
+python3 $SKILL/scripts/research/spec_lookup.py --list servos
+```
+
+**行为**：
+- 命中 → 结构化 YAML 片段 + `source.primary` URL + `confidence` 置信度（1~5）
+- 未命中 → 脚本自动回落到 `sources-catalog.yaml`，输出该类别的**权威源清单** + **WebSearch prompt 模板**
+- `last_verified` 超过 90 天 → 打 `[stale]` 警告，本次建议重新核实
+
+**职责分工**：
+
+| 目录 | 负责 | 粒度 | 示例 |
+|------|------|------|------|
+| `references/data-sources/` | **标准件** — 通用可复用 | 零件型号 | SG90、M3 ISO 4762、608ZZ |
+| `experience/` | **产品级** — 整机经验 | 产品型号 | Redmi K80 Pro、树莓派 4B |
+
+参见：`references/data-sources/README.md`（schema + 置信度 + 贡献规则）
+
+### 用户说"做一个 XXX"时的标准件推断流程
+
+真实用户很少直接说型号（"做 SG90 支架"），大多说模糊意图（"给 ESP32 做个外壳"、"做个挂墙手机支架"、"做机械猫的腿"）。三个 Playbook 都设计了**标准件推断子步骤**处理这种情况：
+
+| Playbook | 子步骤 | 位置 |
+|----------|-------|------|
+| `single-part-playbook.md` | **Step S1.5 — 标准件候选清单** | S1 需求分析 与 S2 几何对齐 之间 |
+| `multi-part-playbook.md` | **Phase P1.5 — 标准件候选清单** | P1 需求拆解 与 P2 建模 之间 |
+| `reference-product-playbook.md` | **R1 第 2 步（双 halt 设计）** | R1 search_plan 构造前 |
+
+**统一流程**：
+
+1. AI 读前一步的需求/拆解结果
+2. AI 输出候选清单（型号 + 数量 + 用途 + 置信度 ●●● + data-sources 命中状态）
+3. `[halt-for-user]` 让用户确认/调整（"OK" / "删 #3" / "改 #2 数量=6" / "加 M3×2" / "换 #1 为 MG996R"）
+4. 确认后批量 `spec_lookup.py` → 参数就位写入 `standard_parts_resolved.md`
+5. 未命中 → 脚本返回的 `websearch_prompts` 抛给下一 Step 的搜索流程
+6. 纯造型件（花瓶/雕塑/手办）显式 `[skip] reason=纯造型件` 不阻塞流程
+
+**置信度标记**（仅推断清单场景）：
+
+| 标记 | 含义 |
+|------|------|
+| ●●●●● | 需求明确指定型号（"用 SG90"） |
+| ●●●●  | 通用方案强推荐（ESP32 外壳配 M2 自攻丝） |
+| ●●●   | 合理推断（机械臂关节用 MG996R 或 SG90） |
+| ●●○   | 备选（可能也可以用 LM8UU 而非 608ZZ） |
+| ●○○   | 冷门可能（特种弹簧/专用轴承） |
+
+（**注意**：此标记与 data-sources YAML 的 `confidence: 1~5`（参数来源可信度）解耦——前者是"AI 推断零件类型对不对"，后者是"这个零件参数准不准"）
+
+---
+
 ## 参考资源
 
 ### 1. 零件建模 (`references/parts/`)
@@ -1234,6 +1300,14 @@ print(f"体积: {part.part.volume:.2f} mm³")
 - `gait-planning.md` — 步态：相位表 + 贝塞尔足端轨迹 + 步态→IK→动画
 - `urdf-export.md` — URDF：build123d→URDF 端到端 + yourdfpy 验证
 - `pybullet-quickstart.md` — PyBullet：加载 URDF + 关节控制 + 步态仿真
+
+### 9. 数据源 (`references/data-sources/`)
+- `README.md` — 目录规范 + YAML schema + 置信度 1~5 约定 + 贡献规则
+- `sources-catalog.yaml` — 按类别（紧固件/轴承/舵机/电子模块/…）的权威源清单 + WebSearch prompt 模板
+- `servos.yaml` — SG90 / MG90S / MG996R / DS3218
+- `fasteners.yaml` — M2/M3/M4/M5 ISO 4762（= DIN 912）内六角圆柱头螺丝
+- `bearings.yaml` — 608ZZ / 624ZZ / 625ZZ / 6001-2RS / F688ZZ
+- 查询：`python3 $SKILL/scripts/research/spec_lookup.py <part_id>`（见 §数据源体系 段）
 
 ### 示例 (`assets/`)
 - `parts/` — 13 个零件示例（01~13，★~★★★★★）
