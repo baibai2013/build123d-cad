@@ -60,6 +60,13 @@ M3_ISO4762:
     datasheet:     https://www.iso.org/standard/57742.html
     confidence:    5
     last_verified: 2026-04-27
+  parts_lib:                          # ★ 独立实体库入口（可选集成）
+    repo:       https://github.com/baibai2013/build123d-parts-lib
+    module:     build123d_parts_lib.parts.fasteners.m3_iso4762
+    factory:    make_m3_screw
+    factory_args: {length: 10}
+    cache_step: build123d_parts_lib/parts/fasteners/cache/m3_iso4762_L10.step
+    install:    "pip install -e lib/parts-lib（需先 git submodule add）"
   notes: |
     M3 是 3D 打印界最常用规格；配热压铜螺母时建议预留 ⌀4.0 mm 预孔（热压过程铜会微张开）。
 

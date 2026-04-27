@@ -1254,6 +1254,47 @@ python3 $SKILL/scripts/research/spec_lookup.py --list servos
 
 （**注意**：此标记与 data-sources YAML 的 `confidence: 1~5`（参数来源可信度）解耦——前者是"AI 推断零件类型对不对"，后者是"这个零件参数准不准"）
 
+## 零件实体库（可选集成）
+
+[`build123d-parts-lib`](https://github.com/baibai2013/build123d-parts-lib) 是独立 git 库（submodule 集成），提供**可直接 import 的 CAD 代码**：
+
+- 📦 **parts/** — 标准件实体（SG90、M3 螺丝等，factory 函数 + 预生成 STEP）
+- 🔧 **modules/** — 功能模块（热压铜螺母柱、卡扣等多零件组合）
+- 🎨 **generators/** — 参数化函数（散热孔阵列、screw clearance 查询）
+- 🏗 **templates/** — 项目模板（SG90 支架、PCB 外壳骨架）
+- 🧪 **materials/** — 工程元数据（密度、公差配合表）
+
+**如何启用**：
+
+```bash
+cd my-project
+git submodule add https://github.com/baibai2013/build123d-parts-lib.git lib/parts-lib
+pip install -e lib/parts-lib
+```
+
+**使用示例**：
+
+```python
+from build123d_parts_lib.parts.servos.sg90 import make_sg90
+from build123d_parts_lib.modules.threaded_insert_boss import make_m3_boss
+from build123d_parts_lib.generators.clearance import get_clearance_diameter
+
+servo = make_sg90()
+boss = make_m3_boss()
+d = get_clearance_diameter("M3", fit="medium")   # 3.4 mm (FDM)
+```
+
+**与 data-sources/ 的分工**：
+
+| 层 | 负责 | 示例 |
+|----|------|------|
+| `data-sources/*.yaml` | 参数数据（SG90 尺寸多少） | `body: {length: 22.8}` |
+| `build123d-parts-lib` | CAD 代码（SG90 的 Part 对象） | `from ... import make_sg90` |
+
+`spec_lookup.py` 命中后会**自动输出 parts_lib 入口**（仅当 YAML 里配了 `parts_lib:` 字段时），AI 就能在建模时直接引用实体库。
+
+参见：[https://github.com/baibai2013/build123d-parts-lib](https://github.com/baibai2013/build123d-parts-lib)
+
 ## 代码源体系（建模前先巡查社区）
 
 数据源告诉 AI "参数是多少"，代码源告诉 AI "别人怎么实现的"。用于防止 AI 写"呆板、不符合社区流行"的代码：

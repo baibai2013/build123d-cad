@@ -137,6 +137,25 @@ def print_hit(entry: dict, field_filter: str | None = None) -> None:
         print("## 全部参数")
         print(yaml.safe_dump({entry["id"]: data}, allow_unicode=True, sort_keys=False, indent=2))
 
+    # 可选：若 YAML 里配了 parts_lib 入口，输出实体库链接
+    parts_lib = data.get("parts_lib")
+    if parts_lib:
+        print("## 实体库链接（build123d-parts-lib）")
+        print(f"  repo:       {parts_lib.get('repo', '(未配)')}")
+        print(f"  module:     {parts_lib.get('module', '(未配)')}")
+        factory = parts_lib.get("factory", "")
+        args = parts_lib.get("factory_args", {}) or {}
+        args_str = ", ".join(f"{k}={v!r}" for k, v in args.items())
+        print(f"  factory:    {factory}({args_str})")
+        cache = parts_lib.get("cache_step")
+        if cache:
+            print(f"  cache_step: {cache}")
+        print(f"  usage:      from {parts_lib.get('module', '...')} import {factory}")
+        install = parts_lib.get("install")
+        if install:
+            print(f"  install:    {install}")
+        print()
+
 
 def print_miss(query: str, entries: dict, catalog: dict) -> None:
     print(f"[spec-miss] 未找到 '{query}'")

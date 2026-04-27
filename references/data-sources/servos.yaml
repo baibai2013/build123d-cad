@@ -30,6 +30,12 @@ SG90:
     datasheet:     ""
     confidence:    4
     last_verified: 2026-04-27
+  parts_lib:                          # ★ 独立实体库入口（可选集成）
+    repo:       https://github.com/baibai2013/build123d-parts-lib
+    module:     build123d_parts_lib.parts.servos.sg90
+    factory:    make_sg90
+    cache_step: build123d_parts_lib/parts/servos/cache/sg90.step
+    install:    "pip install -e lib/parts-lib（需先 git submodule add）"
   notes: |
     量产公差 ±0.3mm；塑料齿轮；
     FDM 打印安装腔建议每侧 +0.2~0.3mm 间隙，SLA +0.1mm。
