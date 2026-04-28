@@ -443,3 +443,146 @@ animation.animate(1)                           # speed=1 正常速度
 - 停留阶段（2→12s）重复同一位置，让用户有充足时间旋转查看
 - 层叠零件沿 Z 轴展开；并列零件沿 X/Y 轴展开
 - `explode_dist` 建议为零件最大尺寸的 30%–50%
+
+---
+
+## 13. 多体融合（标准件分段建模）
+
+**适用场景**：同一零件由几何差异较大的多段组成（螺丝头 + 螺杆、法兰盘 + 六角柱、轮毂 + 翼片）。
+把每段放在独立的 `BuildPart` 里，然后用 `.fuse()` + `.translate()` 合并。
+
+**关键原则**：不要把异形几何强行塞进同一个 `BuildPart`——OCC 的布尔运算对单 context 内多种轮廓不稳定。
+
+```python
+from build123d import *
+
+# 例：法兰螺母 = 圆盘法兰（底）+ 六角柱（上）
+import math
+d, s, m, flange_d, flange_t, pitch = 4.0, 7.0, 5.0, 11.0, 1.0, 0.7
+r_hex = s / math.sqrt(3)     # 六角外接圆半径（对边 s → 顶点 r）
+total_h = flange_t + m
+
+# ① 独立 BuildPart 段
+with BuildPart() as flange_bp:
+    Cylinder(radius=flange_d / 2, height=flange_t,
+             align=(Align.CENTER, Align.CENTER, Align.MIN))
+
+with BuildPart() as hex_bp:
+    with BuildSketch(Plane.XY):
+        RegularPolygon(radius=r_hex, side_count=6)
+    extrude(amount=m)
+
+# ② fuse + translate 对齐 Z
+solid = flange_bp.part.fuse(hex_bp.part.translate((0, 0, flange_t)))
+
+# ③ 减料（螺纹孔）
+from build123d_parts_lib.parts.fasteners._thread_utils import make_internal_thread
+thread_sub = make_internal_thread(d, pitch, total_h)
+result = solid.cut(thread_sub)
+```
+
+**要点**：
+- `align=(Align.CENTER, Align.CENTER, Align.MIN)` 让零件底面在 Z=0，便于 translate 对齐
+- 多段时先建最底层的段，然后逐段 `.translate((0,0,offset)).fuse()`
+- `.fuse()` 不改变原体，返回新对象
+
+---
+
+## 14. 边过滤（选择性 fillet / chamfer）
+
+**适用场景**：只对特定位置的边做圆角，比如六角柱的顶底引入倒角、垂直棱的倒角、外端翼片倒角。
+
+```python
+from build123d import *
+
+solid = ...  # 已有实体
+
+# ① 顶底引入倒角 —— 选水平闭合边（圆形 / 多边形）
+top_z   = solid.bounding_box().max.Z
+bot_z   = solid.bounding_box().min.Z
+chamfer_edges = [
+    e for e in solid.edges()
+    if e.is_closed
+    and (abs(e.center().Z - top_z) < 0.1 or abs(e.center().Z - bot_z) < 0.1)
+]
+if chamfer_edges:
+    solid = solid.chamfer(0.3, None, chamfer_edges)
+
+# ② 四竖棱倒角（方形螺母）—— 选垂直边（长度 ≈ 高度，中心 Z ≈ 中点）
+ht = solid.bounding_box().size.Z
+half_ht = ht / 2
+vert_edges = [
+    e for e in solid.edges()
+    if not e.is_closed
+    and abs(e.center().Z - half_ht) < ht * 0.45   # 跨越大部分高度
+    and abs(e.length - ht) < 0.1                   # 长度 ≈ 整体高度
+]
+if vert_edges:
+    solid = solid.chamfer(0.3, None, vert_edges)
+
+# ③ 外端翼片竖棱圆角 —— 按 X 位置 + Y 角点 + 长度过滤
+outer_x  = 14.0   # 翼片外端 X 坐标
+wing_h   = 11.0   # 翼片高度
+wing_w   = 2.5    # 翼片厚度
+tip_edges = [
+    e for e in solid.edges()
+    if not e.is_closed
+    and abs(abs(e.center().X) - outer_x) < 0.5    # 靠近外端面
+    and abs(abs(e.center().Y) - wing_w / 2) < 0.5  # ±Y 角点
+    and abs(e.length - wing_h) < 2.0              # 竖向边
+]
+if tip_edges:
+    solid = solid.fillet(min(wing_w * 0.45, 1.5), tip_edges)
+```
+
+**要点**：
+- `e.is_closed` = `True` → 闭合边（圆 / 多边形轮廓），通常是水平截面边
+- `e.is_closed` = `False` → 开放边（棱线），通常是竖向或斜向边
+- 容差选 `0.1–0.5 mm`，不要用 `1e-3`（OCC 融合后顶点坐标会有微浮动）
+- 若边过滤结果为空，`if edges: solid.fillet(r, edges)` 静默跳过，不报错
+
+---
+
+## 15. ISO 螺纹工具（内 / 外螺纹可视化几何）
+
+**适用场景**：标准件库中给螺丝、螺母、螺栓生成可视化 ISO 螺纹轮廓（非装配公差精确模型）。
+
+> 工具来自 `build123d-parts-lib`，路径：
+> `build123d_parts_lib/parts/fasteners/_thread_utils.py`
+
+```python
+from build123d_parts_lib.parts.fasteners._thread_utils import (
+    make_internal_thread,   # → 用于减料，得到内螺纹孔
+    make_external_thread,   # → 用于融合，得到外螺纹杆
+)
+
+# ─── 内螺纹（螺母 / 盲孔）────────────────────────────────────────
+# 返回：圆柱实体（含中心 r=0），直接 solid.cut(thread_sub)
+# 贯通孔：depth = 零件总高；盲孔：depth = 目标深度
+thread_sub = make_internal_thread(d=4.0, pitch=0.7, length=5.0)
+nut_solid = nut_body.cut(thread_sub)
+
+# ─── 外螺纹（螺杆）──────────────────────────────────────────────
+# 先建小径圆柱，再 fuse 外螺纹实体
+import math
+r_minor = (4.0 - 1.2269 * 0.7) / 2   # ISO 公式：小径 = d - 1.2269p
+with BuildPart() as shank_bp:
+    Cylinder(radius=r_minor, height=12.0,
+             align=(Align.CENTER, Align.CENTER, Align.MIN))
+thread_add = make_external_thread(d=4.0, pitch=0.7, length=12.0)
+screw_shank = shank_bp.part.fuse(thread_add)
+```
+
+**关键数值（ISO 粗牙，最常用规格）**：
+
+| 规格 | d (mm) | pitch (mm) | r_minor (mm) |
+|------|--------|-----------|--------------|
+| M3 | 3.0 | 0.50 | 1.193 |
+| M4 | 4.0 | 0.70 | 1.572 |
+| M5 | 5.0 | 0.80 | 1.827 |
+
+**要点**：
+- `make_internal_thread` 产生的实体中心 r=0（包含整个孔），直接 `cut` 即可，不需要先打预孔
+- `make_external_thread` 只生成螺牙凸起，需要配小径圆柱 fuse
+- 螺纹为锯齿截面 revolve（可视化几何），不适合公差仿真
+- 杆端建议加 45° 倒角：`Chamfer(edge_list, length=0.5 * pitch)`

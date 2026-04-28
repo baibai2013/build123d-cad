@@ -1,0 +1,462 @@
+# 标准件入库全流程 Playbook（A 系列）
+
+> **适用场景**：向 `build123d-parts-lib` 新增一类标准件（螺丝头型 / 螺母形状 / 垫圈 / 嵌件）。
+> **前置条件**：`build123d-parts-lib` 已作为 submodule 挂载，`_thread_utils.py` 可用。
+> **与其他 Playbook 的区别**：S 系列（单零件原创建模）→ 用于非标自制件；A 系列（标准件入库）→ 数据驱动，优先查标准 + 套模板。
+
+---
+
+## 阶段概览
+
+```
+A1 数据收集  →  A2 YAML 条目  →  A3 Python 模块  →  A4 三层验证
+```
+
+---
+
+## A1 — 数据收集
+
+**目标**：建模前拿到准确的几何参数 + 可追溯的数据来源。严禁凭记忆估数字。
+
+### A1.1 识别标准
+
+根据用户给出的零件类型，确认所属标准：
+
+| 类型 | 常见标准 |
+|------|---------|
+| 内六角圆柱头螺丝 | ISO 4762 / DIN 912 |
+| 内六角沉头螺丝 | ISO 10642 |
+| 内六角圆头螺丝（button） | ISO 7380 |
+| 十字沉头螺丝 | ISO 7046 |
+| 一字沉头螺丝 | ISO 2009 |
+| 十字圆盘头螺丝（pan） | ISO 7045 |
+| 一字圆盘头螺丝 | ISO 1580 |
+| 六角外头螺栓 | DIN 933 / ISO 4017 |
+| 六角螺母（标准 / 薄） | ISO 4032 / GB/T 6172 |
+| 尼龙锁紧螺母 | DIN 985 |
+| 盖形螺母 | DIN 1587 |
+| 法兰螺母 | DIN 6923 |
+| 蝶形螺母 | DIN 315 |
+| 方形螺母 | DIN 562 |
+| T 型螺母（2020 铝型材） | 市场惯例（非统一标准） |
+| 平垫 | ISO 7089 |
+| 弹垫 | GB/T 93 |
+| FDM 热熔嵌件 | Ruthex RX / InsertEZ |
+
+先检查 skill 内 `references/data-sources/fasteners.yaml` 是否已有该 key → 有则直接读取，跳至 A2。
+
+### A1.2 按置信度查数据源
+
+按以下优先级查询，记录 `confidence` 分：
+
+| 来源 | 查询方式 | confidence |
+|------|---------|-----------|
+| ISO / DIN 原版标准 PDF | `WebSearch: "ISO 4762" table dimensions filetype:pdf` | 5 |
+| Bossard / Würth / Misumi 产品页 | `WebSearch: bossard M4 ISO 7380 dimensions` | 5 |
+| SKF / IFI / 制造商技术文档 | `WebSearch + spec_lookup.py` | 4 |
+| McMaster-Carr / Fastenal 规格页 | `WebSearch` | 4 |
+| Wikipedia / 工程 wiki | `WebSearch` | 3 |
+| 市场惯例（多厂商对比） | `WebSearch` + 工程论坛交叉验证 | 3 |
+
+**查询关键词模板**：
+```
+"<标准代号> M<size> dimensions table"     # 例：ISO 7380 M4 dimensions table
+"DIN 315 wing nut M4 specifications mm"
+"bossard <标准代号> M<size>"
+```
+
+如果只能找到 confidence ≤ 3 的来源，在 YAML `notes` 字段加 `[unverified]` 标注。
+
+### A1.3 必须收集的字段
+
+**所有类型都需要**：
+- `d`（螺纹公称直径 mm）
+- `pitch`（粗牙螺距 mm）
+- `clearance_hole.close_fit / medium_fit / loose_fit`
+- `source.primary`（来源 URL）
+- `source.confidence`（1–5）
+- `source.last_verified`（`YYYY-MM-DD`）
+
+**螺丝专有**：
+- `head.dk`（头外径）
+- `head.k`（头高）
+- `head.s`（扳手对边，内六角 / 外六角）
+- `common_lengths_mm: [...]`
+- `counterbore.diameter / depth`（沉孔推荐，socket head 类）
+- `countersink.angle_deg / diameter`（沉头类）
+
+**螺母专有**：
+- `dimensions.s`（对边宽）
+- `dimensions.m`（高度）
+- 形状专有字段（例）：
+  - flange nut：`flange_d`, `flange_t`
+  - wing nut：`hub_d`, `wing_span`, `wing_h`, `wing_w`
+  - square nut：`a`（方边长）
+  - T-slot nut：`head_w`, `head_h`, `stem_w`, `stem_h`, `length`
+  - cap nut：`m`（含半球顶的总高）
+
+### A1.4 产出报告
+
+整理为 Markdown 表格，**得到用户确认后**进入 A2：
+
+```markdown
+## A1 数据收集结果
+
+| 参数 | M3 | M4 | M5 | 来源 | confidence |
+|------|----|----|----|----- |-----------|
+| d    | 3.0 | 4.0 | 5.0 | ISO 7380 | 5 |
+| pitch | 0.50 | 0.70 | 0.80 | ISO 7380 | 5 |
+| dk   | 5.7 | 7.6 | 9.5 | bossard.com | 5 |
+| k    | 1.65 | 2.2 | 2.75 | bossard.com | 5 |
+| s    | 2.0 | 2.5 | 3.0 | bossard.com | 5 |
+```
+
+---
+
+## A2 — YAML 条目创建
+
+**目标**：将参数写入 `build123d_parts_lib/parts/fasteners/fasteners.yaml`，供 `rebuild_cache.py` 自动发现。
+
+### A2.1 Key 命名规则
+
+```
+{SIZE}_{STANDARD_CODE}         例：M4_ISO7380
+{SIZE}_NUT_{STANDARD_CODE}     例：M4_NUT_DIN315
+```
+
+每个规格写一条（M3 / M4 / M5 各独立条目）。
+
+### A2.2 YAML 模板
+
+```yaml
+M4_ISO7380:
+  aliases: [M4-button, M4-ISO7380, M4-button-head]
+  standard: "ISO 7380"
+  type: button-head-socket-screw      # ← 必须唯一，与 Python 模块 _load_specs() 中的 type 完全匹配
+
+  thread:
+    d: 4.0
+    pitch: 0.70
+    unit: mm
+
+  # 螺丝专有
+  head:
+    dk: 7.6       # 头外径
+    k: 2.2        # 头高
+    s: 2.5        # 内六角对边
+
+  # 螺母/垫圈专有（按类型选用）
+  dimensions:
+    s: 7.0        # 对边宽
+    m: 5.0        # 高度
+    # 形状专有字段按需补充
+
+  clearance_hole:
+    close_fit: 4.3
+    medium_fit: 4.5
+    loose_fit: 4.8
+
+  common_lengths_mm: [6, 8, 10, 12, 16, 20]
+
+  source:
+    primary: https://www.bossard.com      # 完整 URL
+    confidence: 5
+    last_verified: 2026-04-28
+
+  factory:                               # ★ rebuild_cache.py 读取此字段
+    module: build123d_parts_lib.parts.fasteners.screw_button_hex
+    fn: make_button_hex_screw
+    args: {size: "M4", length: 12}       # 螺母不需要 length
+    cache: cache/m4_iso7380_L12.step
+
+  notes: "ISO 7380 M4 内六角圆头螺丝（button head）。"
+```
+
+> **type tag 规则**：由 Python 模块的 `_load_specs()` 函数中 `entry.get("type") != "..."` 做路由匹配，必须一一对应。新件型须定义新 type tag（不能复用已有 tag）。
+
+### A2.3 YAML 语法验证
+
+```bash
+cd build123d_parts_lib/parts/fasteners
+python3 -c "import yaml; yaml.safe_load(open('fasteners.yaml').read()); print('YAML OK')"
+```
+
+验证通过后进入 A3。
+
+---
+
+## A3 — Python 模块编写
+
+**目标**：实现 `make_xxx(size) → Part`，遵循四层结构，保证 YAML 驱动和 fallback 兜底。
+
+**参考模板**：`experience/code-patterns/fasteners/standard-part-module-pattern.md`
+
+### A3.1 文件命名
+
+```
+screw_<variant>.py      螺丝：screw_button_hex.py / screw_csk_phillips.py / screw_pan_slotted.py
+nut_<shape>.py          螺母：nut_cap.py / nut_flange.py / nut_wing.py / nut_square.py / nut_tslot.py
+<type>.py               其他：washer.py / threaded_insert.py / hex_bolt.py
+```
+
+### A3.2 四层结构
+
+```python
+# 层 1：Spec 数据容器
+class MyPartSpec(NamedTuple):
+    d: float; pitch: float
+    <form_specific_dims>: float ...
+
+# 层 2：内置 fallback（M3/M4/M5，与 A1 收集数据一致）
+_FALLBACK: dict[str, MyPartSpec] = {
+    "M3": MyPartSpec(...),
+    "M4": MyPartSpec(...),
+    "M5": MyPartSpec(...),
+}
+
+# 层 3：YAML 加载（优先 YAML，缺失 key 用 fallback 补）
+def _load_specs() -> dict[str, MyPartSpec]:
+    # ... 读 fasteners.yaml，过滤 type == "my-type-tag"
+    # ... 对每个 size 建 MyPartSpec
+    # ... 用 _FALLBACK 补全缺失 key
+    ...
+
+_SPECS = _load_specs()
+
+# 层 4：公开工厂函数
+def make_my_part(size: str = "M4") -> Part:
+    spec = _SPECS[size.upper().strip()]
+    # ... 建模（选 Pattern 13/14/15）
+    return part
+
+# 层 5：独立运行块（必须）
+if __name__ == "__main__":
+    for size, spec in _SPECS.items():
+        part = make_my_part(size)
+        export_step(part, f"cache/{size.lower()}_<tag>.step")
+        print(f"OK: {size}  vol={part.volume:.1f} mm³")
+```
+
+### A3.3 选择几何 Pattern
+
+按零件形态选（参考 `references/parts/patterns.md` Pattern 13/14/15）：
+
+| 零件形态 | Pattern |
+|---------|---------|
+| 单体旋转对称（轴、销） | Pattern 4（revolve） |
+| 多段异形（头 + 杆、法兰 + 六角柱） | **Pattern 13**（分段 BuildPart + fuse） |
+| 需要选择性圆角 / 倒角 | **Pattern 14**（边过滤） |
+| 含内螺纹 / 外螺纹 | **Pattern 15**（thread_utils） |
+
+### A3.4 常用几何配方
+
+**六角柱**（对边宽 s → 外接圆半径 r）：
+```python
+import math
+r_hex = s / math.sqrt(3)
+with BuildPart() as hex_bp:
+    with BuildSketch(Plane.XY):
+        RegularPolygon(radius=r_hex, side_count=6)
+    extrude(amount=m)
+```
+
+**内螺纹减料**（贯通孔 / 盲孔）：
+```python
+from ._thread_utils import make_internal_thread
+thread_sub = make_internal_thread(d, pitch, length=total_h)   # 贯通
+thread_sub = make_internal_thread(d, pitch, length=bore_depth)  # 盲孔（bore_depth < total_h）
+solid = solid.cut(thread_sub)
+```
+
+**外螺纹螺杆**：
+```python
+from ._thread_utils import make_external_thread
+r_minor = (d - 1.2269 * pitch) / 2
+with BuildPart() as shank_bp:
+    Cylinder(radius=r_minor, height=L, align=(Align.CENTER, Align.CENTER, Align.MIN))
+thread_add = make_external_thread(d, pitch, L)
+shank = shank_bp.part.fuse(thread_add)
+```
+
+**多体融合（Pattern 13）**：
+```python
+with BuildPart() as part_a_bp:
+    ...  # 下段几何
+with BuildPart() as part_b_bp:
+    ...  # 上段几何
+solid = part_a_bp.part.fuse(part_b_bp.part.translate((0, 0, offset_z)))
+```
+
+**边过滤圆角（Pattern 14）—— 容差必须用 0.1–0.5，不能用 1e-3**：
+```python
+# 顶底引入倒角（闭合边）
+top_z = solid.bounding_box().max.Z
+chamfer_edges = [e for e in solid.edges()
+                 if e.is_closed and abs(e.center().Z - top_z) < 0.2]
+if chamfer_edges:
+    solid = solid.chamfer(c, None, chamfer_edges)
+
+# 竖棱倒角（开放边，长度 ≈ 高度）
+ht = solid.bounding_box().size.Z
+vert_edges = [e for e in solid.edges()
+              if not e.is_closed
+              and abs(e.center().Z - ht / 2) < ht * 0.45
+              and abs(e.length - ht) < 0.3]
+if vert_edges:
+    solid = solid.chamfer(c, None, vert_edges)
+```
+
+### A3.5 踩坑清单（必查）
+
+- [ ] 边过滤容差用 `0.1–0.5 mm`，**绝对不能用 `1e-3`**（OCC fuse 后顶点坐标有浮动）
+- [ ] 翼片 / 凸台 Z 锚点从 `z=0`（底面）开始，不是顶面 → `z_center = feature_h / 2`
+- [ ] `make_internal_thread` 已含中心圆柱，直接 `cut`，无需先打预孔；盲孔 `depth ≤ total_h`
+- [ ] `RegularPolygon(radius=r)` 中 `r` 是**外接圆半径**（顶点到中心），对边宽 `s → r = s / math.sqrt(3)`
+- [ ] 同一 `BuildPart` 内混合 `Cylinder` + `RegularPolygon extrude` 可能不稳定 → 分开建再 fuse
+- [ ] `fillet` / `chamfer` 的 `if edges:` 保护：过滤结果为空时静默跳过，不会报错
+
+---
+
+## A4 — 三层验证
+
+**顺序**：Layer 0 通过 → Layer 1 通过 → Layer 2 通过。任一层失败先修复再往下。
+
+### Layer 0 — 语法 + 导出
+
+```bash
+cd /path/to/build123d-parts-lib
+
+# 独立运行模块，确认无报错 + STEP 正常写出
+python3 -m build123d_parts_lib.parts.fasteners.<module_name>
+
+# 预期每行输出：
+# OK: m3_<tag>.step  vol=XXX.X mm³
+# OK: m4_<tag>.step  vol=XXX.X mm³
+# OK: m5_<tag>.step  vol=XXX.X mm³
+```
+
+**常见报错 → 修复**：
+
+| 报错 | 原因 | 修复 |
+|------|------|------|
+| `ValueError: Unknown size` | YAML type tag 不匹配 | 检查 `_load_specs()` 中 `type` 字符串与 YAML 完全一致 |
+| `StdFail_NotDone` / `BRep_API` | 几何 boolean 操作失败 | 检查 fuse 体积是否重叠正确；尝试分开建体 |
+| `AssertionError: fillet` | 边过滤为空 | 打印 `solid.edges()` center 坐标，调整过滤条件 |
+| `volume == 0` | 实体生成空体 | BuildPart 内无有效几何；检查参数正负 |
+
+### Layer 1 — OCP 视觉检查
+
+```python
+# 在 VSCode OCP viewer 打开的情况下运行
+from build123d_parts_lib.parts.fasteners.<module_name> import make_xxx
+from ocp_vscode import show, set_port, Camera, save_screenshot
+import socket, time
+
+# 自动探测 OCP 端口
+def _get_port():
+    for p in [3939, 4567]:
+        try:
+            socket.create_connection(("localhost", p), timeout=0.5).close()
+            return p
+        except OSError:
+            pass
+    raise RuntimeError("OCP viewer not running")
+
+set_port(_get_port())
+part = make_xxx("M4")
+show(part, reset_camera=Camera.RESET)
+time.sleep(2)
+save_screenshot("build123d_parts_lib/parts/fasteners/cache/m4_<tag>_verify.png")
+print("Screenshot saved")
+```
+
+**视觉检查清单**（逐项确认）：
+
+| 特征 | 检查标准 |
+|------|---------|
+| **整体外形** | 与该类型实物外观一致（圆柱头 / 盖形 / 翼片 / T 截面等） |
+| **外螺纹（螺丝/螺栓）** | 侧面可见锯齿螺牙纹路，杆端有倒角 |
+| **内螺纹（螺母）** | 从顶面孔口看到螺纹凹槽纹路 |
+| **驱动槽 — 内六角** | 顶面六棱孔可见，深度合理 |
+| **驱动槽 — 十字** | 十字槽有明显锥度（顶宽底窄），两道槽相互正交 |
+| **驱动槽 — 一字** | 贯穿头部直径的通槽，深度合理 |
+| **盖形螺母** | 顶部半球 dome 可见，底部六角柱清晰 |
+| **法兰螺母** | 底部圆盘法兰明显宽于六角柱 |
+| **蝶形螺母** | 两侧翼片对称，从底面延伸，外端圆角可见 |
+| **T 型螺母** | T 截面清晰（宽头在下、窄茎在上，呈阶梯形） |
+| **无破面 / 无穿透** | 实体无异常镂空或凹陷 |
+
+### Layer 2 — Cache 集成
+
+```bash
+# 确认 YAML factory 条目被 rebuild_cache 正确发现并构建
+cd /path/to/build123d-parts-lib
+python3 scripts/rebuild_cache.py --filter M4
+
+# 检查新 STEP 出现在输出列表（带 ✅）
+# 检查 cache/ 目录有对应 .step 文件
+ls cache/m4_<tag>*.step
+```
+
+### A4 产出报告
+
+验证完成后输出（复制给用户）：
+
+```
+──────────────────────────────────────────
+新增标准件：<件型名称>（<标准代号>）
+规格：M3 / M4 / M5
+
+Layer 0 — 导出：
+  m3_<tag>.step  vol=XXX mm³  ✅
+  m4_<tag>.step  vol=XXX mm³  ✅
+  m5_<tag>.step  vol=XXX mm³  ✅
+
+Layer 1 — OCP 视觉：
+  截图：cache/m4_<tag>_verify.png
+  外形正确 ✅ | 螺纹可见 ✅ | 关键特征：<逐条列出> ✅
+
+Layer 2 — Cache 集成：
+  rebuild_cache --filter M4 全部 ✅
+
+数据来源：<source.primary>（confidence=N，last_verified=YYYY-MM-DD）
+──────────────────────────────────────────
+```
+
+---
+
+## 附录：常用数值速查
+
+### ISO 粗牙螺距 + 小径
+
+| 规格 | d (mm) | pitch (mm) | r_minor = (d − 1.2269p)/2 |
+|------|--------|-----------|--------------------------|
+| M2 | 2.0 | 0.40 | 0.755 |
+| M2.5 | 2.5 | 0.45 | 0.974 |
+| M3 | 3.0 | 0.50 | 1.193 |
+| M4 | 4.0 | 0.70 | 1.572 |
+| M5 | 5.0 | 0.80 | 1.827 |
+| M6 | 6.0 | 1.00 | 2.388 |
+
+### 六角外接圆半径
+
+```
+r_circumscribed = s / sqrt(3)      # 对边宽 → 顶点到中心距离
+```
+
+| 对边 s | 外接圆 r |
+|--------|---------|
+| 5.5 | 3.175 |
+| 7.0 | 4.041 |
+| 8.0 | 4.619 |
+| 10.0 | 5.774 |
+| 13.0 | 7.506 |
+
+### 边过滤容差推荐
+
+| 用途 | 容差值 |
+|------|-------|
+| 闭合边 Z 位置（顶 / 底面） | `0.1 mm` |
+| 开放边中心位置（X / Y / Z） | `0.3–0.5 mm` |
+| 开放边长度匹配 | `0.5–2.0 mm` |
+| **不要用** | `1e-3 mm`（OCC fuse 后坐标有浮动） |

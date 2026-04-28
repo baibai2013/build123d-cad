@@ -16,11 +16,12 @@
 - protocols/          三大流程 Playbook（AI 执行期 SSOT）
 - verify/             Layer 0/1/2 + 反馈闭环
 - reference-product/  参考物建模子方法论（反推 / 标注 / 摄影）
-- parts/              API cheatsheet + 曲面建模
+- parts/              API cheatsheet + 典型建模模式（Pattern 13–15 含螺纹/多体融合/边过滤）+ 曲面建模
 - process/            3D 打印 / CNC / 激光工艺
 - assembly/           装配模式 + 爆炸动画
 - simulation/         FK / IK / 步态 / URDF
 - peter-corke/        仿真哲学
+- data-sources/       标准件尺寸数据（fasteners / bearings / servos）— 含 ISO 4762/7380/7046/2009/7045/1580 + 全套螺母
 
 ## 准入原则
 

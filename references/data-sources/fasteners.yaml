@@ -124,3 +124,160 @@ M5_ISO4762:
     confidence:    5
     last_verified: 2026-04-27
   notes: 铝型材（2020 V-slot）T 型螺母标配是 M5。
+
+# ─────────────────────────────────────────────────────────────────
+# ISO 7380  内六角圆头螺丝（button head）
+# ─────────────────────────────────────────────────────────────────
+M3_ISO7380:
+  aliases: [M3-button, M3-ISO7380]
+  standard: "ISO 7380"
+  type: button-head-socket-screw
+  thread: {d: 3.0, pitch: 0.50, unit: mm}
+  head: {dk: 5.7, k: 1.65, s: 2.0}
+  clearance_hole: {close_fit: 3.2, medium_fit: 3.4, loose_fit: 3.6}
+  parts_lib: {module: build123d_parts_lib.parts.fasteners.screw_button_hex, fn: make_button_hex_screw}
+  source: {primary: https://www.bossard.com, confidence: 4, last_verified: 2026-04-28}
+
+M4_ISO7380:
+  aliases: [M4-button, M4-ISO7380]
+  standard: "ISO 7380"
+  type: button-head-socket-screw
+  thread: {d: 4.0, pitch: 0.70, unit: mm}
+  head: {dk: 7.6, k: 2.2, s: 2.5}
+  clearance_hole: {close_fit: 4.3, medium_fit: 4.5, loose_fit: 4.8}
+  parts_lib: {module: build123d_parts_lib.parts.fasteners.screw_button_hex, fn: make_button_hex_screw}
+  source: {primary: https://www.bossard.com, confidence: 4, last_verified: 2026-04-28}
+
+M5_ISO7380:
+  aliases: [M5-button, M5-ISO7380]
+  standard: "ISO 7380"
+  type: button-head-socket-screw
+  thread: {d: 5.0, pitch: 0.80, unit: mm}
+  head: {dk: 9.5, k: 2.75, s: 3.0}
+  clearance_hole: {close_fit: 5.3, medium_fit: 5.5, loose_fit: 5.8}
+  parts_lib: {module: build123d_parts_lib.parts.fasteners.screw_button_hex, fn: make_button_hex_screw}
+  source: {primary: https://www.bossard.com, confidence: 4, last_verified: 2026-04-28}
+
+# ─────────────────────────────────────────────────────────────────
+# ISO 7046  十字沉头螺丝 / ISO 2009  一字沉头螺丝（csk）
+# ─────────────────────────────────────────────────────────────────
+M4_ISO7046:
+  aliases: [M4-csk-phillips, M4-ISO7046]
+  standard: "ISO 7046"
+  type: countersunk-phillips-screw
+  thread: {d: 4.0, pitch: 0.70, unit: mm}
+  head: {dk: 8.0, k: 2.3}
+  countersink: {angle_deg: 90, diameter: 8.0}
+  clearance_hole: {close_fit: 4.3, medium_fit: 4.5, loose_fit: 4.8}
+  parts_lib: {module: build123d_parts_lib.parts.fasteners.screw_csk_phillips, fn: make_csk_phillips_screw}
+  source: {primary: https://www.bossard.com, confidence: 4, last_verified: 2026-04-28}
+
+M4_ISO2009:
+  aliases: [M4-csk-slotted, M4-ISO2009]
+  standard: "ISO 2009"
+  type: countersunk-slotted-screw
+  thread: {d: 4.0, pitch: 0.70, unit: mm}
+  head: {dk: 8.0, k: 2.3}
+  countersink: {angle_deg: 90, diameter: 8.0}
+  clearance_hole: {close_fit: 4.3, medium_fit: 4.5, loose_fit: 4.8}
+  parts_lib: {module: build123d_parts_lib.parts.fasteners.screw_csk_slotted, fn: make_csk_slotted_screw}
+  source: {primary: https://www.bossard.com, confidence: 4, last_verified: 2026-04-28}
+
+# ─────────────────────────────────────────────────────────────────
+# ISO 7045  十字圆盘头 / ISO 1580  一字圆盘头（pan head）
+# ─────────────────────────────────────────────────────────────────
+M4_ISO7045:
+  aliases: [M4-pan-phillips, M4-ISO7045]
+  standard: "ISO 7045"
+  type: pan-head-phillips-screw
+  thread: {d: 4.0, pitch: 0.70, unit: mm}
+  head: {dk: 8.0, k: 3.1}
+  clearance_hole: {close_fit: 4.3, medium_fit: 4.5, loose_fit: 4.8}
+  parts_lib: {module: build123d_parts_lib.parts.fasteners.screw_pan_phillips, fn: make_pan_phillips_screw}
+  source: {primary: https://www.bossard.com, confidence: 4, last_verified: 2026-04-28}
+
+M4_ISO1580:
+  aliases: [M4-pan-slotted, M4-ISO1580]
+  standard: "ISO 1580"
+  type: pan-head-slotted-screw
+  thread: {d: 4.0, pitch: 0.70, unit: mm}
+  head: {dk: 8.0, k: 3.1}
+  clearance_hole: {close_fit: 4.3, medium_fit: 4.5, loose_fit: 4.8}
+  parts_lib: {module: build123d_parts_lib.parts.fasteners.screw_pan_slotted, fn: make_pan_slotted_screw}
+  source: {primary: https://www.bossard.com, confidence: 4, last_verified: 2026-04-28}
+
+# ─────────────────────────────────────────────────────────────────
+# 螺母 · Nuts
+# ─────────────────────────────────────────────────────────────────
+M4_NUT_ISO4032:
+  aliases: [M4-nut, M4-hex-nut, M4-ISO4032]
+  standard: "ISO 4032"
+  type: hex-nut
+  thread: {d: 4.0, pitch: 0.70, unit: mm}
+  dimensions: {s: 7.0, m: 3.2}   # s=对边宽, m=高度
+  clearance_hole: {close_fit: 4.3, medium_fit: 4.5}
+  parts_lib: {module: build123d_parts_lib.parts.fasteners.nut_hex, fn: make_hex_nut, args: {standard: ISO4032}}
+  source: {primary: https://www.bossard.com, confidence: 5, last_verified: 2026-04-28}
+  notes: 标准六角螺母，3D 打印件最常用。
+
+M4_NUT_DIN985:
+  aliases: [M4-nyloc, M4-DIN985]
+  standard: "DIN 985"
+  type: hex-nyloc-nut
+  thread: {d: 4.0, pitch: 0.70, unit: mm}
+  dimensions: {s: 7.0, m: 5.0, nylon_h: 1.5}
+  parts_lib: {module: build123d_parts_lib.parts.fasteners.nut_hex, fn: make_hex_nut, args: {standard: DIN985}}
+  source: {primary: https://www.bossard.com, confidence: 5, last_verified: 2026-04-28}
+  notes: 尼龙锁紧螺母，防振动松动。
+
+M4_NUT_DIN1587:
+  aliases: [M4-cap-nut, M4-acorn-nut, M4-DIN1587]
+  standard: "DIN 1587"
+  type: nut-cap
+  thread: {d: 4.0, pitch: 0.70, unit: mm}
+  dimensions: {s: 7.0, m: 6.5}   # m=总高（含半球顶）
+  parts_lib: {module: build123d_parts_lib.parts.fasteners.nut_cap, fn: make_cap_nut}
+  source: {primary: https://www.bossard.com, confidence: 4, last_verified: 2026-04-28}
+  notes: 盖形螺母；六角底 + 半球 dome，封盖螺栓端头。
+
+M4_NUT_DIN6923:
+  aliases: [M4-flange-nut, M4-DIN6923]
+  standard: "DIN 6923"
+  type: nut-flange
+  thread: {d: 4.0, pitch: 0.70, unit: mm}
+  dimensions: {s: 7.0, m: 5.0, flange_d: 11.0, flange_t: 1.0}
+  parts_lib: {module: build123d_parts_lib.parts.fasteners.nut_flange, fn: make_flange_nut}
+  source: {primary: https://www.bossard.com, confidence: 4, last_verified: 2026-04-28}
+  notes: 法兰螺母；自带圆盘法兰，免加平垫。
+
+M4_NUT_DIN315:
+  aliases: [M4-wing-nut, M4-butterfly-nut, M4-DIN315]
+  standard: "DIN 315"
+  type: nut-wing
+  thread: {d: 4.0, pitch: 0.70, unit: mm}
+  dimensions: {hub_d: 12.0, m: 13.0, wing_span: 28.0, wing_h: 11.0, wing_w: 2.5}
+  parts_lib: {module: build123d_parts_lib.parts.fasteners.nut_wing, fn: make_wing_nut}
+  source: {primary: https://www.bossard.com, confidence: 4, last_verified: 2026-04-28}
+  notes: 蝶形螺母；无工具手拧，快拆场景。
+
+M4_NUT_DIN562:
+  aliases: [M4-square-nut, M4-DIN562]
+  standard: "DIN 562"
+  type: nut-square
+  thread: {d: 4.0, pitch: 0.70, unit: mm}
+  dimensions: {a: 7.0, m: 2.2}   # a=方边长, m=高度
+  parts_lib: {module: build123d_parts_lib.parts.fasteners.nut_square, fn: make_square_nut}
+  source: {primary: https://www.bossard.com, confidence: 4, last_verified: 2026-04-28}
+  notes: 方形螺母；常嵌入 3D 打印件方孔（防旋转）。
+
+M4_NUT_TSLOT2020:
+  aliases: [M4-tslot-nut, M4-2020-nut, M4-tslot]
+  standard: "2020 extrusion market standard"
+  type: nut-tslot
+  thread: {d: 4.0, pitch: 0.70, unit: mm}
+  dimensions: {head_w: 5.75, head_h: 1.8, stem_w: 3.8, stem_h: 0.9, length: 10.0}
+  parts_lib: {module: build123d_parts_lib.parts.fasteners.nut_tslot, fn: make_tslot_nut}
+  source: {primary: market practice, confidence: 3, last_verified: 2026-04-28}
+  notes: |
+    2020 铝型材 T 型螺母；宽头嵌入槽腔，窄茎穿 6mm 槽口。
+    M4 是 2020 型材最常用规格（M5 用于 3030 型材）。
