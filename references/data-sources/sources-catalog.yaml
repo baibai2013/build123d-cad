@@ -1,5 +1,113 @@
 # Authoritative Sources Catalog —— 按类别整理的权威数据源 + WebSearch prompt 模板
 # 查询脚本未命中具体条目时，回落到此文件的对应类别，输出 priority_sources 和 websearch_prompt。
+#
+# 每个类别额外包含：
+#   key_params          — 必须从源提取的字段清单
+#   extraction_hints    — 针对各 SW 库的提取操作说明
+#   parts_lib_yaml_schema — 写入 parts-lib YAML 的模板
+#   parts_lib_py_hint   — 写 .py 工厂函数的提示（几何简化原则 + 签名）
+# 全局提取流程见文件末尾 _parts_lib_extraction_pipeline。
+# 全局平台兜底链见 _platform_fallback_chain（类别 priority_sources 找不到时按此顺序继续查）。
+
+# ======================================================================
+# 全局平台兜底链
+# 用法：类别 priority_sources 全部未命中时，按下列 order 依次尝试。
+# AI 执行规则：
+#   1. 先查当前类别的 priority_sources（最权威）
+#   2. 未命中 → 按 _platform_fallback_chain 的 order 逐平台搜索
+#   3. 每个平台先用 search_pattern 构造 WebSearch query
+#   4. 命中后 WebFetch 具体产品页提取参数
+#   5. 记录实际命中的平台到 data-sources YAML 的 source.primary
+# ======================================================================
+_platform_fallback_chain:
+  description: |
+    当类别 priority_sources 未命中时的跨平台兜底顺序。
+    覆盖 SW Toolbox 内容（通过 3D ContentCentral）及主流标准件平台。
+
+  platforms:
+    - order: 1
+      name: McMaster-Carr
+      url: https://www.mcmaster.com
+      search_pattern: 'site:mcmaster.com <part_name> dimensions'
+      how: |
+        1. WebSearch → 找产品页
+        2. WebFetch 产品页 → Specifications tab → 尺寸表
+        3. 约 80% 产品有 STEP/SolidWorks 原生文件可下载
+      best_for: [fasteners, bearings, structural, power_transmission, springs, seals]
+      confidence_if_cited: 5
+      notes: 工程尺寸金标准；与实际采购件一致；STEP 文件最可靠
+
+    - order: 2
+      name: MISUMI
+      url: https://us.misumi-ec.com
+      search_pattern: 'site:misumi-ec.com <part_name> dimensions'
+      how: |
+        1. WebSearch → 找产品系列页
+        2. WebFetch → Dimensional Drawing tab 或 Cross Section PDF
+        3. 可配置件直接在 URL 参数里调规格
+      best_for: [extrusions, linear_motion, fasteners, power_transmission, shafts]
+      confidence_if_cited: 5
+      notes: 精密机械标准件最全；铝型材/线性导轨首选；报价同步
+
+    - order: 3
+      name: 3D ContentCentral
+      url: https://www.3dcontentcentral.com
+      search_pattern: 'site:3dcontentcentral.com <part_name>'
+      how: |
+        1. WebSearch → 找零件页
+        2. WebFetch → Specifications / Details tab
+        3. 含 SW Toolbox 同源内容（Dassault 官方）
+        4. 可下载 SolidWorks 原生 .sldprt 文件
+      best_for: [fasteners, bearings, motors, electronic_modules, tooling]
+      confidence_if_cited: 4
+      notes: SW Toolbox 线上版，与 SW 内置库同源；厂商认证 + 社区共享混合
+
+    - order: 4
+      name: TraceParts
+      url: https://www.traceparts.com
+      search_pattern: 'site:traceparts.com <part_name> dimensions'
+      how: |
+        1. WebSearch → 找零件页
+        2. WebFetch → Technical Specifications tab
+        3. 支持按标准号搜索（如 ISO 4762 / DIN 912）
+      best_for: [fasteners, bearings, pneumatics, hydraulics, seals, structural]
+      confidence_if_cited: 4
+      notes: 900+ 品牌供应商目录；覆盖 SKF/Bosch/MISUMI 等原厂数据
+
+    - order: 5
+      name: PARTcommunity by CADENAS
+      url: https://b2b.partcommunity.com
+      search_pattern: 'site:partcommunity.com <part_name>'
+      how: |
+        1. WebSearch → 找零件页
+        2. WebFetch → 产品参数表（通常含完整技术规格）
+        3. 可按厂商浏览（FAG / Festo / Parker / Bosch Rexroth）
+      best_for: [bearings, automation, pneumatics, drive_tech, connectors]
+      confidence_if_cited: 4
+      notes: 500M+ 件，OEM 原厂参数；工业自动化元件覆盖最全
+
+    - order: 6
+      name: GrabCAD Community
+      url: https://grabcad.com/library
+      search_pattern: 'site:grabcad.com <part_name> STEP'
+      how: |
+        1. WebSearch → 找社区上传的 STEP 模型
+        2. 下载 STEP → 导入 OCP 量取关键尺寸
+        3. 结合 datasheet 交叉验证（不可仅凭 STEP）
+      best_for: [servos, motors, electronic_modules, custom_parts]
+      confidence_if_cited: 3
+      notes: 社区模型，精度不保证；仅作参数来源时必须用官方文档二次核实
+
+  fallback_websearch_templates:
+    - '<part_name> dimensions datasheet filetype:pdf'
+    - '<part_name> mechanical drawing mm specifications'
+    - '<standard_number> <part_name> dimensions table'
+
+  stop_condition: |
+    按顺序查完 6 个平台仍未找到参数时：
+    1. 在 data-sources YAML 写占位条目，confidence: 1，notes 注明"未找到权威源"
+    2. 在 parts-lib .py 中用注释标记 "# UNVERIFIED: dimensions estimated"
+    3. 向用户报告未命中，请求提供 datasheet 或实物测量值
 
 fasteners:
   description: 螺丝、螺母、垫片、热压铜螺母等紧固件
@@ -16,6 +124,14 @@ fasteners:
       url: https://www.bossard.com
       why: 欧规紧固件全表，PDF 可下载
       confidence_if_cited: 4
+    - name: TraceParts Fasteners
+      url: https://www.traceparts.com/en/search?Product=10-01
+      why: DIN/ISO/ANSI 全系含 CAD 下载
+      confidence_if_cited: 4
+    - name: PARTcommunity Fasteners
+      url: https://b2b.partcommunity.com
+      why: Bossard/Wurth/Hilti 等 650+ 厂商目录
+      confidence_if_cited: 4
   fallback_sources:
     - fastenal.com
     - mcmaster.com 的 "Product Detail" 页通常带 CAD download button
@@ -23,6 +139,55 @@ fasteners:
     - 'site:mcmaster.com <part> dimensions'
     - '"ISO 4762" M3 hex socket head cap screw dimensions'
     - '<part> DIN 912 head diameter head height hex key'
+  key_params:
+    - nominal_d      # 公称直径
+    - pitch          # 螺距
+    - head_d         # 头外径 dk
+    - head_h         # 头高 k
+    - hex_key        # 内六角对边 s
+    - clearance_close   # 孔配合（紧）
+    - clearance_medium  # 孔配合（中，FDM 推荐）
+    - counterbore_d     # 沉头孔直径
+    - counterbore_depth # 沉头孔深度
+  extraction_hints:
+    mcmaster: |
+      产品页 → Specifications tab
+      目标字段：Head Diameter / Head Height / Hex Key Size / Thread Pitch
+      URL 规律：https://www.mcmaster.com/<catalog-number>/
+    bossard: |
+      产品页 → Technical Data → 下载 PDF datasheet
+      表格列：d / dk / k / s（对应 nominal_d / head_d / head_h / hex_key）
+    iso_table: |
+      ISO 4762 标准表：d=公称径 dk=头径 k=头高 s=六角尺寸
+      WebSearch: '"ISO 4762" M<size> dimensions table filetype:pdf'
+    step_file: |
+      导入 OCP：
+      1. 量头部最大圆柱直径 → head_d
+      2. 量头部高度（头顶到杆肩） → head_h
+      3. 光杆直径 = nominal_d（公称）
+  parts_lib_yaml_schema: |
+    # 路径：parts-lib/build123d_parts_lib/parts/fasteners/<part_id_lower>.yaml
+    <PART_ID>:              # 例: M3_ISO4762
+      thread:
+        nominal_diameter: <float mm>
+        pitch: <float mm>
+        unit: mm
+      head:
+        diameter: <float mm>   # head_d
+        height:   <float mm>   # head_h
+        hex_key:  <float mm>   # s
+      clearance_hole:
+        close_fit:  <float mm>
+        medium_fit: <float mm>
+        loose_fit:  <float mm>
+      counterbore:
+        diameter: <float mm>
+        depth:    <float mm>
+      common_lengths_mm: [<int list>]
+  parts_lib_py_hint: |
+    # 几何简化：头部圆柱 + 光杆圆柱（不建螺纹、不建内六角凹槽）
+    # 坐标：Z=0 杆底面，Z=length 杆顶，Z=length+head_h 头顶
+    def make_<standard>_screw(length: float = 10.0) -> Part:
 
 bearings:
   description: 深沟球轴承 / 推力轴承 / 滚针轴承
@@ -35,6 +200,10 @@ bearings:
       url: https://www.nsk.com
       why: 同上
       confidence_if_cited: 5
+    - name: PARTcommunity Bearings
+      url: https://b2b.partcommunity.com
+      why: FAG/INA/Timken/NTN 原厂参数，可直接查手册
+      confidence_if_cited: 5
     - name: GrabCAD
       url: https://grabcad.com
       why: 社区 STEP 模型，命名通常为 608ZZ / 6001-2RS 等标准代号
@@ -45,6 +214,35 @@ bearings:
   websearch_prompts:
     - 'site:skf.com OR site:nsk.com <model> dimensions datasheet filetype:pdf'
     - '<model> deep groove ball bearing ID OD width'
+  key_params:
+    - d        # 内径
+    - D        # 外径
+    - B        # 宽度（厚度）
+    - r_min    # 最小倒角半径
+  extraction_hints:
+    skf: |
+      产品页 → Basic dimensions 表
+      列：d（内径）/ D（外径）/ B（宽度）/ r_lim（最小倒角）
+      URL 规律：https://www.skf.com/.../<model>
+    nsk: |
+      产品页 → Technical Data tab → 同 SKF 字段
+    step_file: |
+      导入 OCP：
+      1. 量最大外径 → D
+      2. 量中心孔径 → d
+      3. 量厚度（Z 轴） → B
+  parts_lib_yaml_schema: |
+    # 路径：parts-lib/build123d_parts_lib/parts/bearings/<part_id_lower>.yaml
+    <PART_ID>:              # 例: 608ZZ
+      d: <float mm>         # 内径
+      D: <float mm>         # 外径
+      B: <float mm>         # 宽度
+      r_min: <float mm>     # 最小倒角
+      unit: mm
+  parts_lib_py_hint: |
+    # 几何简化：外圈圆柱 + 内孔减材（不建滚珠/保持架/密封圈）
+    # 坐标：Z=0 底面，轴心 = Z 轴
+    def make_bearing(spec: str) -> Part:   # spec 从 YAML key 读取
 
 servos:
   description: 模型舵机（DC/Coreless）
@@ -54,7 +252,7 @@ servos:
       why: 独立运营数据库，覆盖主流舵机厂
       confidence_if_cited: 4
     - name: 厂商 datasheet
-      url: (TowerPro / Hitec / Savox / Savöx / KST 官网)
+      url: (TowerPro / Hitec / Savox / KST 官网)
       why: 一手资料
       confidence_if_cited: 5
     - name: Pololu / Adafruit 产品页
@@ -68,6 +266,54 @@ servos:
     - '<model> servo dimensions datasheet filetype:pdf'
     - 'site:servodatabase.com <model>'
     - 'site:pololu.com OR site:adafruit.com <model> servo mechanical drawing'
+  key_params:
+    - body_l            # 主体长（X）
+    - body_w            # 主体宽（Y）
+    - body_h            # 主体高（Z，不含输出轴）
+    - ear_width_total   # 含耳朵总宽
+    - ear_thickness     # 耳朵厚度
+    - ear_z_offset      # 耳朵底面到舵机底部距离
+    - screw_hole_d      # 耳朵安装孔直径
+    - screw_pitch       # 两耳安装孔中心距
+    - shaft_h           # 输出轴伸出高度
+  extraction_hints:
+    servodatabase: |
+      页面 Dimensions section：
+      Body: Length / Width / Height
+      Mounting: Ear Width / Hole Pitch
+    datasheet_pdf: |
+      三视图：
+      正视图量 Body L/H，侧视图量 W
+      俯视图量 ear_width_total / screw_pitch
+    step_file: |
+      导入 OCP：
+      1. 量主体 BoundingBox(L×W×H)
+      2. 量耳朵凸缘总宽 ear_width_total
+      3. 量两侧安装孔中心距 screw_pitch
+      4. 量输出轴顶距主体顶面 shaft_h
+  parts_lib_yaml_schema: |
+    # 路径：parts-lib/build123d_parts_lib/parts/servos/<part_id_lower>.yaml
+    <PART_ID>:              # 例: SG90
+      body:
+        length: <float mm>
+        width:  <float mm>
+        height: <float mm>
+        unit: mm
+      mount:
+        ear_width_total: <float mm>
+        ear_thickness:   <float mm>
+        ear_z_offset:    <float mm>
+        screw_hole_d:    <float mm>
+        screw_pitch:     <float mm>
+      output:
+        shaft_height_from_body_top: <float mm>
+        total_height: <float mm>
+        spline: "<string>"
+  parts_lib_py_hint: |
+    # 几何简化：主体箱 + 侧耳凸缘板 + 输出轴圆柱
+    # 不建线缆、齿轮、花键细节
+    # 坐标：原点在主体几何中心 XY，Z=0 底面
+    def make_<servo_id>() -> Part:
 
 motors:
   description: 步进电机 / 无刷电机 / 直流电机
@@ -78,9 +324,64 @@ motors:
     - name: NEMA 标准
       why: NEMA 17/23 外形尺寸有通用表（尾长除外）
       confidence_if_cited: 4
+    - name: MISUMI Motors
+      url: https://us.misumi-ec.com
+      why: 可配置 + 参数表完整
+      confidence_if_cited: 5
+    - name: McMaster-Carr Motors
+      url: https://www.mcmaster.com/motors
+      why: STEP 文件 + 尺寸表
+      confidence_if_cited: 4
   websearch_prompts:
     - '"NEMA 17" stepper motor dimensions frame size datasheet'
     - '<model> brushless motor dimensions filetype:pdf'
+    - 'site:misumi.com <model> motor dimensions'
+  key_params:
+    - frame_w        # 外框宽（NEMA17=42.3mm）
+    - body_l         # 电机体长（不同型号差异大）
+    - mount_pitch    # 安装孔对角中心距
+    - mount_hole_d   # 安装孔直径
+    - boss_d         # 定位凸台直径
+    - boss_h         # 定位凸台高度
+    - shaft_d        # 输出轴径
+    - shaft_l        # 输出轴伸出长度
+  extraction_hints:
+    stepperonline: |
+      产品页 → Datasheet PDF → Frame Size / Shaft Diameter / Mounting Hole Pitch
+      URL 规律：https://www.omc-stepperonline.com/...
+    nema_standard: |
+      NEMA 17 = 42.3mm frame，NEMA 23 = 57.1mm frame
+      安装孔 4×M3，孔距 31.0mm（NEMA17）
+      轴径 / 体长 → 查具体型号 datasheet
+    misumi: |
+      产品页 → Mechanical dimension tab → 全参数表（含 CAD 下载）
+    step_file: |
+      导入 OCP：
+      1. 量 frame 边长（正方形截面） → frame_w
+      2. 量法兰面安装孔对角中心距 → mount_pitch
+      3. 量定位凸台直径/高度 → boss_d / boss_h
+      4. 量轴径 / 伸出长度 → shaft_d / shaft_l
+  parts_lib_yaml_schema: |
+    # 路径：parts-lib/build123d_parts_lib/parts/motors/<part_id_lower>.yaml
+    <PART_ID>:              # 例: NEMA17_42
+      frame:
+        width:  <float mm>   # 正方形边长
+        length: <float mm>   # 电机体长（无轴）
+        unit: mm
+      mount:
+        hole_pitch: <float mm>   # 安装孔对角中心距
+        hole_d:     <float mm>   # 安装孔直径
+        boss_d:     <float mm>   # 定位凸台直径
+        boss_h:     <float mm>   # 定位凸台高度
+      shaft:
+        d: <float mm>
+        l: <float mm>            # 伸出长度
+        flat_w: <float mm>       # D 型轴平面宽（无则 0）
+  parts_lib_py_hint: |
+    # 几何简化：方形主体 + 前法兰圆盘 + 定位凸台 + 输出轴（圆柱或D型截面）
+    # 不建定子/转子/绕组，安装孔建模（通孔减材）
+    # 坐标：Z=0 法兰面，轴沿 +Z 伸出
+    def make_nema17(body_length: float = 40.0) -> Part:
 
 electronic_modules:
   description: PCB 模块 / 开发板 / 传感器 / 显示屏
@@ -100,35 +401,140 @@ electronic_modules:
   websearch_prompts:
     - 'site:digikey.com <part> mechanical dimensions'
     - 'site:adafruit.com OR site:sparkfun.com <board> dimensions mounting holes'
+  key_params:
+    - pcb_l              # PCB 长
+    - pcb_w              # PCB 宽
+    - pcb_h              # PCB 厚（通常 1.6mm FR4）
+    - mount_hole_d       # 安装孔直径
+    - mount_hole_positions  # 安装孔位置列表 [x,y] 相对左下角
+  extraction_hints:
+    adafruit_sparkfun: |
+      产品页 Downloads tab → Dimensions 图 或 Eagle/KiCad .brd 文件
+      GitHub hardware/ 目录 .kicad_pcb 可量取精确孔位
+    digikey_mouser: |
+      Mechanical Drawing tab → PCB outline + mounting holes
+    step_file: |
+      导入 OCP：
+      1. 量 PCB 长×宽（最大 XY bbox） → pcb_l / pcb_w
+      2. 量 PCB 厚 → pcb_h（通常 1.6mm）
+      3. 量各安装孔圆心 XY 坐标（相对某角） → mount_hole_positions
+  parts_lib_yaml_schema: |
+    # 路径：parts-lib/build123d_parts_lib/parts/electronic_modules/<part_id_lower>.yaml
+    <PART_ID>:              # 例: ESP32_DEVKITC_V4
+      pcb:
+        length:    <float mm>
+        width:     <float mm>
+        thickness: <float mm>   # 通常 1.6
+        unit: mm
+      mount_holes:
+        diameter: <float mm>
+        positions: [[x1,y1], [x2,y2], ...]   # 相对 PCB 左下角（mm）
+  parts_lib_py_hint: |
+    # 几何简化：PCB 薄板 + 安装孔减材
+    # 不建元器件/引脚，只建外轮廓和孔位（外壳设计用）
+    # 坐标：Z=0 PCB 底面，左下角在原点
+    def make_<board_id>() -> Part:
 
 connectors:
   description: 机械接插件（XT30/XT60/杜邦/USB/Type-C）
   priority_sources:
     - name: Amass 官网（XT 系列原厂）
+      url: https://www.amass.com
       confidence_if_cited: 5
     - name: USB-IF 规范
-      why: USB-C receptacle 尺寸有标准
+      why: USB-C receptacle 尺寸有 IEC 62680-1-3 标准
       confidence_if_cited: 5
     - name: Molex / JST / TE 官网
+      url: https://www.molex.com | https://www.jst.com | https://www.te.com
       confidence_if_cited: 5
   websearch_prompts:
     - '<connector> datasheet mechanical drawing filetype:pdf'
     - 'site:molex.com OR site:te.com <part-number>'
+  key_params:
+    - body_l         # 本体长
+    - body_w         # 本体宽
+    - body_h         # 本体高
+    - panel_cutout_w # 面板开孔宽（如有）
+    - panel_cutout_h # 面板开孔高
+  extraction_hints:
+    molex_jst_te: |
+      产品页 → Product Drawing PDF
+      正视图：量 Body W / H；俯视图：量 Body L
+      面板安装型：额外量 Panel Cutout W / H
+    usb_if: |
+      USB Type-C receptacle：插口宽 8.34mm / 高 2.56mm（IEC 62680-1-3）
+      PCB 焊接型 body 尺寸约 8.9mm × 3.0mm × 6.5mm
+    step_file: |
+      导入 OCP，量本体最大 BoundingBox (L×W×H)
+  parts_lib_yaml_schema: |
+    # 路径：parts-lib/build123d_parts_lib/parts/connectors/<part_id_lower>.yaml
+    <PART_ID>:
+      body:
+        length: <float mm>
+        width:  <float mm>
+        height: <float mm>
+        unit: mm
+      panel_cutout:         # 面板开孔（面板安装型才需要）
+        width:  <float mm>
+        height: <float mm>
+  parts_lib_py_hint: |
+    # 几何简化：本体长方体（装配占位 + 干涉检查用）
+    # 面板安装型另提供 make_<id>_cutout() 返回开孔减材 Solid
+    def make_<connector_id>() -> Part:
 
 extrusions:
   description: 铝型材 / 工业结构件
   priority_sources:
-    - name: Misumi / Bosch Rexroth / Item 官网
+    - name: MISUMI Aluminum Extrusion
+      url: https://us.misumi-ec.com/vona2/mech/M1500000000/M1501000000/
+      why: 可配置 + 完整断面参数 + CAD 下载
       confidence_if_cited: 5
-    - name: OpenBuilds
+    - name: Bosch Rexroth Profiles
+      url: https://www.boschrexroth.com/en/xc/products/product-groups/assembly-technology/aluminum-structural-framing
+      confidence_if_cited: 5
+    - name: OpenBuilds V-Slot
       url: https://openbuilds.com
       confidence_if_cited: 4
   websearch_prompts:
     - '"2020 V-slot" aluminum extrusion profile dimensions'
     - 'site:misumi.com <profile> dimensions'
+    - '"2020 aluminum extrusion" cross section slot width depth mm'
+  key_params:
+    - profile_w       # 外廓宽
+    - profile_h       # 外廓高（方形时 = profile_w）
+    - slot_width      # 槽口宽
+    - slot_depth      # 槽深
+    - wall_t          # 最薄壁厚
+    - center_hole_d   # 中心圆孔直径
+  extraction_hints:
+    misumi: |
+      产品页 → Cross Section PDF 或 Dimensional Drawing tab
+      标注：外廓 W×H / 槽口宽 / 槽深 / 中心孔 ⌀
+    openbuilds: |
+      V-slot 2020：slot_width=6.35mm，外廓 20×20mm
+      文档在 https://openbuilds.com/builds/v-slot.1/
+    step_file: |
+      导入 OCP（取 1mm 切片）：
+      1. 量断面外廓 W×H → profile_w / profile_h
+      2. 量槽口宽（最窄处） → slot_width
+      3. 量中心圆孔 ⌀ → center_hole_d
+  parts_lib_yaml_schema: |
+    # 路径：parts-lib/build123d_parts_lib/parts/extrusions/<part_id_lower>.yaml
+    <PART_ID>:              # 例: EXTRUSION_2020
+      profile:
+        width:          <float mm>   # 外廓宽
+        height:         <float mm>   # 外廓高
+        slot_width:     <float mm>   # 槽口宽
+        slot_depth:     <float mm>   # 槽深
+        wall_t:         <float mm>   # 最薄壁厚
+        center_hole_d:  <float mm>   # 中心孔径
+        unit: mm
+  parts_lib_py_hint: |
+    # 几何：建断面 Sketch（含4槽 + 中心孔）→ extrude(length)
+    # 断面 sketch 单独封装为 _make_2020_profile_sketch() 便于复用
+    def make_extrusion_2020(length: float = 100.0) -> Part:
 
 # ====== 通用建模代码搜索 ======
-# 当需要找"build123d 怎么写这种结构"时，用以下搜索策略
 build123d_code_search:
   description: 查 build123d / CadQuery 代码范式（非参数，是代码）
   priority_sources:
@@ -149,3 +555,89 @@ build123d_code_search:
   notes: |
     Claude Code 内置 WebSearch 足够；如配置了 Exa MCP，可用 get_code_context_exa
     深度抓 GitHub/文档，效果更好（可选增强，不强制）。
+
+# ======================================================================
+# 全局提取流程：从 SW 库源 → parts-lib YAML + .py
+# ======================================================================
+_parts_lib_extraction_pipeline:
+  description: |
+    从 SW 库（McMaster/SKF/MISUMI/TraceParts 等）提取零件参数
+    → 写入 parts-lib YAML（几何单一真相）
+    → 写 .py 工厂函数（build123d 实体）
+    → 在 data-sources 写薄层元数据（来源 + 指针）
+
+  step1_locate:
+    goal: 找到该类别的权威源页面
+    how: |
+      1. 查本文件对应类别的 priority_sources，按 confidence 从高到低尝试
+      2. 优先 WebFetch 产品页（比 WebSearch 精准），URL 从 priority_sources 的 url 字段推导
+      3. 找不到时再用 websearch_prompts 里的模板搜索
+
+  step2_extract_params:
+    goal: 提取必须字段（见各类别 key_params）
+    how_webfetch: |
+      WebFetch 产品页 → 解析 Specifications / Dimensions / Technical Data 表格
+      McMaster 典型路径：产品页 → "Specifications" tab → 尺寸表
+      SKF 典型路径：产品页 → "Basic dimensions" 表格
+      MISUMI 典型路径：产品页 → "Dimensional Drawing" tab
+    how_step: |
+      若有 STEP 文件（McMaster/TraceParts/GrabCAD 可下载）：
+      1. import_step() 导入 OCP 查看
+      2. 按各类别 extraction_hints.step_file 量取关键尺寸
+      3. STEP 量取值作为验证，产品页参数为主
+    how_pdf: |
+      若只有 PDF datasheet：
+      1. WebFetch PDF URL（返回文本）→ 搜索尺寸表
+      2. 找三视图标注值（通常以 mm 为单位的浮点数）
+    confidence_rule: |
+      厂商官方页面 / ISO 标准 → confidence: 5
+      权威第三方数据库（servodatabase / McMaster） → confidence: 4
+      社区 STEP 量取 / 非官方来源 → confidence: 3
+      仅单一非权威来源 → confidence: 2，必须在 notes 标注"未二次验证"
+
+  step3_write_parts_lib_yaml:
+    goal: 在 parts-lib 建参数 YAML（几何单一真相）
+    target: build123d-parts-lib/build123d_parts_lib/parts/<category>/<part_id_lower>.yaml
+    schema: 见各类别 parts_lib_yaml_schema 字段
+    rules:
+      - 只存几何参数，不存 source metadata（source 留在 data-sources）
+      - 所有尺寸字段同级写 unit: mm（显式，避免英制混淆）
+      - 浮点数保留 1 位小数（0.1mm 精度足够装配用途）
+      - 列表型字段（如 common_lengths_mm）用 YAML 内联列表
+
+  step4_write_parts_lib_py:
+    goal: 在 parts-lib 写工厂函数，从同目录 YAML 读参数
+    target: build123d-parts-lib/build123d_parts_lib/parts/<category>/<part_id_lower>.py
+    rules:
+      - 文件头注释：Source / Standards / License / 简化程度说明
+      - 从 YAML 读参数，不硬编码常量（参考 sg90.py 模式）
+      - 导出 make_<part_id>() -> Part 工厂函数
+      - 坐标约定：原点在几何中心 XY，Z=0 为安装基准面（底面或法兰面）
+      - 简化原则：装配定位 + 干涉检查够用即可（见各类别 parts_lib_py_hint）
+      - __main__ 块写 STEP 缓存逻辑（export_step → cache/<part_id>.step）
+    read_yaml_pattern: |
+      import yaml
+      from pathlib import Path
+      _SPEC = yaml.safe_load((Path(__file__).parent / "<part_id_lower>.yaml").read_text())
+
+  step5_update_data_sources:
+    goal: 在 data-sources 对应 YAML 写薄层元数据（来源溯源 + parts-lib 指针）
+    target: references/data-sources/<category>.yaml
+    schema: |
+      <PART_ID>:
+        aliases: [<alias1>, <alias2>, ...]
+        category: <category>
+        source:
+          primary:       <URL>            # 本次查到参数的页面
+          datasheet:     <PDF URL 或 "">
+          confidence:    <1-5>
+          last_verified: <YYYY-MM-DD>
+        parts_lib:
+          module:     build123d_parts_lib.parts.<category>.<filename>
+          factory:    make_<part_id>
+          cache_step: build123d_parts_lib/parts/<category>/cache/<part_id>.step
+        notes: <量产公差 / 版本差异 / 使用注意>
+    rules:
+      - 不在此写几何尺寸（已在 parts-lib YAML 里）
+      - parts_lib 字段必填，串联 data-sources ↔ parts-lib
+      - 已有 parts_lib 的条目 confidence < 3 时下次使用前必须重新核实
