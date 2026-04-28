@@ -281,3 +281,103 @@ M4_NUT_TSLOT2020:
   notes: |
     2020 铝型材 T 型螺母；宽头嵌入槽腔，窄茎穿 6mm 槽口。
     M4 是 2020 型材最常用规格（M5 用于 3030 型材）。
+
+# ─────────────────────────────────────────────────────────────────
+# 内六角紧定螺丝 ISO 4026/4028/4029  (set screws / grub screws)
+# ─────────────────────────────────────────────────────────────────
+M4_ISO4026:
+  aliases: [M4-set-flat, M4-grub-flat, M4-ISO4026, M4-DIN913]
+  standard: "ISO 4026 / DIN 913"
+  type: socket-set-screw-flat
+  thread: {d: 4.0, pitch: 0.70, unit: mm}
+  head: {s: 2.0}   # 内六角对边宽
+  tip: {style: flat, dp_max: 2.50}
+  common_lengths_mm: [4, 6, 8, 10, 12]
+  source: {primary: https://fullerfasteners.com/tech/iso-4026-specifications-hex-socket-set-screws-with-flat-point/, confidence: 5, last_verified: 2026-04-28}
+  parts_lib: {module: build123d_parts_lib.parts.fasteners.screw_set, fn: make_set_screw, args: {size: "M4", tip: "flat", length: 8}}
+
+M4_ISO4028:
+  aliases: [M4-set-cone, M4-grub-cone, M4-ISO4028]
+  standard: "ISO 4028 (cone per user task spec)"
+  type: socket-set-screw-cone
+  thread: {d: 4.0, pitch: 0.70, unit: mm}
+  head: {s: 2.0}
+  tip: {style: cone, included_angle_deg: 90}
+  common_lengths_mm: [4, 6, 8, 10, 12]
+  source: {primary: https://fullerfasteners.com/tech/iso-4027-specifications-hex-socket-set-screws-with-cone-point/, confidence: 4, last_verified: 2026-04-28}
+  parts_lib: {module: build123d_parts_lib.parts.fasteners.screw_set, fn: make_set_screw, args: {size: "M4", tip: "cone", length: 8}}
+
+M4_ISO4029:
+  aliases: [M4-set-cup, M4-grub-cup, M4-ISO4029, M4-DIN916]
+  standard: "ISO 4029 / DIN 916"
+  type: socket-set-screw-cup
+  thread: {d: 4.0, pitch: 0.70, unit: mm}
+  head: {s: 2.0}
+  tip: {style: cup, dv_max: 2.0}
+  common_lengths_mm: [4, 6, 8, 10, 12]
+  source: {primary: https://fullerfasteners.com/tech/iso-4029-specifications-hex-socket-set-screws-with-cup-point/, confidence: 5, last_verified: 2026-04-28}
+  parts_lib: {module: build123d_parts_lib.parts.fasteners.screw_set, fn: make_set_screw, args: {size: "M4", tip: "cup", length: 8}}
+  notes: 电机联轴器、皮带轮轴孔固定常用。
+
+# ─────────────────────────────────────────────────────────────────
+# 六角铜柱隔离柱 / 马车螺栓  (standoffs + carriage bolt)
+# ─────────────────────────────────────────────────────────────────
+M4_STANDOFF_FF:
+  aliases: [M4-standoff-FF, M4-spacer-FF]
+  standard: "Market convention"
+  type: hex-standoff-ff
+  thread: {d: 4.0, pitch: 0.70, unit: mm}
+  dimensions: {s: 7.0}   # 对边宽 across-flats
+  common_lengths_mm: [8, 10, 12, 16, 20, 25]
+  source: {primary: https://bulkman3d.com/product/hd0042-1/, confidence: 3, last_verified: 2026-04-28}
+  parts_lib: {module: build123d_parts_lib.parts.fasteners.standoff_hex, fn: make_hex_standoff, args: {size: "M4", length: 10, style: "FF"}}
+  notes: PCB 叠层、面板固定常用；两端均为内螺纹。[market convention]
+
+M4_STANDOFF_MF:
+  aliases: [M4-standoff-MF]
+  standard: "Market convention"
+  type: hex-standoff-mf
+  thread: {d: 4.0, pitch: 0.70, unit: mm}
+  dimensions: {s: 7.0, stud_length: 8.0}
+  common_lengths_mm: [8, 10, 12, 16, 20, 25]
+  source: {primary: https://bulkman3d.com/product/hd0042-1/, confidence: 3, last_verified: 2026-04-28}
+  parts_lib: {module: build123d_parts_lib.parts.fasteners.standoff_hex, fn: make_hex_standoff, args: {size: "M4", length: 10, style: "MF"}}
+  notes: 一端内螺纹 + 另一端外螺纹杆（stud 8mm）。[market convention]
+
+M4_DIN603:
+  aliases: [M4-DIN603, M4-carriage-bolt, M4-coach-bolt]
+  standard: "DIN 603 (extended, market convention)"
+  type: carriage-bolt
+  thread: {d: 4.0, pitch: 0.70, unit: mm}
+  head: {dk: 8.0, k: 2.4}
+  dimensions: {sq: 4.0, sq_h: 2.4}   # 方颈尺寸
+  common_lengths_mm: [16, 20, 25, 30]
+  source: {primary: https://www.aspenfasteners.com/content/pdf/Metric_DIN_603_spec.pdf, confidence: 3, last_verified: 2026-04-28}
+  parts_lib: {module: build123d_parts_lib.parts.fasteners.screw_carriage, fn: make_carriage_bolt, args: {size: "M4", length: 20}}
+  notes: 圆头方颈螺栓；方颈防转，木结构和型材连接。[non-standard size, market convention]
+
+# ─────────────────────────────────────────────────────────────────
+# 拉铆螺母 / 弹簧销 DIN 1481
+# ─────────────────────────────────────────────────────────────────
+M4_NUT_RIVET:
+  aliases: [M4-rivet-nut, M4-nutsert, M4-blind-rivet-nut]
+  standard: "rivet-nut (market convention)"
+  type: rivet-nut
+  thread: {d: 4.0, pitch: 0.70, unit: mm}
+  dimensions: {od: 6.0, length: 13.5, flange_d: 9.0, flange_t: 1.2}
+  grip_range_mm: [0.0, 3.5]
+  clearance_hole: {medium_fit: 6.1}
+  source: {primary: https://www.bossard.com, confidence: 4, last_verified: 2026-04-28}
+  parts_lib: {module: build123d_parts_lib.parts.fasteners.rivet_nut, fn: make_rivet_nut, args: {size: "M4"}}
+  notes: 拉铆螺母（安装前形态）；薄板件内螺纹应用，安装后铆管膨胀锁紧。
+
+D4_DIN1481:
+  aliases: [d4-spring-pin, d4-DIN1481, 4mm-spring-pin]
+  standard: "DIN 1481"
+  type: spring-pin
+  nominal: {d: 4.0, unit: mm}
+  dimensions: {od_free: 4.20, wall_t: 1.0, slit_w: 1.2}
+  common_lengths_mm: [10, 12, 14, 16, 20, 25]
+  source: {primary: https://www.bossard.com, confidence: 4, last_verified: 2026-04-28}
+  parts_lib: {module: build123d_parts_lib.parts.fasteners.pin_spring, fn: make_spring_pin, args: {nominal_d: 4, length: 12}}
+  notes: 弹簧销（开口圆管 C 形截面）；轴向弹性定位，安装孔径 = 公称直径。
