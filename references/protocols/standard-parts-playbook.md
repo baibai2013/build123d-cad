@@ -436,9 +436,24 @@ Layer 2 — Cache 集成：
 
 > A5 是强制步骤，不能跳过。未完成 A5 = 零件只在本机，其他人拿不到。
 
-### A5.1 生成代表规格 M4 canonical cache
+### A5.1 生成 canonical cache（STEP + PNG）
 
-> **只生成 M4**，用短名（不带 size/length 后缀）。这是 `parts-index.md` 预览图引用的规范路径。
+> 每个 factory 只出**一个代表规格**，用短名（不带 size/length 后缀）。
+> 这是 `parts-index.md` 预览图引用的规范路径，其他规格需要时直接调 factory 重新生成。
+
+**规格选择约定**：
+
+| 类别 | 代表规格 | 说明 |
+|------|---------|------|
+| **紧固件**（螺丝/螺母/螺栓/垫圈/嵌件） | **M4** | 最常用，覆盖所有头型/形状 |
+| **轴承**（bearings） | 工厂默认型号（608ZZ / MR85ZZ / F688ZZ / LM8UU） | 不用 M4，用型号名 |
+| **销与光轴**（pins） | 工厂默认直径+长度（D4 / L20 等） | 不用 M4，用 diameter+length |
+| **舵机**（servos） | 工厂默认型号（SG90 / single horn） | 不用 M4，用型号名 |
+| **传动件**（transmission） | 工厂默认参数（20T 带轮 / L200 同步带 / 5×5 平行键） | 不用 M4 |
+| **卡簧**（retainers） | 工厂默认直径（shaft_d=8 / hole_d=12） | 不用 M4 |
+| **密封件**（seals） | 工厂默认参数（d1=10, d2=2.0） | 不用 M4 |
+
+**紧固件（fasteners）代码模板**：
 
 ```python
 from build123d_parts_lib.parts.fasteners.<module_name> import make_xxx
@@ -459,18 +474,23 @@ def _get_port():
 set_port(_get_port())
 cache = Path("build123d_parts_lib/parts/fasteners/cache")
 
-part = make_xxx("M4")                              # 代表规格
+part = make_xxx("M4")                              # 紧固件代表规格 = M4
 
 # STEP（canonical 短名）
 export_step(part, str(cache / "<slug>.step"))
 
-# PNG（OCP 截图，若 OCP save_screenshot 超时则 cp m4_xxx.png <slug>.png）
+# PNG（OCP 截图，若 save_screenshot 超时则从已有文件复制）
 show(part, reset_camera=Camera.RESET)
 time.sleep(3)
 save_screenshot(str(cache / "<slug>.png"))
 # 备选：若 OCP 截图超时 → 直接复制已有 M4 文件
 # import shutil; shutil.copy(cache/"m4_xxx.png", cache/"<slug>.png")
 ```
+
+**非紧固件类目**用 `scripts/gen_nonfastener_cache.py` 中的批量模板（所有 factory 调默认参数）。
+
+**cache/ 目录规范**：每个 factory 只保留一个 `<slug>.step` + `<slug>.png`，
+任何带尺寸后缀（`m4_xxx`, `d4_xxx`）或 `_verify` 的临时文件**必须删除**后再提交。
 
 **命名规则**：
 
@@ -481,6 +501,8 @@ save_screenshot(str(cache / "<slug>.png"))
 | `standoff_hex.py` | `standoff_hex` | — |
 | `rivet_nut.py` | `rivet_nut` | — |
 | `pin_spring.py` | `pin_spring` | — |
+| `ball_bearing.py` | `ball_bearing` | — |
+| `timing_pulley_gt2.py` | `timing_pulley_gt2` | — |
 
 ### A5.2 更新 parts-index.md
 
