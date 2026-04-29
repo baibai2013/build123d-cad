@@ -542,25 +542,23 @@ Step R4.0 产出报告
 
 ```bash
 SKILL=/Users/liyijiang/.agents/skills/build123d-cad
+VERIFY=/Users/liyijiang/.agents/skills/cad-vision-verify
 
 # Layer 1 合同运行时验证
 python3 $SKILL/scripts/validate/contract_verify.py \
   --contract tests/<test>/contract.yaml \
   --params tests/<test>/params.json
 
-# Layer 2 视觉对比（需要 R2.7 产出的 part_face_mapping.yaml）
-python3 $SKILL/scripts/visual/multi_view_screenshot.py \
-  tests/<test>/<part>.step \
-  --mode ortho \
-  --face-mapping references/<slug>/part_face_mapping.yaml
-
-python3 $SKILL/scripts/visual/visual_compare.py \
-  output/<part>_FRONT.png references/<slug>/clean/official_front_cropped.png \
-  --reference-scale references/<slug>/clean/official_front_scale.json \
-  --rendered-scale auto \
-  --mode edge_overlay \
-  --output output/compare_front.png
+# Layer 2 视觉对比（cad-vision-verify — 替代旧 visual_compare.py）
+python3 $VERIFY/scripts/verify_loop.py \
+  --contract tests/<test>/contract.yaml \
+  --ref-dir  references/<slug>/clean/ \
+  --output-dir output/<test>/verify/ \
+  --mode auto
 ```
+
+> **注**：旧版 `multi_view_screenshot.py` + `visual_compare.py` 已由 `verify_loop.py` 统一替代。
+> `verify_loop.py` 自动探测 Claude Vision / OpenCV / manual 三种模式，无需手动分步。
 
 **AI 回报契约**：
 ```
@@ -569,19 +567,20 @@ Step R4 产出报告
   "tests/<test>/<part>.py（建模脚本，末尾带 OCP 自动预览块）"
 - [x] tests/<test>/<part>.py              (Layer 1 pass)
 - [x] OCP Viewer 预览已打开               (端口 3939)
-- [x] Layer 2 edge_overlay: IoU=0.87     (≥0.85 阈值，pass)
+- [x] Layer 2 verify_loop: score=87/100  (≥80 PASS)
 下一步：Step R5
 ```
 
-**Layer 2 失败反馈**：若 IoU < 0.85，按 `references/verify/feedback-diagnosis.md` 分根因回退：
-- 根因 A（数据源错）→ 回补 R2/R3
+**Layer 2 失败反馈**：score < 80，按 `verify_loop.py` 返回的诊断路由：
+- 根因 A（数据源错）→ 回补 R2/R3；fix_action 含 params.md 修改方向
 - 根因 B（合同错）→ 回 R3.5 改 contract.yaml
 - 根因 C（代码错）→ 修改建模代码
 - 修复上限：L1×3 + L2×2 + 跨层×2 = 总计 ≤ 5 轮
+- 诊断输出 ≤ 3 条，S（< 5 min）优先执行
 
 **参考**：
 - Layer 1：`references/verify/layer1-verification.md`
-- Layer 2：`references/verify/layer2-visual.md` + `references/verify/edge-comparison.md`
+- Layer 2：`/Users/liyijiang/.agents/skills/cad-vision-verify/SKILL.md`（新主文档）
 - 反馈闭环：`references/verify/feedback-diagnosis.md`
 
 ---

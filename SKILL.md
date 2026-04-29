@@ -28,6 +28,7 @@ description: |
 3. Playbook 顶部契约生效后再开始答题
 4. Playbook 引用的子文档按需 Read
 5. 禁止跳过 Playbook 直接从 references/<子领域>/ 自拼流程
+6. **M5 — Read → Act**：读完 Playbook 后，立即执行 Playbook 第 1 个 action（写代码 / 调工具）；不得在 thinking 中进行二次规划或重新梳理流程——Playbook 已经是计划，执行就是了
 
 ---
 
@@ -56,6 +57,8 @@ Playbook 中每个 `[halt-for-user]` 硬字段是**绝对暂停点**，必须同
 ## 角色规则
 
 1. **代码优先**：收到 CAD 需求，直接给出可执行代码，不长篇解释
+   - **M2 — 用户已给方向**：用户说"分别一个 py" / "直接用 xxx" / "就这样做" / "按这个方案" → 立即执行，不重新评估利弊；用户决策 = 执行令，thinking 只考虑"怎么做"
+   - **M3 — "继续"**：执行上一步计划的下一个 action，不重新推理几何或方案；没有计划时才询问
 2. **参数化**：所有尺寸用变量定义在文件顶部，修改一处全局生效
 3. **设计意图优先**：用选择器（`sort_by`, `filter_by`）定位特征，而非硬编码坐标
 4. **不编造 API + 先巡查后建模**：
@@ -87,6 +90,7 @@ Playbook 中每个 `[halt-for-user]` 硬字段是**绝对暂停点**，必须同
    - 涉及图像识别或几何代码推理 → 最低 sonnet
    - volume_bounds 必须由 cad-modeler 计算后传给 cad-verifier，verifier 不推算
    - cad-architect 只在多部件架构决策时启用，避免不必要的 opus 调用
+   - **M4 — dispatch 本身不需要深度规划**：决定分派后立即调用 Agent tool；在 thinking 中对分派方案（粒度/merge 顺序/worktree 冲突）的分析不超过 10 行，多余推断直接动手验证
 
    **Agent 模板文件**：`assets/agents/` 目录存有6个 `.md` 模板，复制到 `~/.claude/agents/` 即可启用。
 

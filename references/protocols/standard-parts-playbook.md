@@ -255,6 +255,15 @@ if __name__ == "__main__":
 
 ### A3.4 常用几何配方
 
+> ⚠️ **螺纹必须先查工具函数，禁止重新推导**
+>
+> | 场景 | 正确用法 |
+> |------|---------|
+> | 外螺纹螺杆 | `make_external_thread(d, pitch, L)` → `fuse` 到杆 |
+> | 内螺纹（贯通/盲孔） | `make_internal_thread(d, pitch, length)` → `cut` 实体 |
+>
+> 查 `_thread_utils.py` 是 A3 的**第 0 步**，未查就推导 Helix / V槽公式 = 违规，立即停止推导，改为 `from ._thread_utils import ...`。
+
 **六角柱**（对边宽 s → 外接圆半径 r）：
 ```python
 import math
@@ -394,6 +403,56 @@ print(f"Preview PNG saved via {backend}")
 | **T 型螺母** | T 截面清晰（宽头在下、窄茎在上，呈阶梯形） |
 | **无破面 / 无穿透** | 实体无异常镂空或凹陷 |
 
+### Layer 2 — 视觉规格验证（bearing / servo 等 Compound 类）
+
+> 适用于**有 YAML 规格文件**的标准件（bearings、servos 等返回 `Compound` 的工厂）。
+> 紧固件（螺丝/螺母等）无 Compound 子件结构，Layer 2 仅做下方 Cache 集成，可跳过此节。
+
+**调用方式（Python）**：
+
+```python
+import sys
+sys.path.insert(0, "/Users/liyijiang/.agents/skills/cad-vision-verify/scripts")
+from verify_loop import verify_standard_part
+
+# 以轴承为例
+from build123d_parts_lib.parts.bearings.ball_bearing import make_ball_bearing
+solid = make_ball_bearing("608ZZ")
+
+result = verify_standard_part(
+    solid      = solid,
+    slug       = "ball_bearing",          # factory slug
+    model      = "608ZZ",                 # YAML model key
+    yaml_path  = "build123d_parts_lib/parts/bearings/bearings.yaml",
+    verify_temp= "./verify_temp",         # gitignored，在 parts-lib 根目录
+)
+print(result["verdict"])   # PASS / WARN / FAIL
+```
+
+**调用方式（CLI）**：
+
+```bash
+python3 /Users/liyijiang/.agents/skills/cad-vision-verify/scripts/verify_loop.py \
+  --mode standard-part \
+  --slug ball_bearing \
+  --model 608ZZ \
+  --yaml build123d_parts_lib/parts/bearings/bearings.yaml \
+  --verify-temp ./verify_temp
+```
+
+**验证内容**（自动执行）：
+1. YAML 规格 → 生成 contract（d/D/B + 外观描述）
+2. Compound 子件检查（外圈/内圈/保持架/滚珠数量）
+3. 7 视角截图（ISO/FRONT/BACK/TOP/BOTTOM/RIGHT/LEFT）→ `verify_temp/<session>/`
+4. Claude Vision 对照规格评估 → `overall_score`
+5. FAIL 时输出 ≤ 3 条量化诊断（fix_size S/M/L，含具体 fix_action）
+
+**判定阈值**：score ≥ 80 → PASS；60–79 → WARN；< 60 → FAIL
+
+**修复上限**：FAIL 最多 2 轮视觉修复（`MAX_FIX_ROUNDS["layer2"] = 2`）
+
+---
+
 ### Layer 2 — Cache 集成（build_cache.py 统一入口）
 
 先在 `scripts/build_cache.py` 的 `_rep_bundle()` 清单中加入新 factory 的**代表规格**条目：
@@ -424,16 +483,19 @@ ls build123d_parts_lib/parts/fasteners/cache/<slug>.png
 ```
 ──────────────────────────────────────────
 新增标准件：<件型名称>（<标准代号>）
-规格：M3 / M4 / M5
+规格：M3 / M4 / M5   （轴承用型号名，如 608ZZ）
 
 Layer 0 — 导出：
-  m3_<tag>.step  vol=XXX mm³  ✅
-  m4_<tag>.step  vol=XXX mm³  ✅
-  m5_<tag>.step  vol=XXX mm³  ✅
+  <tag>.step  vol=XXX mm³  ✅
 
 Layer 1 — 视觉（VTK 离屏）：
   预览：cache/<slug>.png
-  外形正确 ✅ | 螺纹可见 ✅ | 关键特征：<逐条列出> ✅
+  外形正确 ✅ | 关键特征：<逐条列出> ✅
+
+Layer 2 — 视觉规格验证（bearing/servo）：    ← 仅 Compound 类需要
+  verdict=PASS  score=XX/100  子件检查=✅
+  session: verify_temp/<ts>_<slug>_<model>/
+  （紧固件跳过此行）
 
 Layer 2 — Cache 集成：
   scripts/build_cache.py 全部 ✅（代表规格 1 step + 1 png）
