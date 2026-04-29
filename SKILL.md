@@ -1340,7 +1340,8 @@ save_screenshot(png_path)
 - **有交互 IDE + 工程展示**（新增 parts-lib 零件、核对齿形）→ 走 OCP（Cursor / VS Code 开着 Viewer）
 - **CI / 无 GUI 环境**（headless 服务器、批量渲染）→ 强制 VTK
 
-**统一生成入口：`scripts/build_cache.py`**：
+**统一生成入口：`scripts/build_cache.py` + 验证入口：`scripts/verify_cache.py`**：
+
 所有 cache 由 `scripts/build_cache.py` 的 `_rep_bundle()` 清单统一驱动：
 ```python
 # scripts/build_cache.py
@@ -1350,10 +1351,17 @@ def _rep_bundle():
         ...
     ]
 ```
-每个条目 → 1 个 STEP + 1 个 PNG。运行：
+每个条目 → 1 个 STEP + 1 个 PNG。
+
+**常用命令**（增量覆盖，不 purge 其他类别）：
 ```bash
-python scripts/build_cache.py  # purge 所有 cache/ 后重新生成
+python scripts/build_cache.py --only bearings            # 按 category
+python scripts/build_cache.py --only ball_bearing        # 按 slug
+python scripts/build_cache.py --only ball_bearing --model 6000ZZ  # 具体型号
+python scripts/verify_cache.py --only bearings           # 三层断言验证
 ```
+
+**详细说明见 → `references/parts-lib/cache-workflow.md`**（含 `--model` 约束、三层断言阈值、OCP 截图异步坑、新增零件 6 步流程）。
 
 ### 新增 parts-lib 零件的 4 步流程
 

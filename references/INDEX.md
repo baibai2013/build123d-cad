@@ -10,6 +10,7 @@
 | 曲面建模 | parts/surface-modeling.md | parts/cheatsheet.md |
 | 工艺约束 | process/{3d-printing,cnc,laser}.md | — |
 | 仿真 / IK | simulation/ | peter-corke/simulation-philosophy.md |
+| parts-lib cache 管理 | parts-lib/cache-workflow.md | SKILL.md §parts-lib Cache 规范 |
 
 ## 目录职责（一行一目录）
 
@@ -17,6 +18,7 @@
 - verify/             Layer 0/1/2 + 反馈闭环
 - reference-product/  参考物建模子方法论（反推 / 标注 / 摄影）
 - parts/              API cheatsheet + 典型建模模式（Pattern 13–15 含螺纹/多体融合/边过滤）+ 曲面建模
+- parts-lib/          parts-lib 仓库操作（cache 生成/验证脚本、--model 型号定向导出）
 - process/            3D 打印 / CNC / 激光工艺
 - assembly/           装配模式 + 爆炸动画
 - simulation/         FK / IK / 步态 / URDF
