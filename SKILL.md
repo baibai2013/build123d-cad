@@ -1293,6 +1293,84 @@ d = get_clearance_diameter("M3", fit="medium")   # 3.4 mm (FDM)
 
 `spec_lookup.py` 命中后会**自动输出 parts_lib 入口**（仅当 YAML 里配了 `parts_lib:` 字段时），AI 就能在建模时直接引用实体库。
 
+### parts-lib Cache 规范（重要！）
+
+**Cache 粒度**：`parts/<category>/cache/` 里**每类零件只存 1 对文件**：
+- `<slug>.step` — 一个**代表规格**的 STEP（不是每个尺寸都存）
+- `<slug>.png` — 同一规格的预览图
+
+❌ 禁止每个规格（`m2_20t_bore8.step` / `m1_16t_bore5.step` ...）都入 cache，堆积几十个文件。
+✅ 只入代表规格（`spur_gear.step` / `spur_gear.png`），其他规格**运行时按需生成**。
+
+**PNG 渲染后端：OCP Viewer 优先 → VTK 兜底**：
+
+实测（2026-04-29，7 种齿轮入库验证）：**OCP Viewer 的 WebGL 渲染带 edge-line 描边、质感清晰，齿数可数；VTK 偏糊但无依赖**。两者都保留，按场景选择：
+
+| 后端 | 函数 | 依赖 | 输出质量 | 典型大小 |
+|---|---|---|---|---|
+| **OCP**（优先） | `save_preview_png_ocp()` | VS Code / Cursor 的 OCP CAD Viewer 插件跑在 3939/4567 | 边线清晰，金属质感，齿/螺纹可数 | ~120~330 KB |
+| **VTK**（兜底） | `save_preview_png()` | `vtk` Python 包，无 Viewer 依赖 | Phong 平滑，无边线，略糊 | ~30~90 KB |
+
+**推荐调用方式**（自动探测 OCP，失败转 VTK）：
+
+```python
+from build123d_parts_lib._preview_ocp import save_preview_png_auto
+
+path, backend = save_preview_png_auto(part, "cache/my_part.png",
+                                       title="My Part m2 z20")
+# backend ∈ {"ocp", "vtk (ocp 失败: ...)"}
+```
+
+**OCP 后端实现细节**（`_preview_ocp.py`）：
+```python
+from ocp_vscode import Camera, save_screenshot, set_port, show
+from ocp_vscode.comms import port_check
+from ocp_vscode.state import get_ports
+
+port = next((int(p) for p in get_ports() if port_check(int(p))), None)
+set_port(port)
+show(part, reset_camera=Camera.RESET)
+time.sleep(2)            # WebGL render settle
+save_screenshot(png_path)
+```
+
+**VTK 后端实现细节**（`_preview.py`）：`vtkPolyDataNormals + feature_angle=60°`，Phong 平滑；原理见文件内注释。
+
+**适用场景选择**：
+- **有交互 IDE + 工程展示**（新增 parts-lib 零件、核对齿形）→ 走 OCP（Cursor / VS Code 开着 Viewer）
+- **CI / 无 GUI 环境**（headless 服务器、批量渲染）→ 强制 VTK
+
+**统一生成入口：`scripts/build_cache.py`**：
+所有 cache 由 `scripts/build_cache.py` 的 `_rep_bundle()` 清单统一驱动：
+```python
+# scripts/build_cache.py
+def _rep_bundle():
+    return [
+        (category, slug, factory_fn, kwargs, title),
+        ...
+    ]
+```
+每个条目 → 1 个 STEP + 1 个 PNG。运行：
+```bash
+python scripts/build_cache.py  # purge 所有 cache/ 后重新生成
+```
+
+### 新增 parts-lib 零件的 4 步流程
+
+| 步骤 | 动作 |
+|---|---|
+| 1 | 写 `parts/<category>/<part>.py`：参数化 factory 函数 + `if __name__`：**只做几何断言（`is_valid` / `bbox` / `solids==1`），不写 cache** |
+| 2 | 更新 `parts/<category>/<category>.yaml`：新条目（`aliases` / `dimensions` / `source` / `factory` / `cache: cache/<slug>.step` / `notes`） |
+| 3 | 更新 `parts/<category>/__init__.py`：导出 `make_<part>` 到 `__all__` |
+| 4 | 更新 `scripts/build_cache.py` 的 `_rep_bundle()`：新增一条代表规格；运行 `python scripts/build_cache.py` 验证生成 step + png |
+
+**验收门**：运行 `python scripts/build_cache.py` 无 `[FAIL]`，AI 用 Read 核对 PNG 的几何是否合理（齿数、齿形、比例），通过再 commit。
+
+**已知陷阱**：
+- `part.is_valid` 是**属性**不是方法（无括号）；某些复杂布尔结果 is_valid=False 是 OCP 容差假阳性，用 `volume>0` + `bbox ≈ 理论值` 作主断言更稳
+- 大型非凸多边形（齿轮/凸轮）一次 extrude 会让 OCP viewer 忽略顶底面（`face ignored`）：必须用"根实体 + 逐特征 Algebra Mode 融合"
+- Boolean fuse 浮点误差可能留微小孤立 solid → 返回前用 `max(part.solids(), key=lambda s: s.volume)` 过滤 + `BuildPart() + add(main)` 重新包装
+
 参见：[https://github.com/baibai2013/build123d-parts-lib](https://github.com/baibai2013/build123d-parts-lib)
 
 ## 代码源体系（建模前先巡查社区）
