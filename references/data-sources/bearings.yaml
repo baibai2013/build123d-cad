@@ -96,3 +96,56 @@ F688ZZ:
     confidence:    4
     last_verified: 2026-04-27
   notes: 带法兰微型轴承，常用于 3D 打印机 Bowden 送料机构。
+
+TS17x23x3_5:
+  aliases: [ts17x23x3_5, TS17x23x3.5, thin-section-17x23x3.5, INA61803, FAG61803]
+  category: bearings
+  type: thin-section-deep-groove-ball-bearing
+  dimensions:
+    inner_diameter: 17.0  # d
+    outer_diameter: 23.0  # D
+    width:          3.5   # B
+    cross_section:  3.0   # (D-d)/2 = 3 mm，极薄截面
+    unit:           mm
+  source:
+    primary:       https://www.ina.com/content/dam/schaeffler/global/worldwide/products/bearings-and-housing/rolling-bearings/single-row-deep-groove-ball-bearings/61803-2rsr/
+    confidence:    4
+    last_verified: 2026-04-29
+  parts_lib:
+    module: build123d_parts_lib.parts.bearings.thin_section_bearing
+    fn: make_thin_section_bearing
+    args: {model: "TS17x23x3_5"}
+    cache: build123d_parts_lib/parts/bearings/cache/thin_section_bearing.step
+  notes: |
+    谐波减速器波发生器轴承（BOM A3）。截面极薄（(D-d)/2 = 3 mm），
+    安装于椭圆凸轮外径，驱动柔轮变形。对应 INA/FAG 61803 系列。
+    安装间隙配合：凸轮轴 k5/m5（过盈），外径入柔轮 H7（间隙）。
+
+7001C:
+  aliases: [7001c, 7001C, 7001-C, angular-contact-7001]
+  category: bearings
+  type: angular-contact-ball-bearing
+  contact_angle_deg: 15.0
+  arrangement: DB  # 背对背成对配置
+  dimensions:
+    inner_diameter: 12.0  # d
+    outer_diameter: 28.0  # D
+    width:          8.0   # B
+    unit:           mm
+  load:
+    dynamic_c_n:  6550    # 动载荷（SKF 7001 CE/HCP4A）
+    static_c0_n:  3000    # 静载荷
+    max_rpm_grease: 28000
+  source:
+    primary:       https://www.skf.com/group/products/rolling-bearings/ball-bearings/angular-contact-ball-bearings/single-row-angular-contact-ball-bearings/productid-7001-CE%2FHCP4A
+    confidence:    5
+    last_verified: 2026-04-29
+  parts_lib:
+    module: build123d_parts_lib.parts.bearings.angular_contact_bearing
+    fn: make_angular_contact_bearing
+    args: {model: "7001C"}
+    cache: build123d_parts_lib/parts/bearings/cache/angular_contact_bearing.step
+  notes: |
+    QDD 关节模组输出主轴承（BOM A4），DB 成对配置承受径向+轴向+倾覆载荷。
+    外圈带单肩（C 型）：一侧沉孔减料暴露保持架，便于轴向预载调整。
+    与 6001-2RS 尺寸相同（d=12/D=28/B=8），可互换安装孔，但承载方向不同。

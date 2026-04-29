@@ -107,6 +107,7 @@ Playbook 中每个 `[halt-for-user]` 硬字段是**绝对暂停点**，必须同
 | 参考物建模 | 需求含已存在的具体产品型号（手机/芯片板/舵机/传感器…） | `references/protocols/reference-product-playbook.md` |
 | 单部件 | 1 个独立实体，无装配关系 | `references/protocols/single-part-playbook.md` |
 | 多部件 | ≥2 个部件 / 有关节装配 / 有仿真需求 | `references/protocols/multi-part-playbook.md` |
+| **标准件入库** | **向 `build123d-parts-lib` 新增标准件 / 入库 / 标准件开发 / BOM 里缺的轴承螺丝等通用零件** | **`references/protocols/standard-parts-playbook.md`** |
 
 ---
 
@@ -141,6 +142,20 @@ Playbook 中每个 `[halt-for-user]` 硬字段是**绝对暂停点**，必须同
 **唯一执行路径**：立即 Read `references/protocols/single-part-playbook.md`，按 Playbook 的 S1~S4 执行。
 
 **SKILL.md 本文件不含 S1~S4 细节**——凭记忆走视为违规，必须回补 Read + Quote-back。
+
+**Quote-back 强制**：每个 Step 产出报告第一行引用 Playbook 原文（格式见 Playbook §执行契约）。
+
+---
+
+## 标准件入库流程
+
+**触发**：向 `build123d-parts-lib` 新增标准件（轴承 / 螺丝 / 螺母 / 舵机 / 卡圈等通用零件），含"做 BOM 里缺的 XXX"、"标准件开发"、"入库"等语义。
+
+**唯一执行路径**：立即 Read `references/protocols/standard-parts-playbook.md`，按 Playbook 的 A1~A5 执行。
+
+**SKILL.md 本文件不含 A1~A5 细节**——凭记忆走视为违规，必须回补 Read + Quote-back。
+
+**⚠️ 特别注意**：SKILL.md 正文后方有一个"新增 parts-lib 零件的 4 步流程"表，那是**已废弃的简化版**，缺少 A4 三层验证和 A5 入库收尾，**不得使用**——以 standard-parts-playbook.md 为准。
 
 **Quote-back 强制**：每个 Step 产出报告第一行引用 Playbook 原文（格式见 Playbook §执行契约）。
 
