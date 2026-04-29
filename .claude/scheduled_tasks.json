@@ -1,0 +1,13 @@
+{
+  "tasks": [
+    {
+      "id": "155beb76",
+      "cron": "17 9 * * 3",
+      "prompt": "双周 D-Gate 健康检查提醒：运行 `cd e:/work/build123d-parts-lib && python scripts/scan_all_gates.py` 检查所有 D0/D1/D2 门控。发现 FAIL 时直接修复对应 factory 文件或 YAML；不需要讨论。同时检查是否有新的 slug 需要补 D0 文件（`python scripts/check_d0_ops.py --slug <new_slug> --category <cat> --init`）。",
+      "createdAt": 1777483886031,
+      "recurring": true,
+      "createdBySessionId": "8f202a6d-3763-4dae-85b2-18c0f4f8a945",
+      "createdByPid": 20140
+    }
+  ]
+}
