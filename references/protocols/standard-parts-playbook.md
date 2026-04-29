@@ -335,6 +335,9 @@ if vert_edges:
 
 **顺序**：Layer 0 通过 → Layer 1 通过 → Layer 2 通过。任一层失败先修复再往下。
 
+> ⛔ **入库门控（强制）**：Layer 2 `verify_standard_part()` 必须返回 `verdict=PASS` 才能进入 A5 入库。
+> WARN 需用户明确确认；FAIL 必须修复至 PASS，**不得绕过直接提交**。
+
 ### Layer 0 — 语法 + 导出
 
 ```bash
@@ -403,10 +406,11 @@ print(f"Preview PNG saved via {backend}")
 | **T 型螺母** | T 截面清晰（宽头在下、窄茎在上，呈阶梯形） |
 | **无破面 / 无穿透** | 实体无异常镂空或凹陷 |
 
-### Layer 2 — 视觉规格验证（bearing / servo 等 Compound 类）
+### Layer 2 — 视觉规格验证（**所有有 YAML 规格文件的标准件，无豁免**）
 
-> 适用于**有 YAML 规格文件**的标准件（bearings、servos 等返回 `Compound` 的工厂）。
-> 紧固件（螺丝/螺母等）无 Compound 子件结构，Layer 2 仅做下方 Cache 集成，可跳过此节。
+> **强制执行**：所有新增标准件（轴承 / 密封件 / 螺丝 / 螺母 / 舵机 / 销轴 / 传动件等），
+> 只要有 YAML 规格文件，**必须**调用 `verify_standard_part()`，不得以"非 Compound"为由跳过。
+> Compound 类会自动做子件检查；非 Compound 类（Part）跳过子件检查，但 7 视角截图 + AI Vision 评估**仍须执行**。
 
 **调用方式（Python）**：
 
@@ -415,7 +419,7 @@ import sys
 sys.path.insert(0, "/Users/liyijiang/.agents/skills/cad-vision-verify/scripts")
 from verify_loop import verify_standard_part
 
-# 以轴承为例
+# 示例：轴承（Compound）
 from build123d_parts_lib.parts.bearings.ball_bearing import make_ball_bearing
 solid = make_ball_bearing("608ZZ")
 
@@ -427,6 +431,19 @@ result = verify_standard_part(
     verify_temp= "./verify_temp",         # gitignored，在 parts-lib 根目录
 )
 print(result["verdict"])   # PASS / WARN / FAIL
+
+# 示例：O 型圈（Part，非 Compound）— 同样必须调用
+from build123d_parts_lib.parts.seals.oring import make_oring
+solid = make_oring(d1=40.0, d2=2.0)
+
+result = verify_standard_part(
+    solid      = solid,
+    slug       = "oring",
+    model      = "OR_40x20",
+    yaml_path  = "build123d_parts_lib/parts/seals/oring.yaml",
+    verify_temp= "./verify_temp",
+)
+print(result["verdict"])
 ```
 
 **调用方式（CLI）**：
@@ -441,10 +458,10 @@ python3 /Users/liyijiang/.agents/skills/cad-vision-verify/scripts/verify_loop.py
 ```
 
 **验证内容**（自动执行）：
-1. YAML 规格 → 生成 contract（d/D/B + 外观描述）
-2. Compound 子件检查（外圈/内圈/保持架/滚珠数量）
-3. 7 视角截图（ISO/FRONT/BACK/TOP/BOTTOM/RIGHT/LEFT）→ `verify_temp/<session>/`
-4. Claude Vision 对照规格评估 → `overall_score`
+1. YAML 规格 → 生成 contract（关键尺寸 + 外观描述）
+2. Compound 子件检查（外圈/内圈/保持架/滚珠数量）—— 仅 Compound 类执行，Part 类自动跳过
+3. 7 视角截图（ISO/FRONT/BACK/TOP/BOTTOM/RIGHT/LEFT）→ `verify_temp/<session>/` —— **所有类型必须执行**
+4. Claude Vision 对照规格评估 → `overall_score` —— **所有类型必须执行**
 5. FAIL 时输出 ≤ 3 条量化诊断（fix_size S/M/L，含具体 fix_action）
 
 **判定阈值**：score ≥ 80 → PASS；60–79 → WARN；< 60 → FAIL
@@ -492,10 +509,10 @@ Layer 1 — 视觉（VTK 离屏）：
   预览：cache/<slug>.png
   外形正确 ✅ | 关键特征：<逐条列出> ✅
 
-Layer 2 — 视觉规格验证（bearing/servo）：    ← 仅 Compound 类需要
-  verdict=PASS  score=XX/100  子件检查=✅
+Layer 2 — 视觉规格验证（所有有 YAML 规格的标准件，无豁免）：
+  verdict=PASS  score=XX/100  子件检查=✅（Compound）/ N/A（Part）
   session: verify_temp/<ts>_<slug>_<model>/
-  （紧固件跳过此行）
+  ⛔ verdict ≠ PASS 不得进入 A5
 
 Layer 2 — Cache 集成：
   scripts/build_cache.py 全部 ✅（代表规格 1 step + 1 png）
@@ -511,6 +528,9 @@ Layer 2 — Cache 集成：
 **目标**：A4 三层验证全部通过后，把新件型正式写入索引、文档、技能数据源，并提交两个 repo。
 
 > A5 是强制步骤，不能跳过。未完成 A5 = 零件只在本机，其他人拿不到。
+>
+> ⛔ **前置条件**：A4 Layer 2 `verdict=PASS`（或 WARN 经用户确认）才可开始 A5。
+> 未跑 Layer 2 / verdict=FAIL 时，**禁止执行任何 A5 步骤**，必须先修复至 PASS。
 
 ### A5.1 生成 canonical cache（STEP + PNG）
 
