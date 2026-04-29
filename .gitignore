@@ -31,6 +31,9 @@ env/
 .vscode/
 *.code-workspace
 
+# Claude Code 本地配置（含个人 token/权限，不入版本控制）
+.claude/settings.local.json
+
 # 测试/临时文件
 *.tmp
 *.log
