@@ -1,0 +1,33 @@
+# 密封件参数库（Seals）
+# O 型圈（O-Ring），ISO 3601-1 / GB/T 3452.1 标准。
+# 字段：d1 = 内径 (mm)，d2 = 截面直径 / 索绳直径 (mm)
+# 外径 OD = d1 + 2×d2；环形体积 = 2π² × (d1/2 + d2/2) × (d2/2)²
+
+OR_40x20:
+  aliases: [o-ring-40x2, or-40-20, o40x2.0, or40x2, bom-d1]
+  category: seals
+  type: o-ring
+  standard: "GB/T 3452.1 / ISO 3601-1"
+  dimensions:
+    d1: 40.0    # 内径
+    d2: 2.0     # 截面直径
+    od: 44.0    # 外径 = d1 + 2*d2
+    unit: mm
+  tolerance:
+    d1_plus: 0.30
+    d1_minus: 0.30
+    d2_plus: 0.10
+    d2_minus: 0.10
+  source:
+    primary: https://openstd.samr.gov.cn/bzgk/gb/newGbInfo?hcno=B2B43E1D35B65FD42ABD6DF3E23D88E2
+    confidence: 5
+    last_verified: 2026-04-29
+  parts_lib:
+    module: build123d_parts_lib.parts.seals.oring
+    fn: make_oring
+    args: {d1: 40.0, d2: 2.0}
+    cache: build123d_parts_lib/parts/seals/cache/oring.step
+  notes: |
+    BOM D1 — 液冷/气密关节密封用 O 型圈，NBR 材质。
+    外径 44mm，截面圆 ⌀2mm，OCC Torus 几何（major_r=21, minor_r=1）。
+    常用于水下机器人关节、气动阀门盖板密封槽（槽深 ≈ 1.6mm，槽宽 ≈ 2.4mm）。
