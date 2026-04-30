@@ -6,7 +6,7 @@ English | [中文](README.md)
 
 > *"Think like a machinist, not a programmer." — Dave Cowden*
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
 [![Claude Code](https://img.shields.io/badge/Claude%20Code-Skill-blueviolet)](https://claude.ai/code)
 [![build123d](https://img.shields.io/badge/build123d-CAD-green)](https://github.com/gumyr/build123d)
 [![Nuwa](https://img.shields.io/badge/Made%20with-Nuwa.skill-orange)](https://github.com/alchaincyf/nuwa-skill)
@@ -373,9 +373,15 @@ npx skills add alchaincyf/nuwa-skill
 
 ---
 
+## Disclaimer
+
+This skill is intended for engineering exploration and learning. Reference documentation and examples are compiled from publicly available online resources. Design suggestions generated with AI assistance should be reviewed with professional tools; actual manufacturing tolerances should be adjusted based on your specific process. Upstream dependencies evolve; some example code may require adaptation. Provided as-is, without warranty of fitness for a particular purpose.
+
+---
+
 ## License
 
-MIT — Use it, modify it, model anything.
+Apache License 2.0 — Use it, modify it, model anything. Commercial use allowed, with explicit patent grant, consistent with upstream [build123d](https://github.com/gumyr/build123d) (Apache 2.0). See [LICENSE](LICENSE).
 
 ---
 
@@ -385,7 +391,7 @@ MIT — Use it, modify it, model anything.
 
 <br>
 
-MIT License
+Apache License 2.0
 
 Made with [Nuwa.skill](https://github.com/alchaincyf/nuwa-skill)
 

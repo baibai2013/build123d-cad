@@ -6,7 +6,7 @@
 
 > *「像机械师思考，而不是像程序员思考。」— Dave Cowden*
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
 [![Claude Code](https://img.shields.io/badge/Claude%20Code-Skill-blueviolet)](https://claude.ai/code)
 [![build123d](https://img.shields.io/badge/build123d-CAD-green)](https://github.com/gumyr/build123d)
 [![Nuwa](https://img.shields.io/badge/Made%20with-女娲.skill-orange)](https://github.com/alchaincyf/nuwa-skill)
@@ -373,9 +373,17 @@ npx skills add alchaincyf/nuwa-skill
 
 ---
 
+## 免责声明
+
+本项目以工程探索与学习交流为目的，参考文档及示例基于网络公开数据收集整理，按现状提供，不对特定用途的适用性作出承诺。AI 辅助生成的设计建议结合专业工具进行评审，实际制造公差请根据工艺自行调整。上游依赖库持续演进，部分示例代码可能需要适配。
+
+---
+
 ## 许可证
 
-MIT — 随便用，随便改，随便建模。
+Apache License 2.0 — 随便用，随便改，随便建模，商业可用，含专利授权条款。详见 [LICENSE](LICENSE)。
+
+与上游 [build123d](https://github.com/gumyr/build123d)（Apache 2.0）保持一致。
 
 ---
 
@@ -385,7 +393,7 @@ MIT — 随便用，随便改，随便建模。
 
 <br>
 
-MIT License
+Apache License 2.0
 
 Made with [女娲.skill](https://github.com/alchaincyf/nuwa-skill)
 
