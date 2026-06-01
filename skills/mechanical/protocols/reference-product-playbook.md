@@ -298,7 +298,7 @@ Step R2.5 产出报告
 下一步：Step R2.7
 ```
 
-**参考**：`references/reference-product/reverse-engineering.md`（5 种手段 A~E 的应用边界）
+**参考**：`../references/reference-product/reverse-engineering.md`（5 种手段 A~E 的应用边界）
 
 ---
 
@@ -325,7 +325,7 @@ python3 $SKILL/scripts/visual/preprocess_reference.py \
   --output-dir references/$SLUG/clean/
 
 # 2) 基于模板写 part_face_mapping.yaml
-cp $SKILL/references/verify/part-face-mapping-template.yaml \
+cp $SKILL/skills/mechanical/references/verify/part-face-mapping-template.yaml \
    references/$SLUG/part_face_mapping.yaml
 # 编辑内容：
 #   - part: <产品 slug>
@@ -347,9 +347,9 @@ Step R2.7 产出报告
 ```
 
 **参考**：
-- `references/verify/reference-image-preprocessing.md`（预处理 6 节规范）
-- `references/verify/part-face-mapping-template.yaml`（模板）
-- `references/verify/edge-comparison.md`（下游 Layer 2 阈值）
+- `../references/verify/reference-image-preprocessing.md`（预处理 6 节规范）
+- `../references/verify/part-face-mapping-template.yaml`（模板）
+- `../references/verify/edge-comparison.md`（下游 Layer 2 阈值）
 
 **特别提示**：
 - 只要本次要做 Layer 2 视觉对比，R2.7 就必做——哪怕 R2 有 STEP。
@@ -396,7 +396,7 @@ Step R2.7 产出报告
 | 开孔余量（单侧） | +0.5mm | 防止遮挡关键接口 |
 ```
 
-**置信度约定**（与 `references/reference-product/photo-annotation.md` 同步）：
+**置信度约定**（与 `../references/reference-product/photo-annotation.md` 同步）：
 - ★★★★★ 官网参数 / 规格书 / STEP 实测
 - ★★★★ 三视图反推（手段 B）/ 已知基准测量（手段 C）
 - ★★★ 拆机视频截帧反推（手段 E）
@@ -470,7 +470,7 @@ Step R3.5 产出报告
 下一步：等用户确认 → Step R4
 ```
 
-**参考**：`references/verify/layer0-contract.md`
+**参考**：`../references/verify/layer0-contract.md`
 
 > 发 `[halt-for-user]` 前必过 SKILL.md §确认门执行契约 的三项自检。
 
@@ -579,9 +579,9 @@ Step R4 产出报告
 - 诊断输出 ≤ 3 条，S（< 5 min）优先执行
 
 **参考**：
-- Layer 1：`references/verify/layer1-verification.md`
+- Layer 1：`../references/verify/layer1-verification.md`
 - Layer 2：`/Users/liyijiang/.agents/skills/cad-vision-verify/SKILL.md`（新主文档）
-- 反馈闭环：`references/verify/feedback-diagnosis.md`
+- 反馈闭环：`../references/verify/feedback-diagnosis.md`
 
 ---
 
@@ -736,7 +736,7 @@ python3 -c "from PIL import Image; print(Image.open('<img>').size)"
 **根因**：AI 没真 Read，凭记忆拼了一句"像 Playbook 的话"
 **诊断**：
 ```bash
-grep -F "<被引用的原文>" references/protocols/reference-product-playbook.md
+grep -F "<被引用的原文>" ../protocols/reference-product-playbook.md
 ```
 **修复**：要求 AI 重新 Read 对应 Step 原文，重出产出报告；多次违规视为必须降级重跑本 Step
 

@@ -458,10 +458,10 @@ Step S2.5 产出报告
 | 薄壁件 | `offset(amount=-t, openings=face)` 抽壳 |
 | 阵列特征 | `GridLocations` / `PolarLocations` |
 | 快速组合 | Algebra Mode（`+`, `-`, `&`） |
-| **有机曲面/流线型** | **Loft 多截面放样 + Sweep 扭转**（见 `references/parts/surface-modeling.md`） |
+| **有机曲面/流线型** | **Loft 多截面放样 + Sweep 扭转**（见 `../references/parts/surface-modeling.md`） |
 | **复杂轮廓（齿轮/凸轮）** | **根实体 + 逐特征 Algebra Mode 融合** |
 
-完整代码模板见 `references/parts/patterns.md`，可运行示例见 `assets/` 目录。
+完整代码模板见 `../references/parts/patterns.md`，可运行示例见 `assets/` 目录。
 
 ### 生成3个变体 + OCP 并排对比
 

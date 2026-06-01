@@ -376,7 +376,7 @@ Phase P2 产出报告
 **前置**：Step 2a~2d 所有部件各自选定变体并导出 STEP。
 
 **本步产出**：
-- `tests/<test>/assembly_contract.yaml`（含顶层 `parts` + `cross_refs`，schema 见 `references/verify/layer0-contract.md §Appendix B`）
+- `tests/<test>/assembly_contract.yaml`（含顶层 `parts` + `cross_refs`，schema 见 `../references/verify/layer0-contract.md §Appendix B`）
 - `tests/<test>/precheck_bbox.md`（两两 AABB 重叠检查）
 - 用户 review 两份产物后决定 "ok 进 P3" 或 "改 <具体>"（未确认前不得进 P3）
 
@@ -710,7 +710,7 @@ python3 $SKILL/scripts/visual/visual_compare.py \
   --output output/compare_front.png
 ```
 
-**Layer 2 失败反馈**：IoU < 0.85 时按 `references/verify/feedback-diagnosis.md` 分根因回退：
+**Layer 2 失败反馈**：IoU < 0.85 时按 `../references/verify/feedback-diagnosis.md` 分根因回退：
 - 根因 A（数据源错）→ 回补 `reference-product-playbook.md` §R2/R3
 - 根因 B（合同错）→ 回 `reference-product-playbook.md` §R3.5 改 contract.yaml
 - 根因 C（代码错）→ 回 P2 改对应部件，或回 P3 改装配/关节
@@ -731,9 +731,9 @@ Phase P4 产出报告
 ```
 
 **参考**：
-- Layer 1：`references/verify/layer1-verification.md`
-- Layer 2：`references/verify/layer2-visual.md` + `references/verify/edge-comparison.md`
-- 反馈闭环：`references/verify/feedback-diagnosis.md`
+- Layer 1：`../references/verify/layer1-verification.md`
+- Layer 2：`../references/verify/layer2-visual.md` + `../references/verify/edge-comparison.md`
+- 反馈闭环：`../references/verify/feedback-diagnosis.md`
 
 ---
 

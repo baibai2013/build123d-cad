@@ -131,7 +131,7 @@ Q4 → 侧面可见矩形键槽，两端可见倒角
 | 拉铆螺母 | 市场惯例（Blind Rivet Nut） |
 | 弹簧销（开口圆管） | DIN 1481 / ISO 8752 |
 
-先检查 skill 内 `references/data-sources/fasteners.yaml` 是否已有该 key → 有则直接读取，跳至 A2。
+先检查 skill 内 `../references/data-sources/fasteners.yaml` 是否已有该 key → 有则直接读取，跳至 A2。
 
 ### A1.2 按置信度查数据源
 
@@ -650,7 +650,7 @@ if __name__ == "__main__":
 
 ### A3.3 选择几何 Pattern
 
-按零件形态选（参考 `references/parts/patterns.md` Pattern 13/14/15）：
+按零件形态选（参考 `../references/parts/patterns.md` Pattern 13/14/15）：
 
 | 零件形态 | Pattern |
 |---------|---------|
@@ -1064,7 +1064,7 @@ save_preview_png(
 
 ### A5.4 更新 skill 数据源
 
-文件路径：`~/.agents/skills/build123d-cad/references/data-sources/fasteners.yaml`
+文件路径：`~/.agents/skills/build123d-cad/skills/mechanical/references/data-sources/fasteners.yaml`
 
 **追加新类型条目**（以 M4 代表，格式如下）：
 
@@ -1099,7 +1099,7 @@ git commit -m "docs+cache: <件型名> M4 canonical cache + index/README update"
 
 # ② skill repo
 cd ~/.agents/skills/build123d-cad
-git add references/data-sources/fasteners.yaml
+git add ../references/data-sources/fasteners.yaml
 git commit -m "feat(fasteners): add <件型名> entries to skill fasteners.yaml"
 ```
 
