@@ -1,0 +1,168 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/baibai2013/build123d-cad/shared/schemas/joints.schema.json",
+  "title": "joints.yaml v1 — mechanical → urdf handoff",
+  "description": "share/build123d-cad改造/04 §8 + 08 §2.1 权威落盘版本; 由 export_urdf.py + tests + agent-eval 强校验.",
+  "type": "object",
+  "required": ["schema_version", "robot", "links", "joints"],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {"const": 1},
+    "robot": {"type": "string", "minLength": 1, "pattern": "^[a-z][a-z0-9_]*$"},
+    "units": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "length": {"enum": ["m"], "default": "m"},
+        "angle":  {"enum": ["rad"], "default": "rad"}
+      }
+    },
+    "mesh_units": {"enum": ["mm", "m"], "default": "mm"},
+    "mesh_uri_style": {"enum": ["relative", "package"], "default": "relative"},
+    "package_name": {"type": "string", "pattern": "^[a-z][a-z0-9_]*$"},
+    "naming_convention": {"enum": ["quadruped", "arm", "custom"], "default": "quadruped"},
+    "materials_library": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "required": ["density_kg_m3"],
+        "properties": {
+          "density_kg_m3": {"type": "number", "exclusiveMinimum": 0},
+          "color_rgba": {"type": "array", "minItems": 4, "maxItems": 4,
+                         "items": {"type": "number", "minimum": 0, "maximum": 1}}
+        }
+      }
+    },
+    "links": {
+      "type": "array", "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["name"],
+        "additionalProperties": false,
+        "properties": {
+          "name": {"type": "string", "pattern": "^[a-z][a-z0-9_]*$"},
+          "mesh": {"type": "string"},
+          "material": {"type": "string"},
+          "collision": {
+            "oneOf": [
+              {"const": "same_as_visual"},
+              {"const": "primitive"},
+              {"type": "string", "pattern": "^mesh:"}
+            ]
+          },
+          "collision_primitive": {
+            "type": "object",
+            "required": ["type", "origin"],
+            "properties": {
+              "type": {"enum": ["box", "cylinder", "sphere"]},
+              "radius": {"type": "number", "exclusiveMinimum": 0},
+              "length": {"type": "number", "exclusiveMinimum": 0},
+              "size": {"type": "array", "minItems": 3, "maxItems": 3,
+                       "items": {"type": "number", "exclusiveMinimum": 0}},
+              "origin": {"$ref": "#/$defs/origin"}
+            },
+            "allOf": [
+              {"if": {"properties": {"type": {"const": "box"}}},
+               "then": {"required": ["size"]}},
+              {"if": {"properties": {"type": {"const": "cylinder"}}},
+               "then": {"required": ["radius", "length"]}},
+              {"if": {"properties": {"type": {"const": "sphere"}}},
+               "then": {"required": ["radius"]}}
+            ]
+          },
+          "inertial": {
+            "type": "object",
+            "required": ["mass", "origin", "inertia"],
+            "additionalProperties": false,
+            "properties": {
+              "mass": {"type": "number", "exclusiveMinimum": 0},
+              "origin": {"$ref": "#/$defs/origin"},
+              "inertia": {
+                "type": "object",
+                "required": ["ixx", "iyy", "izz", "ixy", "ixz", "iyz"],
+                "additionalProperties": false,
+                "properties": {
+                  "ixx": {"type": "number", "exclusiveMinimum": 0},
+                  "iyy": {"type": "number", "exclusiveMinimum": 0},
+                  "izz": {"type": "number", "exclusiveMinimum": 0},
+                  "ixy": {"type": "number"},
+                  "ixz": {"type": "number"},
+                  "iyz": {"type": "number"}
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "joints": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["name", "type", "parent", "child", "origin"],
+        "additionalProperties": false,
+        "properties": {
+          "name": {"type": "string", "pattern": "^[a-z][a-z0-9_]*$"},
+          "type": {"enum": ["fixed", "revolute", "continuous", "prismatic", "floating"]},
+          "parent": {"type": "string", "pattern": "^[a-z][a-z0-9_]*$"},
+          "child":  {"type": "string", "pattern": "^[a-z][a-z0-9_]*$"},
+          "origin": {"$ref": "#/$defs/origin"},
+          "axis": {"type": "array", "minItems": 3, "maxItems": 3,
+                   "items": {"type": "number"}},
+          "limit": {
+            "type": "object",
+            "required": ["lower", "upper"],
+            "additionalProperties": false,
+            "properties": {
+              "lower":    {"type": "number"},
+              "upper":    {"type": "number"},
+              "effort":   {"type": "number", "minimum": 0},
+              "velocity": {"type": "number", "minimum": 0}
+            }
+          },
+          "dynamics": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "damping":  {"type": "number", "minimum": 0},
+              "friction": {"type": "number", "minimum": 0}
+            }
+          },
+          "mimic": {
+            "type": "object",
+            "required": ["joint"],
+            "additionalProperties": false,
+            "properties": {
+              "joint":      {"type": "string", "pattern": "^[a-z][a-z0-9_]*$"},
+              "multiplier": {"type": "number"},
+              "offset":     {"type": "number"}
+            }
+          },
+          "transmission": {"type": "object"},
+          "positive_motion": {"type": "string"}
+        },
+        "allOf": [
+          {"if": {"properties": {"type": {"const": "revolute"}}},
+           "then": {"required": ["axis", "limit"]}},
+          {"if": {"properties": {"type": {"const": "prismatic"}}},
+           "then": {"required": ["axis", "limit"]}},
+          {"if": {"properties": {"type": {"const": "continuous"}}},
+           "then": {"required": ["axis"], "not": {"required": ["limit"]}}}
+        ]
+      }
+    }
+  },
+  "$defs": {
+    "origin": {
+      "type": "object",
+      "required": ["xyz", "rpy"],
+      "additionalProperties": false,
+      "properties": {
+        "xyz": {"type": "array", "minItems": 3, "maxItems": 3,
+                "items": {"type": "number"}},
+        "rpy": {"type": "array", "minItems": 3, "maxItems": 3,
+                "items": {"type": "number"}}
+      }
+    }
+  }
+}
