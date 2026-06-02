@@ -109,32 +109,191 @@ domains:
     local_doc: references/code-sources/enclosures.md
 
   robotics:
-    description: 机械臂 / 腿 / 步态 / IK / URDF
-    primary_repos: [gumyr/build123d]
-    fallback_repos: [CadQuery/cadquery]
+    description: 机械臂 / 四足机器狗 / 关节模组 / 步态 / IK / URDF
+    primary_repos: [Nate711/StanfordQuadruped, mangdangroboticsclub/mini_pupper_2]
+    fallback_repos:
+      - mit-biomimetics/Cheetah-Software
+      - open-dynamic-robot-initiative/open_robot_actuator_hardware
+      - chvmp/champ
+      - odriverobotics/ODrive
     websearch_prompts:
-      - '"build123d" robotic arm example site:github.com'
-      - '"build123d" quadruped OR leg site:github.com'
-    local_doc: null   # 待建：用到第一次时补 robotics.md
+      - 'site:github.com/Nate711/StanfordQuadruped <feature>'
+      - '"mini-pupper" OR "stanford-pupper" <feature>'
+      - '"MIT cheetah" MPC OR WBC <feature>'
+      - '"Solo12" OR "ODRI" actuator hardware <feature>'
+    local_doc: references/code-sources/robotics.md
 
   fixtures:
-    description: 夹具 / 支架 / 定位销 / 工装
-    primary_repos: [gumyr/build123d, gumyr/bd_warehouse]
-    fallback_repos: [CadQuery/cadquery-contrib]
+    description: 加工夹具 / 定位销 / 压板 / t-slot 工装 / 测试治具
+    primary_repos: [gumyr/build123d, fragmuffin/cqparts]
+    fallback_repos: [jscad/OpenJSCAD.org]
     websearch_prompts:
-      - '"build123d" jig OR fixture OR mount example'
-    local_doc: null
+      - '"build123d" jig OR fixture OR clamp example filename:*.py'
+      - '"cqparts" t-slot OR fastener filename:*.py'
+      - 'misumi t-slot extrusion 40x40 dimensions'
+    local_doc: references/code-sources/fixtures.md
 
   simulation:
-    description: PyBullet / URDF 导出 / 运动仿真 / FK/IK 可视化
-    primary_repos: [gumyr/build123d]
+    description: PyBullet / Drake / Gazebo / MuJoCo / URDF 加载 / 步态仿真 / RL
+    primary_repos: [bulletphysics/bullet3, RobotLocomotion/drake]
     fallback_repos:
-      - ros/urdf_tutorial
-      - bulletphysics/bullet3
+      - gazebosim/gz-sim
+      - google-deepmind/mujoco_menagerie
+      - petercorke/robotics-toolbox-python
+      - isaac-sim/IsaacLab
     websearch_prompts:
-      - '"build123d" urdf export example'
-      - '"build123d" pybullet integration'
-    local_doc: null
+      - 'site:github.com/bulletphysics/bullet3 path:examples/pybullet <feature>'
+      - 'site:github.com/RobotLocomotion/drake quadruped <feature>'
+      - '"gz-sim" OR "Gazebo" SDF world example <feature>'
+      - 'site:github.com/google-deepmind/mujoco_menagerie quadruped'
+      - '"robotics-toolbox-python" DH OR Jacobian example'
+    local_doc: references/code-sources/simulation.md
+
+
+# ============ 18 候选源仓库白名单(P1-3,robotics/fixtures/simulation 专属)============
+# 与 core_repos 分开:这些是垂直领域专精仓,不在常规建模日常路径
+
+domain_repos:
+  # === robotics(6 个)===
+  - name: Nate711/StanfordQuadruped
+    url: https://github.com/Nate711/StanfordQuadruped
+    domain: robotics
+    license: MIT
+    license_status: pending
+    retrieved_at: 2026-06-02
+    confidence: 5
+    coverage: [quadruped, ik, gait, leg-geometry]
+    notes: 同体型四足参考;详见 robotics.md §1
+  - name: mangdangroboticsclub/mini_pupper_2
+    url: https://github.com/mangdangroboticsclub/mini_pupper_2
+    domain: robotics
+    license: Apache-2.0(代码) + CC-BY-SA-4.0(机械文档)
+    license_status: pending
+    retrieved_at: 2026-06-02
+    confidence: 4
+    coverage: [quadruped, urdf, ros2, mechanical-step]
+    notes: 机械文档 SA 传染必须复核;详见 robotics.md §2
+  - name: mit-biomimetics/Cheetah-Software
+    url: https://github.com/mit-biomimetics/Cheetah-Software
+    domain: robotics
+    license: MIT
+    license_status: pending
+    retrieved_at: 2026-06-02
+    confidence: 4
+    coverage: [mpc, wbc, quadruped-control]
+    notes: 思路参考为主;详见 robotics.md §3
+  - name: open-dynamic-robot-initiative/open_robot_actuator_hardware
+    url: https://github.com/open-dynamic-robot-initiative/open_robot_actuator_hardware
+    domain: robotics
+    license: CC-BY-SA-4.0
+    license_status: pending
+    retrieved_at: 2026-06-02
+    confidence: 4
+    coverage: [actuator, joint-module, bldc, mechanical-bom]
+    notes: SA 传染;详见 robotics.md §4
+  - name: chvmp/champ
+    url: https://github.com/chvmp/champ
+    domain: robotics
+    license: BSD-3-Clause
+    license_status: pending
+    retrieved_at: 2026-06-02
+    confidence: 3
+    coverage: [quadruped, ros2, gait]
+    notes: ROS2 通用四足栈;详见 robotics.md §5
+  - name: odriverobotics/ODrive
+    url: https://github.com/odriverobotics/ODrive
+    domain: robotics
+    license: MIT
+    license_status: pending
+    retrieved_at: 2026-06-02
+    confidence: 3
+    coverage: [bldc, foc, motor-control]
+    notes: 详见 robotics.md §6
+
+  # === fixtures(5 个,前 2 已在 core_repos,这里只补领域专精)===
+  - name: fragmuffin/cqparts
+    url: https://github.com/fragmuffin/cqparts
+    domain: fixtures
+    license: Apache-2.0
+    license_status: pending
+    retrieved_at: 2026-06-02
+    confidence: 4
+    coverage: [t-slot, fasteners, jig]
+    notes: 走 cadquery-to-build123d.md 翻译;详见 fixtures.md §2
+  - name: jscad/OpenJSCAD.org
+    url: https://github.com/jscad/OpenJSCAD.org
+    domain: fixtures
+    license: MIT
+    license_status: pending
+    retrieved_at: 2026-06-02
+    confidence: 2
+    coverage: [machinelib-geometry-思路]
+    notes: 仅参考几何思路,不抄 JS 代码;详见 fixtures.md §3
+  - name: misumi-techcentral
+    url: https://misumi-techcentral.com
+    domain: fixtures
+    license: proprietary
+    license_status: pending
+    retrieved_at: 2026-06-02
+    confidence: 3
+    coverage: [尺寸基准]
+    notes: 只引用尺寸数字,不复制图纸;详见 fixtures.md §4
+
+  # === simulation(7 个)===
+  - name: bulletphysics/bullet3
+    url: https://github.com/bulletphysics/bullet3
+    domain: simulation
+    license: zlib
+    license_status: pending
+    retrieved_at: 2026-06-02
+    confidence: 5
+    coverage: [pybullet, urdf-load, joint-control, force-feedback]
+    notes: 端到端仿真首选;详见 simulation.md §1
+  - name: RobotLocomotion/drake
+    url: https://github.com/RobotLocomotion/drake
+    domain: simulation
+    license: BSD-3-Clause
+    license_status: pending
+    retrieved_at: 2026-06-02
+    confidence: 4
+    coverage: [rigid-body-dynamics, mpc, lqr]
+    notes: 严肃动力学;详见 simulation.md §2
+  - name: gazebosim/gz-sim
+    url: https://github.com/gazebosim/gz-sim
+    domain: simulation
+    license: Apache-2.0
+    license_status: pending
+    retrieved_at: 2026-06-02
+    confidence: 4
+    coverage: [sdf-world, sensors, ros2-bridge]
+    notes: 与 skills/sdf 联动;详见 simulation.md §3
+  - name: google-deepmind/mujoco_menagerie
+    url: https://github.com/google-deepmind/mujoco_menagerie
+    domain: simulation
+    license: Apache-2.0(主) + 各模型 LICENSE 不同
+    license_status: pending
+    retrieved_at: 2026-06-02
+    confidence: 4
+    coverage: [mjcf, quadruped-models]
+    notes: 逐模型读 LICENSE;详见 simulation.md §4
+  - name: petercorke/robotics-toolbox-python
+    url: https://github.com/petercorke/robotics-toolbox-python
+    domain: simulation
+    license: LGPL-3.0
+    license_status: pending
+    retrieved_at: 2026-06-02
+    confidence: 4
+    coverage: [dh-params, jacobian, kinematics]
+    notes: LGPL 调用 OK,fork 改要回馈;详见 simulation.md §6
+  - name: isaac-sim/IsaacLab
+    url: https://github.com/isaac-sim/IsaacLab
+    domain: simulation
+    license: BSD-3-Clause + NVIDIA EULA
+    license_status: pending
+    retrieved_at: 2026-06-02
+    confidence: 3
+    coverage: [gpu-physics, rl-training]
+    notes: NVIDIA EULA 商用条款;P3 评估;详见 simulation.md §7
 
 
 # ============ License 原则 ============

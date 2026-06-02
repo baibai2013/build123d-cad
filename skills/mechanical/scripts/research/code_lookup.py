@@ -86,7 +86,10 @@ def cache_status(path: Path) -> tuple[str, int | None]:
 
 
 def print_domain(domain_name: str, domain: dict, catalog: dict, keyword: str, websearch_only: bool, fresh: bool) -> int:
+    # 合并 core_repos(通用)+ domain_repos(P1-3 加,robotics/fixtures/simulation 专属)
     repos = {r["name"]: r for r in catalog.get("core_repos", []) or []}
+    for r in catalog.get("domain_repos", []) or []:
+        repos.setdefault(r["name"], r)
 
     cpath = cache_path(domain_name, keyword)
     status, age = cache_status(cpath)
@@ -124,14 +127,20 @@ def print_domain(domain_name: str, domain: dict, catalog: dict, keyword: str, we
     for repo_name in domain.get("primary_repos", []) or []:
         repo = repos.get(repo_name)
         if repo:
-            print(f"  - **{repo['name']}**  (License: {repo['license']})")
+            ls = repo.get("license_status")
+            ls_tag = f" [{ls}]" if ls and ls != "verified" else ""
+            print(f"  - **{repo['name']}**  (License: {repo['license']}{ls_tag})")
             print(f"    {repo['url']}")
-            print(f"    翻译成本：{repo['translate_cost']}  |  confidence={repo['confidence']}/5")
+            tc = repo.get("translate_cost", "n/a")
+            conf = repo.get("confidence", "?")
+            print(f"    翻译成本：{tc}  |  confidence={conf}/5")
             if repo.get("notes"):
                 first_line = repo["notes"].strip().split("\n")[0]
                 print(f"    {first_line}")
+            if ls == "pending":
+                print("    ⚠️ license_status=pending,借鉴前必须 cad-scraper 复核(红线 #5)")
         else:
-            print(f"  - {repo_name}  (未在 core_repos 注册，请补 catalog.yaml)")
+            print(f"  - {repo_name}  (未在 catalog 注册,请补)")
     print()
 
     # Fallback
@@ -141,7 +150,10 @@ def print_domain(domain_name: str, domain: dict, catalog: dict, keyword: str, we
         for repo_name in fallback:
             repo = repos.get(repo_name)
             if repo:
-                print(f"  - {repo['name']}  (License: {repo['license']}, translate_cost={repo['translate_cost']})")
+                ls = repo.get("license_status")
+                ls_tag = f" [{ls}]" if ls and ls != "verified" else ""
+                tc = repo.get("translate_cost", "n/a")
+                print(f"  - {repo['name']}  (License: {repo['license']}{ls_tag}, translate_cost={tc})")
             else:
                 print(f"  - {repo_name}  (外部来源，未收录 License 信息——借鉴前自查)")
         print()

@@ -11,6 +11,28 @@
 
 ---
 
+## 5 条借鉴红线(P1-3 落定,02 §13.2 同步)
+
+任何新增 / 借鉴动作必须先过这 5 条:
+
+1. **抄代码 → 必须保留原文件头 license 注释 + 在本目录 `<domain>.md` 登记**
+   登记字段:`url` / `license` / `license_status`(`verified` / `pending`)/ `retrieved_at` / `commit_hash`(可选)。
+2. **GPL/AGPL 严禁直接抄**(本仓 Apache 2.0,传染性 license 不兼容)。
+   LGPL 调用 OK;但 fork 改 LGPL 库本身要回馈,慎做。
+3. **CC-BY-SA(机械文档)抄了 → 衍生件必须以 CC-BY-SA 公开**(SA 传染)。
+   只想用尺寸不传染:**只读尺寸数字,不复制图纸/截图/版式**。
+4. **proprietary / vendor datasheet** 只复述参数与公开数值,**不复制原图**。
+   引用要标注出处(品牌 + 文档名 + URL)。
+5. **新增候选源 → 先填 `<domain>.md` license 列再开始借鉴**。
+   未过 license 复核的条目标 `license_status: pending`,不得进入 Playbook 引用流。
+
+执行点:
+- Playbook §S2.5 / P2 Step 2.0 / R4.0(代码库巡查)前必读本节。
+- code_lookup.py 命中后,如果条目 `license_status: pending`,脚本会输出 `⚠️ pending` 警示。
+- 复核流程:`cad-scraper` agent 拉 LICENSE 文件 → 改 `verified` + 填 `commit_hash`/`retrieved_at`。
+
+---
+
 ## 目录组织
 
 ```

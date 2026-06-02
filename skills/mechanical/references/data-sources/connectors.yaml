@@ -1,0 +1,388 @@
+# Connectors 数据源 — P1-2 落定(02 §12.2.2)
+#
+# schema 见 02 §12.1.2;首批 14 型号 4 大族(JST / Molex / XT / 通用)。
+# JST 系列尺寸为厂商手册公开值;XT 系列为玩具级标准件;数值标 confidence 与 datasheet_url。
+schema_version: 1
+kind: connector
+
+entries:
+  - id: jst_xh_2p
+    family: JST
+    series: XH
+    pole_count: 2
+    pitch_mm: 2.5
+    keywords: [JST XH 2pin, 2.5mm]
+    interface:
+      type: wire_to_board
+      mount: through_hole
+      gender: header_pin
+    rated:
+      voltage_v: 250
+      current_a: 3.0
+      mating_cycles: 50
+    geometry:
+      bbox_mm: [7.5, 5.0, 6.0]
+      keying: ribbed
+    cable:
+      awg: [22, 28]
+      strip_length_mm: 1.5
+    source:
+      datasheet_url: https://www.jst-mfg.com/product/pdf/eng/eXH.pdf
+      retrieved_at: '2026-06-02'
+      license: vendor_datasheet
+      confidence: 4
+    notes: |
+      最常见的 2.5mm 节距,机器狗动力线 / 编码器线优选(2P 单路电源)。
+
+  - id: jst_xh_3p
+    family: JST
+    series: XH
+    pole_count: 3
+    pitch_mm: 2.5
+    keywords: [JST XH 3pin, signal pwm]
+    interface:
+      type: wire_to_board
+      mount: through_hole
+      gender: header_pin
+    rated:
+      voltage_v: 250
+      current_a: 3.0
+      mating_cycles: 50
+    geometry:
+      bbox_mm: [10.0, 5.0, 6.0]
+      keying: ribbed
+    cable:
+      awg: [22, 28]
+      strip_length_mm: 1.5
+    source:
+      datasheet_url: https://www.jst-mfg.com/product/pdf/eng/eXH.pdf
+      retrieved_at: '2026-06-02'
+      license: vendor_datasheet
+      confidence: 4
+    notes: |
+      标准伺服 PWM 接口(信号/+/-);MG996R 等舵机配此接口。
+
+  - id: jst_xh_4p
+    family: JST
+    series: XH
+    pole_count: 4
+    pitch_mm: 2.5
+    keywords: [JST XH 4pin, i2c, 4 wires]
+    interface:
+      type: wire_to_board
+      mount: through_hole
+      gender: header_pin
+    rated:
+      voltage_v: 250
+      current_a: 3.0
+      mating_cycles: 50
+    geometry:
+      bbox_mm: [12.5, 5.0, 6.0]
+      keying: ribbed
+    cable:
+      awg: [22, 28]
+      strip_length_mm: 1.5
+    source:
+      datasheet_url: https://www.jst-mfg.com/product/pdf/eng/eXH.pdf
+      retrieved_at: '2026-06-02'
+      license: vendor_datasheet
+      confidence: 4
+    notes: I2C 标准接口(SDA/SCL/GND/VCC);步进电机 A/B 双极对接也用。
+
+  - id: jst_ph_2p
+    family: JST
+    series: PH
+    pole_count: 2
+    pitch_mm: 2.0
+    keywords: [JST PH 2pin, lipo single cell]
+    interface:
+      type: wire_to_board
+      mount: through_hole
+      gender: header_pin
+    rated:
+      voltage_v: 100
+      current_a: 2.0
+      mating_cycles: 50
+    geometry:
+      bbox_mm: [6.0, 4.5, 6.0]
+      keying: ribbed
+    cable:
+      awg: [24, 30]
+      strip_length_mm: 1.5
+    source:
+      datasheet_url: https://www.jst-mfg.com/product/pdf/eng/ePH.pdf
+      retrieved_at: '2026-06-02'
+      license: vendor_datasheet
+      confidence: 4
+    notes: 锂电池单芯接口(单芯 LiPo 充电板常见);玩具/无人机级。
+
+  - id: jst_ph_3p
+    family: JST
+    series: PH
+    pole_count: 3
+    pitch_mm: 2.0
+    keywords: [JST PH 3pin, short servo cable]
+    interface:
+      type: wire_to_board
+      mount: through_hole
+      gender: header_pin
+    rated:
+      voltage_v: 100
+      current_a: 2.0
+      mating_cycles: 50
+    geometry:
+      bbox_mm: [8.0, 4.5, 6.0]
+      keying: ribbed
+    cable:
+      awg: [24, 30]
+      strip_length_mm: 1.5
+    source:
+      datasheet_url: https://www.jst-mfg.com/product/pdf/eng/ePH.pdf
+      retrieved_at: '2026-06-02'
+      license: vendor_datasheet
+      confidence: 4
+    notes: 舵机短线常见接口(空间局促时用);机器狗 PCB 上信号布线常用。
+
+  - id: jst_zh_3p
+    family: JST
+    series: ZH
+    pole_count: 3
+    pitch_mm: 1.5
+    keywords: [JST ZH 3pin, micro servo, sg90]
+    interface:
+      type: wire_to_board
+      mount: through_hole
+      gender: header_pin
+    rated:
+      voltage_v: 50
+      current_a: 1.0
+      mating_cycles: 30
+    geometry:
+      bbox_mm: [5.5, 4.0, 5.0]
+      keying: ribbed
+    cable:
+      awg: [26, 32]
+      strip_length_mm: 1.0
+    source:
+      datasheet_url: https://www.jst-mfg.com/product/pdf/eng/eZH.pdf
+      retrieved_at: '2026-06-02'
+      license: vendor_datasheet
+      confidence: 4
+    notes: 微型舵机(SG90 等)细线接口;1.5mm 节距,玩具级。
+
+  - id: jst_sh_4p
+    family: JST
+    series: SH
+    pole_count: 4
+    pitch_mm: 1.0
+    keywords: [JST SH 4pin, board to board, qwiic]
+    interface:
+      type: wire_to_board
+      mount: smt
+      gender: header_pin
+    rated:
+      voltage_v: 50
+      current_a: 1.0
+      mating_cycles: 30
+    geometry:
+      bbox_mm: [5.0, 3.5, 4.0]
+      keying: smt
+    cable:
+      awg: [28, 32]
+      strip_length_mm: 0.8
+    source:
+      datasheet_url: https://www.jst-mfg.com/product/pdf/eng/eSH.pdf
+      retrieved_at: '2026-06-02'
+      license: vendor_datasheet
+      confidence: 4
+    notes: |
+      板间 I2C 细线接口(Qwiic / Stemma QT 标准),Sparkfun/Adafruit 主推。
+
+  - id: jst_gh_5p
+    family: JST
+    series: GH
+    pole_count: 5
+    pitch_mm: 1.25
+    keywords: [JST GH 5pin, pixhawk, telemetry]
+    interface:
+      type: wire_to_board
+      mount: smt
+      gender: header_pin
+    rated:
+      voltage_v: 50
+      current_a: 1.0
+      mating_cycles: 30
+    geometry:
+      bbox_mm: [7.5, 4.0, 4.0]
+      keying: smt
+    cable:
+      awg: [28, 32]
+      strip_length_mm: 1.0
+    source:
+      datasheet_url: https://www.jst-mfg.com/product/pdf/eng/eGH.pdf
+      retrieved_at: '2026-06-02'
+      license: vendor_datasheet
+      confidence: 3
+    notes: Pixhawk 风格遥测接口(GPS/SBUS/Telemetry);1.25mm 节距,飞控生态。
+
+  - id: molex_picoblade_2p
+    family: Molex
+    series: PicoBlade
+    pole_count: 2
+    pitch_mm: 1.25
+    keywords: [molex picoblade, embedded power]
+    interface:
+      type: wire_to_board
+      mount: smt
+      gender: header_pin
+    rated:
+      voltage_v: 125
+      current_a: 1.0
+      mating_cycles: 30
+    geometry:
+      bbox_mm: [4.5, 3.0, 3.5]
+      keying: ribbed
+    cable:
+      awg: [28, 32]
+      strip_length_mm: 1.0
+    source:
+      datasheet_url: https://www.molex.com/molex/products/family/picoblade
+      retrieved_at: '2026-06-02'
+      license: vendor_datasheet
+      confidence: 3
+    notes: 嵌入式细线电源;Dynamixel XL 系列舵机线缆用此族(实测 3P)。
+
+  - id: molex_picoblade_4p
+    family: Molex
+    series: PicoBlade
+    pole_count: 4
+    pitch_mm: 1.25
+    keywords: [molex picoblade, embedded i2c]
+    interface:
+      type: wire_to_board
+      mount: smt
+      gender: header_pin
+    rated:
+      voltage_v: 125
+      current_a: 1.0
+      mating_cycles: 30
+    geometry:
+      bbox_mm: [6.0, 3.0, 3.5]
+      keying: ribbed
+    cable:
+      awg: [28, 32]
+      strip_length_mm: 1.0
+    source:
+      datasheet_url: https://www.molex.com/molex/products/family/picoblade
+      retrieved_at: '2026-06-02'
+      license: vendor_datasheet
+      confidence: 3
+    notes: 嵌入式 I2C / SPI;Crazyflie 等小机生态常用。
+
+  - id: xt30_2p
+    family: XT
+    series: XT30
+    pole_count: 2
+    pitch_mm: ~
+    keywords: [xt30, 大电流, bldc supply]
+    interface:
+      type: wire_to_wire
+      mount: crimp_housing
+      gender: plug
+    rated:
+      voltage_v: 500
+      current_a: 15
+      mating_cycles: 1000
+    geometry:
+      bbox_mm: [16, 8, 7]
+      keying: female_socket
+    cable:
+      awg: [16, 18]
+      strip_length_mm: 5
+    source:
+      datasheet_url: https://www.amass-connector.com/product/xt30/
+      retrieved_at: '2026-06-02'
+      license: vendor_datasheet
+      confidence: 3
+    notes: BLDC 主电源(<15A) / 单关节模组主线;玩具/工业普及型。
+
+  - id: xt60_2p
+    family: XT
+    series: XT60
+    pole_count: 2
+    pitch_mm: ~
+    keywords: [xt60, 整机主电源, lipo]
+    interface:
+      type: wire_to_wire
+      mount: crimp_housing
+      gender: plug
+    rated:
+      voltage_v: 500
+      current_a: 60
+      mating_cycles: 1000
+    geometry:
+      bbox_mm: [22, 12, 8]
+      keying: female_socket
+    cable:
+      awg: [10, 14]
+      strip_length_mm: 7
+    source:
+      datasheet_url: https://www.amass-connector.com/product/xt60/
+      retrieved_at: '2026-06-02'
+      license: vendor_datasheet
+      confidence: 4
+    notes: 整机主电源(<60A);LiPo / 整车主回路标准接口。
+
+  - id: dupont_4p
+    family: Dupont
+    series: 2.54mm
+    pole_count: 4
+    pitch_mm: 2.54
+    keywords: [dupont, 2.54mm, prototype debug]
+    interface:
+      type: wire_to_board
+      mount: through_hole
+      gender: header_pin
+    rated:
+      voltage_v: 250
+      current_a: 3.0
+      mating_cycles: 30
+    geometry:
+      bbox_mm: [10, 6, 8]
+      keying: none
+    cable:
+      awg: [22, 28]
+      strip_length_mm: 2
+    source:
+      datasheet_url: https://www.te.com/usa-en/plp/header-pin-connectors/Z14XBe5xQ.html
+      retrieved_at: '2026-06-02'
+      license: vendor_datasheet
+      confidence: 3
+    notes: 调试线(临时);防反插弱,生产不用。
+
+  - id: usb_c_24p
+    family: USB
+    series: USB-C
+    pole_count: 24
+    pitch_mm: 0.5
+    keywords: [usb-c, type-c, debug, charging]
+    interface:
+      type: wire_to_board
+      mount: smt
+      gender: receptacle
+    rated:
+      voltage_v: 20
+      current_a: 5
+      mating_cycles: 10000
+    geometry:
+      bbox_mm: [9, 7, 3.3]
+      keying: orientation_reversible
+    cable:
+      awg: [22, 28]
+      strip_length_mm: ~
+    source:
+      datasheet_url: https://www.usb.org/document-library/usb-type-cr-cable-and-connector-specification-revision-22
+      retrieved_at: '2026-06-02'
+      license: usb_if_proprietary
+      confidence: 4
+    notes: 主控调试 / 充电(ESP32-S3 DevKitC、RPi 5 标配);不分正反插。

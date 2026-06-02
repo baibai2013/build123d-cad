@@ -46,9 +46,10 @@ CATALOG_FILE = DATA_DIR / "sources-catalog.yaml"
 STALE_DAYS = 90
 
 
-def load_all_entries() -> tuple[dict, dict]:
+def load_all_entries(kind_filter: str | None = None) -> tuple[dict, dict]:
     """返回 (entries_by_id, raw_files_by_category)。
     entries_by_id: {normalized_id: entry_dict_plus_meta}
+    kind_filter: 仅载入文件名 stem 匹配的 yaml(如 'motors' 只读 motors.yaml)。
     """
     entries: dict[str, dict] = {}
     files_by_category: dict[str, list[Path]] = {}
@@ -56,10 +57,33 @@ def load_all_entries() -> tuple[dict, dict]:
     for yaml_path in sorted(DATA_DIR.glob("*.yaml")):
         if yaml_path.name == CATALOG_FILE.name:
             continue
+        if kind_filter and yaml_path.stem != kind_filter:
+            continue
         try:
             loaded = yaml.safe_load(yaml_path.read_text(encoding="utf-8")) or {}
         except yaml.YAMLError as e:
             sys.stderr.write(f"[warn] 解析失败 {yaml_path.name}: {e}\n")
+            continue
+
+        # P1-2 schema_version: 1 走 entries[] 列表;旧 schema 走顶层 dict
+        if isinstance(loaded, dict) and loaded.get("schema_version") and isinstance(loaded.get("entries"), list):
+            kind = loaded.get("kind", yaml_path.stem)
+            category = f"{kind}s" if not kind.endswith("s") else kind
+            for body in loaded["entries"]:
+                if not isinstance(body, dict) or "id" not in body:
+                    continue
+                part_id = body["id"]
+                files_by_category.setdefault(category, []).append(yaml_path)
+                ids = {str(part_id).lower()}
+                for kw in body.get("keywords", []) or []:
+                    ids.add(str(kw).lower().replace(" ", "_"))
+                for norm_id in ids:
+                    entries[norm_id] = {
+                        "id": part_id,
+                        "file": yaml_path,
+                        "category": category,
+                        "data": body,
+                    }
             continue
 
         for part_id, body in loaded.items():
@@ -207,17 +231,31 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
         description="标准件参数目录查询（SG90 / M3 / 608ZZ 等）"
     )
-    parser.add_argument("query", nargs="?", help="零件 ID 或 alias")
-    parser.add_argument("--field", help="只返回某个字段（如 body / mount / source）")
+    parser.add_argument("query", nargs="?", help="零件 ID 或 alias(也可用 --query 传)")
+    parser.add_argument("--query", dest="query_flag", help="同 positional query")
+    parser.add_argument(
+        "--kind",
+        help="类别过滤(motor / connector / mcu_board / servo / bearing / fastener);P1-2 新增"
+    )
+    parser.add_argument("--field", help="只返回某个字段(如 body / mount / source)")
     parser.add_argument("--list", metavar="CATEGORY", help="列出某类别全部条目")
     parser.add_argument("--list-categories", action="store_true", help="列出所有类别")
     args = parser.parse_args(argv)
+    if not args.query and args.query_flag:
+        args.query = args.query_flag
 
     if not DATA_DIR.exists():
         sys.stderr.write(f"[error] 数据目录不存在：{DATA_DIR}\n")
         return 2
 
-    entries, files_by_category = load_all_entries()
+    # P1-2:有 --kind 时只载入对应 yaml 文件,避免同 id 冲突(SG90 在 servos+motors 都有)
+    kind_map = {
+        "motor": "motors", "connector": "connectors",
+        "mcu": "mcu_boards", "mcu_board": "mcu_boards",
+        "servo": "servos", "bearing": "bearings", "fastener": "fasteners", "seal": "seals",
+    }
+    kind_filter = kind_map.get(args.kind.lower()) if args.kind else None
+    entries, files_by_category = load_all_entries(kind_filter=kind_filter)
     catalog = load_catalog()
 
     if args.list_categories:
@@ -234,12 +272,14 @@ def main(argv: list[str] | None = None) -> int:
 
     q = args.query.strip().lower()
     entry = entries.get(q)
+
+    # --kind 已在 load_all_entries 阶段过滤了 yaml,这里不再二次过滤
     if entry:
         print_hit(entry, field_filter=args.field)
         return 0
 
     print_miss(args.query, entries, catalog)
-    return 3  # 返回码 3 = 未命中（便于调用方判断）
+    return 3  # 返回码 3 = 未命中
 
 
 if __name__ == "__main__":

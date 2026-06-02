@@ -1,0 +1,367 @@
+# Motors 数据源 — P1-2 落定(02 §12.2.1)
+#
+# schema 见 02 §12.1.1;首批 11 型号 5 类(servo/bldc/stepper/dc_geared/linear)。
+# 数据准则:datasheet_url 给出处;不可亲验数据标 confidence: 2~3 + verify_pending: true,
+# 由 cad-scraper agent 在 P1 周期内拉 datasheet 复核后改 confidence: 4~5。
+schema_version: 1
+kind: motor
+
+entries:
+  - id: sg90
+    type: servo
+    family: hobby_micro_servo
+    manufacturer: tower_pro
+    part_number: SG90
+    keywords: [9g 舵机, micro servo, sg90]
+    rated:
+      voltage_v: [4.8, 6.0]
+      stall_torque_kgcm: 1.8
+      no_load_speed_rpm: 60
+      stall_current_a: 0.65
+      mass_g: 9
+    geometry:
+      bbox_mm: [22.2, 11.8, 31]
+      mount_holes: 2
+      mount_pitch_mm: 27.7
+      shaft_spline: 21T_horn
+    interface:
+      signal: pwm_50hz_500_2500us
+      connector: jst_zh_3p
+    limits:
+      angle_range_deg: 180
+      duty_cycle_pct: 60
+    density_g_cm3: ~
+    source:
+      datasheet_url: https://servodatabase.com/servo/towerpro/sg90
+      retrieved_at: '2026-06-02'
+      license: vendor_datasheet
+      confidence: 4
+    notes: |
+      入门级,塑料齿轮易磨损;机器狗腿部不推荐,头部/尾部摆动可用。
+      注:与 servos.yaml 内 SG90 旧条目 schema 不同,此处为 motors.yaml 新 schema。
+
+  - id: mg996r
+    type: servo
+    family: standard_metal_gear_servo
+    manufacturer: tower_pro
+    part_number: MG996R
+    keywords: [mg996r, 55g servo, metal gear, 12kg-cm]
+    rated:
+      voltage_v: [4.8, 7.2]
+      stall_torque_kgcm: 12
+      no_load_speed_rpm: 60
+      stall_current_a: 2.5
+      mass_g: 55
+    geometry:
+      bbox_mm: [40.7, 19.7, 42.9]
+      mount_holes: 2
+      mount_pitch_mm: 49.5
+      shaft_spline: 25T_horn
+    interface:
+      signal: pwm_50hz_500_2500us
+      connector: jst_xh_3p
+    limits:
+      angle_range_deg: 120
+      duty_cycle_pct: 50
+    density_g_cm3: ~
+    source:
+      datasheet_url: https://www.electronicoscaldas.com/datasheet/MG996R_Tower-Pro.pdf
+      retrieved_at: '2026-06-02'
+      license: vendor_datasheet
+      confidence: 4
+    notes: |
+      金属齿,中等负载备选;扭矩比 SG90 高 6×;机器狗辅助件可用。
+
+  - id: dynamixel_xl330_m288_t
+    type: servo
+    family: dynamixel
+    manufacturer: robotis
+    part_number: XL330-M288-T
+    keywords: [dynamixel, xl330, ttl, smart servo]
+    rated:
+      voltage_v: [3.7, 6.0]
+      stall_torque_kgcm: 0.93
+      no_load_speed_rpm: 461
+      stall_current_a: 1.5
+      mass_g: 18
+    geometry:
+      bbox_mm: [20, 23.5, 33.5]
+      mount_holes: 4
+      mount_pitch_mm: ~
+      shaft_spline: spline_5T_or_horn
+    interface:
+      signal: ttl_half_duplex
+      connector: molex_picoblade_3p
+    limits:
+      angle_range_deg: 360
+      duty_cycle_pct: 100
+    density_g_cm3: ~
+    source:
+      datasheet_url: https://emanual.robotis.com/docs/en/dxl/x/xl330-m288/
+      retrieved_at: '2026-06-02'
+      license: vendor_datasheet
+      confidence: 4
+    notes: |
+      关节驱动主选(轻型四足);带编码器读取 + 温度反馈;TTL 总线菊花链。
+
+  - id: dynamixel_xl430_w250_t
+    type: servo
+    family: dynamixel
+    manufacturer: robotis
+    part_number: XL430-W250-T
+    keywords: [dynamixel, xl430, high torque, smart servo]
+    rated:
+      voltage_v: [9.0, 14.8]
+      stall_torque_kgcm: 14.0
+      no_load_speed_rpm: 61
+      stall_current_a: 1.4
+      mass_g: 57
+    geometry:
+      bbox_mm: [28.5, 34, 46.5]
+      mount_holes: 4
+      mount_pitch_mm: ~
+      shaft_spline: spline
+    interface:
+      signal: ttl_half_duplex
+      connector: jst_pn_3p
+    limits:
+      angle_range_deg: 360
+      duty_cycle_pct: 100
+    density_g_cm3: ~
+    source:
+      datasheet_url: https://emanual.robotis.com/docs/en/dxl/x/xl430-w250/
+      retrieved_at: '2026-06-02'
+      license: vendor_datasheet
+      confidence: 4
+    notes: |
+      髋关节高扭矩候选;1.4 N·m,温度反馈;比 XL330 重 3×。
+
+  - id: gim4108_8
+    type: bldc
+    family: gimbal_bldc
+    manufacturer: t_motor_or_diy
+    part_number: GM4108-8
+    keywords: [4108, gimbal motor, bldc, 框无刷, mn4108]
+    rated:
+      voltage_v: [12, 24]
+      stall_torque_kgcm: ~
+      no_load_speed_rpm: ~
+      stall_current_a: ~
+      mass_g: 60
+    geometry:
+      bbox_mm: [46, 46, 21]
+      mount_holes: 4
+      mount_pitch_mm: 25
+      shaft_spline: round_8mm
+    interface:
+      signal: foc_3phase
+      connector: xt30_2p
+    limits:
+      angle_range_deg: 360
+      duty_cycle_pct: 100
+    density_g_cm3: ~
+    source:
+      datasheet_url: https://store.tmotor.com/category/cf-series.html
+      retrieved_at: '2026-06-02'
+      license: vendor_datasheet
+      confidence: 2
+      verify_pending: true
+    notes: |
+      髋/膝大扭矩候选(自研关节模组,配 ODrive S1);
+      参数需 cad-scraper 复核 datasheet(TMotor 同型号有多版,KV 值差大)。
+
+  - id: gim5208_24
+    type: bldc
+    family: gimbal_bldc
+    manufacturer: t_motor
+    part_number: MN5208 KV340
+    keywords: [mn5208, mit cheetah, gimbal motor, 5208]
+    rated:
+      voltage_v: [14.8, 24]
+      stall_torque_kgcm: ~
+      no_load_speed_rpm: ~
+      stall_current_a: ~
+      mass_g: 175
+    geometry:
+      bbox_mm: [60, 60, 24]
+      mount_holes: 4
+      mount_pitch_mm: 25
+      shaft_spline: round_10mm
+    interface:
+      signal: foc_3phase
+      connector: xt60_2p
+    limits:
+      angle_range_deg: 360
+      duty_cycle_pct: 100
+    density_g_cm3: ~
+    source:
+      datasheet_url: https://store.tmotor.com/goods.php?id=388
+      retrieved_at: '2026-06-02'
+      license: vendor_datasheet
+      confidence: 2
+      verify_pending: true
+    notes: |
+      MIT mini-cheetah 同款髋摆动电机;参数复核同 GM4108。
+
+  - id: nema17_42_40
+    type: stepper
+    family: nema17
+    manufacturer: generic
+    part_number: 17HS4401
+    keywords: [nema 17, stepper, 1.8 deg/step, 17hs4401]
+    rated:
+      voltage_v: [12]
+      stall_torque_kgcm: 4.0
+      no_load_speed_rpm: ~
+      stall_current_a: 1.7
+      mass_g: 280
+    geometry:
+      bbox_mm: [42.3, 42.3, 40]
+      mount_holes: 4
+      mount_pitch_mm: 31
+      shaft_spline: round_5mm_d_cut
+    interface:
+      signal: a_b_step_dir
+      connector: jst_xh_4p
+    limits:
+      angle_range_deg: 360
+      duty_cycle_pct: 100
+    density_g_cm3: ~
+    source:
+      datasheet_url: https://www.omc-stepperonline.com/nema-17-bipolar-1-8deg-40ncm-56-67oz-in-1-7a-2-8v-42x42x40mm-4-wires-17hs15-1704s
+      retrieved_at: '2026-06-02'
+      license: vendor_datasheet
+      confidence: 4
+    notes: |
+      试验台架使用,机器狗整机不用;1.8°/步,40mm 长。
+
+  - id: n20_298_1
+    type: dc_geared
+    family: n20_micro_gearmotor
+    manufacturer: generic
+    part_number: N20 298:1 6V
+    keywords: [n20, dc gearmotor, 100rpm, micro motor]
+    rated:
+      voltage_v: [3, 12]
+      stall_torque_kgcm: 0.4
+      no_load_speed_rpm: 100
+      stall_current_a: 0.6
+      mass_g: 12
+    geometry:
+      bbox_mm: [12, 10, 25]
+      mount_holes: 2
+      mount_pitch_mm: 7
+      shaft_spline: round_3mm_d_cut
+    interface:
+      signal: dc_pwm
+      connector: dupont_2p
+    limits:
+      angle_range_deg: 360
+      duty_cycle_pct: 100
+    density_g_cm3: ~
+    source:
+      datasheet_url: https://www.pololu.com/category/60/micro-metal-gearmotors
+      retrieved_at: '2026-06-02'
+      license: vendor_datasheet
+      confidence: 3
+    notes: |
+      头部传感器云台候选;6V 100 rpm 是常见档位,具体减速比 298:1 可改。
+
+  - id: gm6020_can
+    type: bldc
+    family: dji_robomaster
+    manufacturer: dji
+    part_number: GM6020
+    keywords: [gm6020, robomaster, can bus, big servo]
+    rated:
+      voltage_v: [24]
+      stall_torque_kgcm: ~
+      no_load_speed_rpm: 320
+      stall_current_a: ~
+      mass_g: 365
+    geometry:
+      bbox_mm: [89, 89, 50]
+      mount_holes: 4
+      mount_pitch_mm: 70
+      shaft_spline: round_14mm
+    interface:
+      signal: can_2_0_b
+      connector: gh_4p
+    limits:
+      angle_range_deg: 360
+      duty_cycle_pct: 100
+    density_g_cm3: ~
+    source:
+      datasheet_url: https://www.robomaster.com/zh-CN/products/components/general/GM6020
+      retrieved_at: '2026-06-02'
+      license: vendor_datasheet
+      confidence: 3
+      verify_pending: true
+    notes: |
+      备选(RoboMaster 大功率,内置驱动 + CAN);整机太重,备而不选。
+
+  - id: xt30_brake_unit
+    type: linear
+    family: solenoid_brake
+    manufacturer: generic
+    part_number: ~
+    keywords: [solenoid, brake, 直线 brake]
+    rated:
+      voltage_v: [12, 24]
+      stall_torque_kgcm: ~
+      no_load_speed_rpm: ~
+      stall_current_a: ~
+      mass_g: ~
+    geometry:
+      bbox_mm: ~
+      mount_holes: ~
+      mount_pitch_mm: ~
+      shaft_spline: ~
+    interface:
+      signal: dc_on_off
+      connector: xt30_2p
+    limits:
+      angle_range_deg: ~
+      duty_cycle_pct: ~
+    density_g_cm3: ~
+    source:
+      datasheet_url: ~
+      retrieved_at: '2026-06-02'
+      license: proprietary
+      confidence: 1
+      verify_pending: true
+    notes: |
+      占位条目;具体型号待选定后由 cad-scraper 补 datasheet。
+      备选制动用直线作动器(机器狗紧急停摆)。
+
+  - id: coreless_8520
+    type: dc_geared
+    family: coreless_micro
+    manufacturer: generic
+    part_number: 8520 coreless
+    keywords: [coreless, 空心杯, 8520, micro drone]
+    rated:
+      voltage_v: [3.7, 4.2]
+      stall_torque_kgcm: 0.05
+      no_load_speed_rpm: 50000
+      stall_current_a: 2.0
+      mass_g: 5
+    geometry:
+      bbox_mm: [8.5, 8.5, 20]
+      mount_holes: 0
+      mount_pitch_mm: ~
+      shaft_spline: round_1mm
+    interface:
+      signal: dc_pwm
+      connector: jst_ph_2p
+    limits:
+      angle_range_deg: 360
+      duty_cycle_pct: 100
+    density_g_cm3: ~
+    source:
+      datasheet_url: https://www.gartt.com/coreless-motors
+      retrieved_at: '2026-06-02'
+      license: vendor_datasheet
+      confidence: 3
+    notes: |
+      抓夹辅件 / 实验用;FPV 无人机标准件,机器狗暂不主用。

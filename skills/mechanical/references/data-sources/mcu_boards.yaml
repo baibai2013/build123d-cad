@@ -1,0 +1,353 @@
+# MCU Boards 数据源 — P1-2 落定(02 §12.2.3)
+#
+# schema 见 02 §12.1.3;首批 8 型号 4 大族(ESP32 / STM32 / RPi / Teensy)。
+# 板型 bbox / 安装孔 / 电源参数为厂商手册公开值;具体引脚定义不入此 schema(走另一份 pinout)。
+schema_version: 1
+kind: mcu_board
+
+entries:
+  - id: esp32_s3_devkitc_1
+    family: ESP32
+    soc: ESP32-S3-WROOM-1
+    manufacturer: espressif
+    part_number: ESP32-S3-DevKitC-1
+    keywords: [esp32-s3, devkitc, dual_core_xtensa]
+    cpu:
+      arch: xtensa_lx7
+      cores: 2
+      clock_mhz: 240
+      flash_mb: 8
+      psram_mb: 8
+    io:
+      gpio_count: 45
+      adc_channels: 20
+      dac_channels: 0
+      pwm_channels: 16
+      uart_count: 3
+      i2c_count: 2
+      spi_count: 2
+      can_count: 2
+      usb: usb_otg
+    radio:
+      wifi: 802.11_b_g_n_2.4ghz
+      bluetooth: ble_5.0
+    power:
+      input_v: [5.0, 5.5]
+      typ_current_ma: 200
+    geometry:
+      bbox_mm: [69, 27, 11]
+      mount_holes: 4
+      mount_pitch_mm: [22.0, 60.5]
+      bottom_clearance_mm: 5
+    interface:
+      programming: usb_jtag_serial
+      debug: builtin_jtag
+    source:
+      datasheet_url: https://docs.espressif.com/projects/esp-dev-kits/en/latest/esp32s3/esp32-s3-devkitc-1/
+      retrieved_at: '2026-06-02'
+      license: cc_by_nc_4.0
+      confidence: 4
+    notes: |
+      机器狗主控候选;WiFi+BLE+ 双核够跑 IK + 无线遥控;实时性弱,
+      关节伺服闭环建议交给 STM32 / 单独 MCU。
+
+  - id: esp32_s3_n16r8
+    family: ESP32
+    soc: ESP32-S3-WROOM-2
+    manufacturer: espressif
+    part_number: ESP32-S3 N16R8(模组型号)
+    keywords: [esp32-s3, n16r8, large psram, ml inference]
+    cpu:
+      arch: xtensa_lx7
+      cores: 2
+      clock_mhz: 240
+      flash_mb: 16
+      psram_mb: 8
+    io:
+      gpio_count: 45
+      adc_channels: 20
+      dac_channels: 0
+      pwm_channels: 16
+      uart_count: 3
+      i2c_count: 2
+      spi_count: 2
+      can_count: 2
+      usb: usb_otg
+    radio:
+      wifi: 802.11_b_g_n_2.4ghz
+      bluetooth: ble_5.0
+    power:
+      input_v: [5.0, 5.5]
+      typ_current_ma: 250
+    geometry:
+      bbox_mm: ~
+      mount_holes: ~
+      mount_pitch_mm: ~
+      bottom_clearance_mm: ~
+    interface:
+      programming: usb_jtag_serial
+      debug: builtin_jtag
+    source:
+      datasheet_url: https://www.espressif.com/sites/default/files/documentation/esp32-s3_datasheet_en.pdf
+      retrieved_at: '2026-06-02'
+      license: cc_by_nc_4.0
+      confidence: 3
+      verify_pending: true
+    notes: |
+      ESP32-S3 N16R8 是模组,具体板型(几何尺寸)需指定开发板;
+      跑 ML 推理(8MB PSRAM)候选。
+
+  - id: stm32f407_discovery
+    family: STM32
+    soc: STM32F407VGT6
+    manufacturer: stmicroelectronics
+    part_number: STM32F4-DISCOVERY
+    keywords: [stm32f407, m4f, fpu, joint loop]
+    cpu:
+      arch: arm_cortex_m4f
+      cores: 1
+      clock_mhz: 168
+      flash_mb: 1
+      psram_mb: 0
+    io:
+      gpio_count: 80
+      adc_channels: 16
+      dac_channels: 2
+      pwm_channels: 16
+      uart_count: 6
+      i2c_count: 3
+      spi_count: 3
+      can_count: 2
+      usb: usb_otg_fs
+    radio: ~
+    power:
+      input_v: [5.0]
+      typ_current_ma: 100
+    geometry:
+      bbox_mm: [97, 66, 11]
+      mount_holes: 4
+      mount_pitch_mm: ~
+      bottom_clearance_mm: 5
+    interface:
+      programming: stlink_v2
+      debug: stlink_swd
+    source:
+      datasheet_url: https://www.st.com/en/evaluation-tools/stm32f4discovery.html
+      retrieved_at: '2026-06-02'
+      license: stm_proprietary
+      confidence: 4
+    notes: |
+      关节闭环候选;M4F + FPU 算 IK / FOC 速度足够;板载 ST-Link 调试便利。
+
+  - id: stm32g474_nucleo
+    family: STM32
+    soc: STM32G474RET6
+    manufacturer: stmicroelectronics
+    part_number: NUCLEO-G474RE
+    keywords: [stm32g4, nucleo, foc, bldc]
+    cpu:
+      arch: arm_cortex_m4f
+      cores: 1
+      clock_mhz: 170
+      flash_mb: 0.5
+      psram_mb: 0
+    io:
+      gpio_count: 51
+      adc_channels: 16
+      dac_channels: 4
+      pwm_channels: 24
+      uart_count: 5
+      i2c_count: 4
+      spi_count: 4
+      can_count: 3
+      usb: ~
+    radio: ~
+    power:
+      input_v: [5.0, 12]
+      typ_current_ma: 80
+    geometry:
+      bbox_mm: [82.5, 70, 18]
+      mount_holes: 4
+      mount_pitch_mm: ~
+      bottom_clearance_mm: 5
+    interface:
+      programming: stlink_v3
+      debug: stlink_swd
+    source:
+      datasheet_url: https://www.st.com/en/evaluation-tools/nucleo-g474re.html
+      retrieved_at: '2026-06-02'
+      license: stm_proprietary
+      confidence: 4
+    notes: |
+      BLDC FOC 候选;高速 PWM(24 通道)+ 内置高速比较器,适合矢量控制。
+
+  - id: stm32h743_nucleo
+    family: STM32
+    soc: STM32H743ZIT6
+    manufacturer: stmicroelectronics
+    part_number: NUCLEO-H743ZI
+    keywords: [stm32h7, m7, dsp, nucleo-144]
+    cpu:
+      arch: arm_cortex_m7
+      cores: 1
+      clock_mhz: 480
+      flash_mb: 2
+      psram_mb: 0
+    io:
+      gpio_count: 114
+      adc_channels: 36
+      dac_channels: 2
+      pwm_channels: 30
+      uart_count: 8
+      i2c_count: 4
+      spi_count: 6
+      can_count: 2
+      usb: usb_otg_hs_fs
+    radio: ~
+    power:
+      input_v: [5.0, 12]
+      typ_current_ma: 200
+    geometry:
+      bbox_mm: [133, 70, 18]
+      mount_holes: 4
+      mount_pitch_mm: ~
+      bottom_clearance_mm: 5
+    interface:
+      programming: stlink_v3
+      debug: stlink_swd
+    source:
+      datasheet_url: https://www.st.com/en/evaluation-tools/nucleo-h743zi.html
+      retrieved_at: '2026-06-02'
+      license: stm_proprietary
+      confidence: 4
+    notes: |
+      高端方案;480MHz M7 + DSP,适合复杂控制律 / 多关节联控;价格高。
+
+  - id: rpi_4b_4g
+    family: RPi
+    soc: BCM2711
+    manufacturer: raspberry_pi_foundation
+    part_number: Raspberry Pi 4 Model B 4GB
+    keywords: [rpi 4b, raspberry pi, upper computer, vlm]
+    cpu:
+      arch: arm_cortex_a72
+      cores: 4
+      clock_mhz: 1500
+      flash_mb: 0
+      psram_mb: 4096
+    io:
+      gpio_count: 40
+      adc_channels: 0
+      dac_channels: 0
+      pwm_channels: 4
+      uart_count: 5
+      i2c_count: 6
+      spi_count: 5
+      can_count: 0
+      usb: 2x_usb3_2x_usb2
+    radio:
+      wifi: 802.11ac_dual_band
+      bluetooth: 5.0
+    power:
+      input_v: [5.0, 5.1]
+      typ_current_ma: 1500
+    geometry:
+      bbox_mm: [85, 56, 17]
+      mount_holes: 4
+      mount_pitch_mm: [49, 58]
+      bottom_clearance_mm: 5
+    interface:
+      programming: sd_card
+      debug: serial_via_uart
+    source:
+      datasheet_url: https://www.raspberrypi.com/products/raspberry-pi-4-model-b/
+      retrieved_at: '2026-06-02'
+      license: rpi_proprietary
+      confidence: 5
+    notes: |
+      上位机 / VLM 推理候选;Linux 标配;PWM 弱,关节闭环不能交给它。
+
+  - id: rpi_5_8g
+    family: RPi
+    soc: BCM2712
+    manufacturer: raspberry_pi_foundation
+    part_number: Raspberry Pi 5 8GB
+    keywords: [rpi 5, raspberry pi, pcie, upper computer]
+    cpu:
+      arch: arm_cortex_a76
+      cores: 4
+      clock_mhz: 2400
+      flash_mb: 0
+      psram_mb: 8192
+    io:
+      gpio_count: 40
+      adc_channels: 0
+      dac_channels: 0
+      pwm_channels: 4
+      uart_count: 5
+      i2c_count: 6
+      spi_count: 5
+      can_count: 0
+      usb: 2x_usb3_2x_usb2
+    radio:
+      wifi: 802.11ac_dual_band
+      bluetooth: 5.0
+    power:
+      input_v: [5.0, 5.1]
+      typ_current_ma: 3000
+    geometry:
+      bbox_mm: [85, 56, 17]
+      mount_holes: 4
+      mount_pitch_mm: [49, 58]
+      bottom_clearance_mm: 5
+    interface:
+      programming: sd_card
+      debug: serial_via_uart
+    source:
+      datasheet_url: https://www.raspberrypi.com/products/raspberry-pi-5/
+      retrieved_at: '2026-06-02'
+      license: rpi_proprietary
+      confidence: 5
+    notes: 上位机优选(PCIe + 更高带宽);需散热,功耗 ~3A 高。
+
+  - id: teensy_4_1
+    family: Teensy
+    soc: NXP iMXRT1062
+    manufacturer: pjrc
+    part_number: Teensy 4.1
+    keywords: [teensy 4.1, m7, ethernet, sd card]
+    cpu:
+      arch: arm_cortex_m7
+      cores: 1
+      clock_mhz: 600
+      flash_mb: 8
+      psram_mb: 0
+    io:
+      gpio_count: 55
+      adc_channels: 18
+      dac_channels: 2
+      pwm_channels: 35
+      uart_count: 8
+      i2c_count: 3
+      spi_count: 3
+      can_count: 3
+      usb: usb_hs
+    radio: ~
+    power:
+      input_v: [3.6, 5.5]
+      typ_current_ma: 100
+    geometry:
+      bbox_mm: [61, 18, 5]
+      mount_holes: 0
+      mount_pitch_mm: ~
+      bottom_clearance_mm: 3
+    interface:
+      programming: usb_native
+      debug: usb_serial
+    source:
+      datasheet_url: https://www.pjrc.com/store/teensy41.html
+      retrieved_at: '2026-06-02'
+      license: pjrc_proprietary
+      confidence: 4
+    notes: |
+      应急 / 教学方案;600 MHz 单核 M7 + Arduino 生态便利;CAN×3 + PWM×35。
