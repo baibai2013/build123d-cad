@@ -1,0 +1,8 @@
+{
+  "name": "build123d-cad-viewer",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "viewer 多引擎容器 — 统一 server,后缀 → 引擎 路由。零 npm install,直接 node 跑。",
+  "main": "backend/server.mjs"
+}

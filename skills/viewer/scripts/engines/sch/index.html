@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="zh-cn">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Schematic Viewer · 待实现</title>
+<style>
+:root { color-scheme: dark; }
+* { box-sizing: border-box; }
+body {
+  margin: 0; min-height: 100vh; display: grid; place-items: center;
+  font-family: -apple-system, "SF Pro Text", "Segoe UI", Helvetica, Arial, sans-serif;
+  background: linear-gradient(160deg, #0d1117 0%, #161b22 100%);
+  color: #c9d1d9;
+}
+.card {
+  max-width: 540px; padding: 40px 44px; text-align: center;
+  border: 1px solid #30363d; border-radius: 12px; background: #161b22;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+}
+.tag { display: inline-block; padding: 4px 10px; font-size: 12px;
+  background: #2ea04333; color: #7ee787; border-radius: 6px; letter-spacing: 0.5px; }
+h1 { margin: 18px 0 8px; font-size: 22px; font-weight: 600; }
+p { margin: 6px 0; font-size: 14px; line-height: 1.6; color: #8b949e; }
+code { background: #0d1117; padding: 2px 6px; border-radius: 4px; color: #d2a8ff; font-size: 13px; }
+a { color: #58a6ff; text-decoration: none; }
+a:hover { text-decoration: underline; }
+.file { margin-top: 16px; font-size: 13px; color: #6e7681; word-break: break-all; }
+</style>
+</head>
+<body>
+<main class="card">
+  <span class="tag">engine = sch · 待实现</span>
+  <h1>原理图预览引擎(P3 落地)</h1>
+  <p>当前为占位页。P3 阶段将集成 <code>KiCanvas</code>(MIT,纯 web)+ SVG 直接 <code>&lt;img&gt;</code> 兜底。</p>
+  <p class="file" id="file"></p>
+  <p style="margin-top: 22px;">
+    规格:<a href="https://github.com/liyijiang/build123d-cad/blob/main/docs/superpowers/specs/03-viewer.md" target="_blank">03-viewer 多引擎子技能 §8</a>
+  </p>
+</main>
+<script>
+  const p = new URLSearchParams(location.search);
+  const f = p.get('file');
+  if (f) document.getElementById('file').textContent = '文件:' + decodeURIComponent(f);
+</script>
+</body>
+</html>
