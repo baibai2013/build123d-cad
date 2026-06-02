@@ -1,0 +1,105 @@
+# agent-eval YAML - PR 触发版(fast 子集)
+#
+# 落盘位置: ~/.agents/skills/build123d-cad/evals/bench-mechanical-pr.yaml
+# 触发: PR 改动命中 mechanical 子技能 / shared/python/ / Playbook 时,公司 CI evals gate 调用
+# 配套文档: ../07-测试与验证基建.md §7
+# 依赖: agent-eval (~/.claude/skills/agent-eval/) 提供 YAML→worktree→pytest 判分能力
+
+name: bench-mechanical-pr
+description: |
+  mechanical 子技能 fast 回归 — 跑 #1 calibration_block + #2 flange_4hole + #3 l_bracket。
+  目标: PR 必跑,总耗时 < 60s,失败=PR 红;通过即解锁 merge。
+
+# ---- 触发 ----
+triggers:
+  on_pull_request:
+    paths:
+      - "skills/mechanical/**"
+      - "skills/mechanical/SKILL.md"
+      - "skills/mechanical/scripts/**"
+      - "skills/mechanical/Playbook/**"
+      - "shared/python/**"
+      - "SKILL.md"   # 父级路由表
+  on_workflow_dispatch: true   # 允许手动复跑
+
+# ---- 测试主体 (worktree-isolated) ----
+repo: ~/.agents/skills/build123d-cad
+worktree: true                  # agent-eval 默认开,显式声明
+branch_strategy: pr_head        # 评测的是 PR head,不是 main
+commit_pin: head                # PR 每次 push 都跑
+
+# ---- 跑题集合 ----
+suite: fast                     # 对应 examples/benchmarks-prompts.md fast 子集
+cases:
+  - id: calibration_block
+    prompt_file: skills/mechanical/benchmarks/prompts/01_calibration_block.md
+    timeout_seconds: 30
+    output_path: output/calibration_block.step
+  - id: flange_4hole
+    prompt_file: skills/mechanical/benchmarks/prompts/02_flange_4hole.md
+    timeout_seconds: 45
+    output_path: output/flange_4hole.step
+    extra_outputs:
+      - output/flange_4hole.dxf
+  - id: l_bracket
+    prompt_file: skills/mechanical/benchmarks/prompts/03_l_bracket.md
+    timeout_seconds: 45
+    output_path: output/l_bracket.step
+
+total_timeout_seconds: 120      # 整套 hard cap;超时 = 红
+
+# ---- 判分 ----
+judge:
+  # 1) 文件必须产出且非空
+  - type: file_exists
+    path: "{output_path}"
+    min_size_kb: 5
+    apply_to: each_case
+
+  # 2) STEP reimport + manifold 校验 (mechanical 已有的 validate)
+  - type: shell
+    command: python skills/mechanical/scripts/validate/run.py "{output_path}" --json
+    expect_json:
+      step_reimport_ok: true
+      is_manifold: true
+    apply_to: each_case
+
+  # 3) 与 golden.json 对得上
+  - type: shell
+    command: python skills/mechanical/benchmarks/compare_golden.py --case "{id}" --golden skills/mechanical/benchmarks/golden.json
+    exit_code_must_be: 0
+    apply_to: each_case
+
+  # 4) pytest smoke (子技能内部不变量)
+  - type: pytest
+    command: pytest skills/mechanical/tests/test_smoke.py -q -m smoke
+    apply_once: true
+
+# ---- 基线对比 ----
+baseline:
+  golden_file: skills/mechanical/benchmarks/golden.json
+  golden_freeze_policy: |
+    golden.json 改动必须 @tech_lead + @mechanical(Dave) 双签;
+    本 eval 不允许 --emit-golden,只跑 compare。
+
+# ---- 失败处理 ----
+on_failure:
+  artifacts:
+    - output/**/*.step
+    - output/**/*.dxf
+    - skills/mechanical/benchmarks/report.md
+    - skills/mechanical/benchmarks/diffs/*.png   # 视觉比对截图(可选)
+  pr_comment:
+    template: |
+      ❌ **bench-mechanical-pr** 失败
+      失败 case: {failed_cases}
+      详细 report: 见 artifact `report.md`
+      golden vs actual diff: 见 artifact `diffs/`
+      复跑命令: `cd ~/.agents/skills/build123d-cad && python skills/mechanical/benchmarks/run_all.py --suite fast`
+  block_merge: true              # PR 红,不允许 merge
+
+# ---- 与公司 CI evals gate 的接线 ----
+ci_integration:
+  provider: company_evals_gate   # 决议见 ../01-分工与排期.md §8 #11
+  channel: "#待审批"              # 失败时通知频道
+  gate_id: build123d-cad-bench-pr

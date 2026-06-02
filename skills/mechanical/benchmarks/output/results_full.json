@@ -1,0 +1,278 @@
+[
+  {
+    "case": "calibration_block",
+    "difficulty": 1,
+    "suite": [
+      "fast",
+      "full"
+    ],
+    "timeout_seconds": 30,
+    "step_path": "calibration_block.step",
+    "build_seconds": 0.02,
+    "volume_mm3": 46994.6904,
+    "bbox_mm": [
+      60.0,
+      40.0,
+      20.0
+    ],
+    "center_of_mass_mm": [
+      30.0,
+      20.0,
+      10.0
+    ],
+    "area_mm2": 9704.7787,
+    "solid_count": 1,
+    "is_manifold": true,
+    "step_reimport_ok": true,
+    "checksum_sha256": "bc05f5bffefe0ed89d92f56735bed1a7c3fa249c1a69efc813c6f80c0aee808c",
+    "step_size_kb": 29.07
+  },
+  {
+    "case": "flange_4hole",
+    "difficulty": 2,
+    "suite": [
+      "fast",
+      "full"
+    ],
+    "timeout_seconds": 45,
+    "step_path": "flange_4hole.step",
+    "build_seconds": 0.014,
+    "volume_mm3": 29254.5108,
+    "bbox_mm": [
+      80.0,
+      80.0,
+      8.0
+    ],
+    "center_of_mass_mm": [
+      0.0,
+      0.0,
+      4.0
+    ],
+    "area_mm2": 10932.7424,
+    "solid_count": 1,
+    "is_manifold": true,
+    "step_reimport_ok": true,
+    "checksum_sha256": "6291bbbc4e00bbf531dbc25f88dc5b786ffefd0069e255944a7488d64449f867",
+    "step_size_kb": 23.77,
+    "extra_outputs": [
+      "flange_4hole.dxf"
+    ]
+  },
+  {
+    "case": "l_bracket",
+    "difficulty": 2,
+    "suite": [
+      "fast",
+      "full"
+    ],
+    "timeout_seconds": 45,
+    "step_path": "l_bracket.step",
+    "build_seconds": 0.047,
+    "volume_mm3": 23555.2572,
+    "bbox_mm": [
+      50.0,
+      50.0,
+      40.0
+    ],
+    "center_of_mass_mm": [
+      17.0025,
+      23.8551,
+      11.1951
+    ],
+    "area_mm2": 12064.1168,
+    "solid_count": 1,
+    "is_manifold": true,
+    "step_reimport_ok": true,
+    "checksum_sha256": "2716c75832ecc1f93325e4130c8b37007da5430d9fb85f944584ed09401fe5c4",
+    "step_size_kb": 64.8
+  },
+  {
+    "case": "stepped_shaft",
+    "difficulty": 3,
+    "suite": [
+      "full"
+    ],
+    "timeout_seconds": 60,
+    "step_path": "stepped_shaft.step",
+    "build_seconds": 0.018,
+    "volume_mm3": 9012.3328,
+    "bbox_mm": [
+      16.0,
+      16.0,
+      65.0
+    ],
+    "center_of_mass_mm": [
+      -0.2048,
+      0.0,
+      34.878
+    ],
+    "area_mm2": 3234.8418,
+    "solid_count": 1,
+    "is_manifold": true,
+    "step_reimport_ok": true,
+    "checksum_sha256": "dd4da027d689f9c85bc0d2e0011d291613a635c0ca16aec8584265a5d7c45bb7",
+    "step_size_kb": 30.01
+  },
+  {
+    "case": "enclosure_box",
+    "difficulty": 3,
+    "suite": [
+      "full"
+    ],
+    "timeout_seconds": 90,
+    "step_path": "enclosure_box.step",
+    "build_seconds": 0.077,
+    "volume_mm3": 32308.1216,
+    "bbox_mm": [
+      100.0,
+      60.0,
+      30.0
+    ],
+    "center_of_mass_mm": [
+      61.5228,
+      41.3025,
+      18.4569
+    ],
+    "area_mm2": 24200.0042,
+    "solid_count": 5,
+    "is_manifold": true,
+    "step_reimport_ok": true,
+    "checksum_sha256": "b4f6651bb854a36c641a979d95a52b659f23dfea8783887070ebeeabd33d3a77",
+    "step_size_kb": 78.01
+  },
+  {
+    "case": "clevis_yoke",
+    "difficulty": 3,
+    "suite": [
+      "full"
+    ],
+    "timeout_seconds": 60,
+    "step_path": "clevis_yoke.step",
+    "build_seconds": 0.041,
+    "volume_mm3": 16145.6636,
+    "bbox_mm": [
+      31.0,
+      30.0,
+      40.0
+    ],
+    "center_of_mass_mm": [
+      17.04,
+      13.8232,
+      14.683
+    ],
+    "area_mm2": 6658.407,
+    "solid_count": 1,
+    "is_manifold": true,
+    "step_reimport_ok": true,
+    "checksum_sha256": "20d7cf92751809e090b6c37bb574d945be22552dc6bb7385cabb6e079d999052",
+    "step_size_kb": 66.82
+  },
+  {
+    "case": "radial_cylinder",
+    "difficulty": 4,
+    "suite": [
+      "full"
+    ],
+    "timeout_seconds": 90,
+    "step_path": "radial_cylinder.step",
+    "build_seconds": 0.123,
+    "volume_mm3": 95980.9564,
+    "bbox_mm": [
+      85.0,
+      60.0,
+      88.0
+    ],
+    "center_of_mass_mm": [
+      0.5808,
+      0.0,
+      48.9291
+    ],
+    "area_mm2": 24956.759,
+    "solid_count": 1,
+    "is_manifold": true,
+    "step_reimport_ok": true,
+    "checksum_sha256": "0f4dbb555fc139d3b2ea4b7c0c067e52a6e363d0bb313f6568cebd25dafa5611",
+    "step_size_kb": 105.51
+  },
+  {
+    "case": "impeller_3blade",
+    "difficulty": 4,
+    "suite": [
+      "full"
+    ],
+    "timeout_seconds": 120,
+    "step_path": "impeller_3blade.step",
+    "build_seconds": 0.038,
+    "volume_mm3": 13316.8135,
+    "bbox_mm": [
+      60.866,
+      70.282,
+      30.0
+    ],
+    "center_of_mass_mm": [
+      -0.0,
+      0.0,
+      15.0
+    ],
+    "area_mm2": 9286.7254,
+    "solid_count": 4,
+    "is_manifold": true,
+    "step_reimport_ok": true,
+    "checksum_sha256": "a17f88c6eee82f6304067d746ed9fd8d8c65cfe295e4a28abd07a0a79dc768df",
+    "step_size_kb": 70.5
+  },
+  {
+    "case": "spiral_staircase",
+    "difficulty": 5,
+    "suite": [
+      "full"
+    ],
+    "timeout_seconds": 120,
+    "step_path": "spiral_staircase.step",
+    "build_seconds": 0.459,
+    "volume_mm3": 6872669.7894,
+    "bbox_mm": [
+      200.0,
+      200.0,
+      2200.0
+    ],
+    "center_of_mass_mm": [
+      -1.4122,
+      1.4122,
+      1092.9928
+    ],
+    "area_mm2": 527840.7442,
+    "solid_count": 1,
+    "is_manifold": true,
+    "step_reimport_ok": true,
+    "checksum_sha256": "34947a9097ab973ed1ee4d3c76241b8f8b6e5ad6f86e12042420d8b1e0ee2fea",
+    "step_size_kb": 340.67
+  },
+  {
+    "case": "planetary_gear_set",
+    "difficulty": 5,
+    "suite": [
+      "full"
+    ],
+    "timeout_seconds": 150,
+    "step_path": "planetary_gear_set.step",
+    "build_seconds": 0.004,
+    "volume_mm3": 12560.0874,
+    "bbox_mm": [
+      58.0,
+      58.0,
+      8.0
+    ],
+    "center_of_mass_mm": [
+      0.0,
+      0.0,
+      4.0
+    ],
+    "area_mm2": 7839.8445,
+    "solid_count": 5,
+    "is_manifold": true,
+    "step_reimport_ok": true,
+    "checksum_sha256": "13c427a4c8025c55e27f6bb894cb6b22e9c81e9dfd1cd997c418eff23e8267f5",
+    "step_size_kb": 40.5
+  }
+]

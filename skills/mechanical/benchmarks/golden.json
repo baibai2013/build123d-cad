@@ -1,0 +1,259 @@
+{
+  "_meta": {
+    "schema_version": 1,
+    "generator": "skills/mechanical/benchmarks/run_all.py",
+    "frozen_by": "<待 Dave 签字>",
+    "frozen_at_seed": "2026-06-02T08:09:14+0800",
+    "_note": "首版种子,Dave 审过后改 frozen_by + commit"
+  },
+  "calibration_block": {
+    "version": 1,
+    "build_seconds": 0.02,
+    "step_path": "output/calibration_block.step",
+    "step_reimport_ok": true,
+    "solid_count": 1,
+    "is_manifold": true,
+    "volume_mm3": 46994.6904,
+    "volume_tolerance_pct": 0.5,
+    "bbox_mm": [
+      60.0,
+      40.0,
+      20.0
+    ],
+    "bbox_tolerance_mm": 0.05,
+    "center_of_mass_mm": [
+      30.0,
+      20.0,
+      10.0
+    ],
+    "com_tolerance_mm": 0.1,
+    "area_mm2": 9704.7787,
+    "area_tolerance_pct": 1.0,
+    "checksum_sha256": "bc05f5bffefe0ed89d92f56735bed1a7c3fa249c1a69efc813c6f80c0aee808c"
+  },
+  "flange_4hole": {
+    "version": 1,
+    "build_seconds": 0.014,
+    "step_path": "output/flange_4hole.step",
+    "step_reimport_ok": true,
+    "solid_count": 1,
+    "is_manifold": true,
+    "volume_mm3": 29254.5108,
+    "volume_tolerance_pct": 0.5,
+    "bbox_mm": [
+      80.0,
+      80.0,
+      8.0
+    ],
+    "bbox_tolerance_mm": 0.05,
+    "center_of_mass_mm": [
+      0.0,
+      0.0,
+      4.0
+    ],
+    "com_tolerance_mm": 0.1,
+    "area_mm2": 10932.7424,
+    "area_tolerance_pct": 1.0,
+    "checksum_sha256": "6291bbbc4e00bbf531dbc25f88dc5b786ffefd0069e255944a7488d64449f867"
+  },
+  "l_bracket": {
+    "version": 1,
+    "build_seconds": 0.047,
+    "step_path": "output/l_bracket.step",
+    "step_reimport_ok": true,
+    "solid_count": 1,
+    "is_manifold": true,
+    "volume_mm3": 23555.2572,
+    "volume_tolerance_pct": 0.5,
+    "bbox_mm": [
+      50.0,
+      50.0,
+      40.0
+    ],
+    "bbox_tolerance_mm": 0.05,
+    "center_of_mass_mm": [
+      17.0025,
+      23.8551,
+      11.1951
+    ],
+    "com_tolerance_mm": 0.1,
+    "area_mm2": 12064.1168,
+    "area_tolerance_pct": 1.0,
+    "checksum_sha256": "2716c75832ecc1f93325e4130c8b37007da5430d9fb85f944584ed09401fe5c4"
+  },
+  "stepped_shaft": {
+    "version": 1,
+    "build_seconds": 0.018,
+    "step_path": "output/stepped_shaft.step",
+    "step_reimport_ok": true,
+    "solid_count": 1,
+    "is_manifold": true,
+    "volume_mm3": 9012.3328,
+    "volume_tolerance_pct": 1.0,
+    "bbox_mm": [
+      16.0,
+      16.0,
+      65.0
+    ],
+    "bbox_tolerance_mm": 0.05,
+    "center_of_mass_mm": [
+      -0.2048,
+      0.0,
+      34.878
+    ],
+    "com_tolerance_mm": 0.1,
+    "area_mm2": 3234.8418,
+    "area_tolerance_pct": 1.0,
+    "checksum_sha256": "dd4da027d689f9c85bc0d2e0011d291613a635c0ca16aec8584265a5d7c45bb7"
+  },
+  "enclosure_box": {
+    "version": 1,
+    "build_seconds": 0.077,
+    "step_path": "output/enclosure_box.step",
+    "step_reimport_ok": true,
+    "solid_count": 5,
+    "is_manifold": true,
+    "volume_mm3": 32308.1216,
+    "volume_tolerance_pct": 1.0,
+    "bbox_mm": [
+      100.0,
+      60.0,
+      30.0
+    ],
+    "bbox_tolerance_mm": 0.05,
+    "center_of_mass_mm": [
+      61.5228,
+      41.3025,
+      18.4569
+    ],
+    "com_tolerance_mm": 0.1,
+    "area_mm2": 24200.0042,
+    "area_tolerance_pct": 1.0,
+    "checksum_sha256": "b4f6651bb854a36c641a979d95a52b659f23dfea8783887070ebeeabd33d3a77"
+  },
+  "clevis_yoke": {
+    "version": 1,
+    "build_seconds": 0.041,
+    "step_path": "output/clevis_yoke.step",
+    "step_reimport_ok": true,
+    "solid_count": 1,
+    "is_manifold": true,
+    "volume_mm3": 16145.6636,
+    "volume_tolerance_pct": 1.0,
+    "bbox_mm": [
+      31.0,
+      30.0,
+      40.0
+    ],
+    "bbox_tolerance_mm": 0.05,
+    "center_of_mass_mm": [
+      17.04,
+      13.8232,
+      14.683
+    ],
+    "com_tolerance_mm": 0.1,
+    "area_mm2": 6658.407,
+    "area_tolerance_pct": 1.0,
+    "checksum_sha256": "20d7cf92751809e090b6c37bb574d945be22552dc6bb7385cabb6e079d999052"
+  },
+  "radial_cylinder": {
+    "version": 1,
+    "build_seconds": 0.123,
+    "step_path": "output/radial_cylinder.step",
+    "step_reimport_ok": true,
+    "solid_count": 1,
+    "is_manifold": true,
+    "volume_mm3": 95980.9564,
+    "volume_tolerance_pct": 1.5,
+    "bbox_mm": [
+      85.0,
+      60.0,
+      88.0
+    ],
+    "bbox_tolerance_mm": 0.05,
+    "center_of_mass_mm": [
+      0.5808,
+      0.0,
+      48.9291
+    ],
+    "com_tolerance_mm": 0.1,
+    "area_mm2": 24956.759,
+    "area_tolerance_pct": 1.0,
+    "checksum_sha256": "0f4dbb555fc139d3b2ea4b7c0c067e52a6e363d0bb313f6568cebd25dafa5611"
+  },
+  "impeller_3blade": {
+    "version": 1,
+    "build_seconds": 0.038,
+    "step_path": "output/impeller_3blade.step",
+    "step_reimport_ok": true,
+    "solid_count": 4,
+    "is_manifold": true,
+    "volume_mm3": 13316.8135,
+    "volume_tolerance_pct": 1.5,
+    "bbox_mm": [
+      60.866,
+      70.282,
+      30.0
+    ],
+    "bbox_tolerance_mm": 0.05,
+    "center_of_mass_mm": [
+      -0.0,
+      0.0,
+      15.0
+    ],
+    "com_tolerance_mm": 0.1,
+    "area_mm2": 9286.7254,
+    "area_tolerance_pct": 1.0,
+    "checksum_sha256": "a17f88c6eee82f6304067d746ed9fd8d8c65cfe295e4a28abd07a0a79dc768df"
+  },
+  "spiral_staircase": {
+    "version": 1,
+    "build_seconds": 0.459,
+    "step_path": "output/spiral_staircase.step",
+    "step_reimport_ok": true,
+    "solid_count": 1,
+    "is_manifold": true,
+    "volume_mm3": 6872669.7894,
+    "volume_tolerance_pct": 2.0,
+    "bbox_mm": [
+      200.0,
+      200.0,
+      2200.0
+    ],
+    "bbox_tolerance_mm": 0.05,
+    "center_of_mass_mm": [
+      -1.4122,
+      1.4122,
+      1092.9928
+    ],
+    "com_tolerance_mm": 0.1,
+    "area_mm2": 527840.7442,
+    "area_tolerance_pct": 1.0,
+    "checksum_sha256": "34947a9097ab973ed1ee4d3c76241b8f8b6e5ad6f86e12042420d8b1e0ee2fea"
+  },
+  "planetary_gear_set": {
+    "version": 1,
+    "build_seconds": 0.004,
+    "step_path": "output/planetary_gear_set.step",
+    "step_reimport_ok": true,
+    "solid_count": 5,
+    "is_manifold": true,
+    "volume_mm3": 12560.0874,
+    "volume_tolerance_pct": 2.0,
+    "bbox_mm": [
+      58.0,
+      58.0,
+      8.0
+    ],
+    "bbox_tolerance_mm": 0.05,
+    "center_of_mass_mm": [
+      0.0,
+      0.0,
+      4.0
+    ],
+    "com_tolerance_mm": 0.1,
+    "area_mm2": 7839.8445,
+    "area_tolerance_pct": 1.0,
+    "checksum_sha256": "13c427a4c8025c55e27f6bb894cb6b22e9c81e9dfd1cd997c418eff23e8267f5"
+  }
+}

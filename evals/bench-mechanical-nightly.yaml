@@ -1,0 +1,96 @@
+# agent-eval YAML - nightly + merge-to-main 触发版(full 10 题)
+#
+# 落盘位置: ~/.agents/skills/build123d-cad/evals/bench-mechanical-nightly.yaml
+# 触发: 每日 02:30 nightly cron + 每次 merge 到 main
+# 配套文档: ../07-测试与验证基建.md §7
+# 与 PR 版的差异:
+#   - 跑全部 10 题 (full suite)
+#   - 总耗时上限 10 min
+#   - 失败不阻塞 merge,但发 #待审批 + 抓 artifact
+
+name: bench-mechanical-nightly
+description: |
+  mechanical 子技能 full 回归 — 全部 10 题。
+  目标: 拓扑 + 几何回归基线;失败=黄(警告但不 block),merge-to-main 失败需 mechanical Owner 24h 内响应。
+
+# ---- 触发 ----
+triggers:
+  on_schedule:
+    cron: "30 2 * * *"          # 每日 02:30 (本地)
+  on_push:
+    branches: [main]
+  on_workflow_dispatch: true
+
+# ---- 测试主体 ----
+repo: ~/.agents/skills/build123d-cad
+worktree: true
+branch_strategy: main
+commit_pin: head
+
+# ---- 跑题集合 ----
+suite: full
+cases:
+  - {id: calibration_block,   prompt_file: skills/mechanical/benchmarks/prompts/01_calibration_block.md,   timeout_seconds: 30,  output_path: output/calibration_block.step}
+  - {id: flange_4hole,        prompt_file: skills/mechanical/benchmarks/prompts/02_flange_4hole.md,        timeout_seconds: 45,  output_path: output/flange_4hole.step,
+     extra_outputs: [output/flange_4hole.dxf]}
+  - {id: l_bracket,           prompt_file: skills/mechanical/benchmarks/prompts/03_l_bracket.md,           timeout_seconds: 45,  output_path: output/l_bracket.step}
+  - {id: stepped_shaft,       prompt_file: skills/mechanical/benchmarks/prompts/04_stepped_shaft.md,       timeout_seconds: 60,  output_path: output/stepped_shaft.step}
+  - {id: enclosure_box,       prompt_file: skills/mechanical/benchmarks/prompts/05_enclosure_box.md,       timeout_seconds: 90,  output_path: output/enclosure_box.step}
+  - {id: clevis_yoke,         prompt_file: skills/mechanical/benchmarks/prompts/06_clevis_yoke.md,         timeout_seconds: 60,  output_path: output/clevis_yoke.step}
+  - {id: radial_cylinder,     prompt_file: skills/mechanical/benchmarks/prompts/07_radial_cylinder.md,     timeout_seconds: 90,  output_path: output/radial_cylinder.step}
+  - {id: impeller_3blade,     prompt_file: skills/mechanical/benchmarks/prompts/08_impeller_3blade.md,     timeout_seconds: 120, output_path: output/impeller_3blade.step}
+  - {id: spiral_staircase,    prompt_file: skills/mechanical/benchmarks/prompts/09_spiral_staircase.md,    timeout_seconds: 90,  output_path: output/spiral_staircase.step}
+  - {id: planetary_gear_set,  prompt_file: skills/mechanical/benchmarks/prompts/10_planetary_gear_set.md,  timeout_seconds: 150, output_path: output/planetary_gear_set.step}
+
+total_timeout_seconds: 600       # 10 min hard cap
+
+parallel: 4                      # 4 case 并行 (本地 8 核机器/CI runner 上限按情况调)
+
+# ---- 判分 ----
+judge:
+  - {type: file_exists, path: "{output_path}", min_size_kb: 5, apply_to: each_case}
+
+  - type: shell
+    command: python skills/mechanical/scripts/validate/run.py "{output_path}" --json
+    expect_json: {step_reimport_ok: true, is_manifold: true}
+    apply_to: each_case
+
+  - type: shell
+    command: python skills/mechanical/benchmarks/compare_golden.py --case "{id}" --golden skills/mechanical/benchmarks/golden.json
+    exit_code_must_be: 0
+    apply_to: each_case
+    failure_severity: warning   # nightly 失败=黄,不 block (与 PR 版差异)
+
+# ---- 基线 ----
+baseline:
+  golden_file: skills/mechanical/benchmarks/golden.json
+  drift_report: skills/mechanical/benchmarks/drift.md
+  drift_report_format: |
+    # benchmark drift report ({date})
+    | case | volume Δ% | bbox Δmm | manifold | reimport | verdict |
+
+# ---- 失败处理 ----
+on_failure:
+  artifacts:
+    - output/**/*.step
+    - output/**/*.dxf
+    - skills/mechanical/benchmarks/report.md
+    - skills/mechanical/benchmarks/drift.md
+  notify:
+    channel: "#待审批"            # 决议见 ../01-分工与排期.md §8
+    mention: "@mechanical (Dave) @tech_lead"
+    template: |
+      ⚠️ **bench-mechanical-nightly** 失败 ({passed}/{total} pass)
+      失败 case: {failed_cases}
+      drift report: 见 artifact `drift.md`
+      响应 SLA: mechanical Owner 24h 内复核(merge-to-main 失败时必须响应)
+  block_merge: false
+
+# ---- 与公司 CI evals gate 的接线 ----
+ci_integration:
+  provider: company_evals_gate
+  channel: "#待审批"
+  gate_id: build123d-cad-bench-nightly
+  retention:
+    artifacts_days: 14
+    drift_history_days: 90
