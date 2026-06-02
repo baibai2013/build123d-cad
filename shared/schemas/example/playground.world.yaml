@@ -1,0 +1,40 @@
+# 最小机器狗 Gazebo 世界样例 — 04 §11.2 world.yaml schema v1
+# 用法:
+#   先出 URDF: python skills/urdf/scripts/export_urdf.py shared/schemas/example/single_leg.joints.yaml -o /tmp/dog/
+#   再出 SDF : python skills/sdf/scripts/export_sdf.py shared/schemas/example/playground.world.yaml --urdf /tmp/dog/robot.urdf -o /tmp/dog/
+schema_version: 1
+sdformat_version: "1.12"
+world_name: dog_playground
+
+physics:
+  type: ode
+  max_step_size: 0.001
+  real_time_factor: 1.0
+  gravity: [0, 0, -9.81]
+
+ground:
+  type: plane
+  size: [100, 100]
+  friction: {mu: 0.8, mu2: 0.8}
+
+light:
+  - name: sun
+    type: directional
+    direction: [-0.5, -0.5, -1.0]
+    cast_shadows: true
+
+include_models:
+  - uri: model://dog_left_front_leg     # export_sdf 把 URDF→SDF model 后落 model.sdf,world 用 model:// 引用
+    name: dog_instance
+    pose: {xyz: [0, 0, 0.4], rpy: [0, 0, 0]}
+
+sensors:
+  - link: base_link
+    name: imu
+    type: imu
+  - link: fl_thigh
+    name: front_camera
+    type: camera
+    camera: {horizontal_fov: 1.047, image: {width: 640, height: 480}}
+
+plugins: []

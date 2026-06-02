@@ -1,0 +1,8 @@
+# L1 元数据助手复用 shared/python/cadpy_metadata(R5 已抽共享,不再 vendor 第三份)
+--editable ../../shared/python/cadpy_metadata
+pyyaml>=6.0
+jsonschema>=4.20
+# build123d 或 trimesh 可选:仅 export_sdf 需要把 STEP mesh 落 STL 时用,缺时跳过
+# gz-tools(brew install ignition-tools / apt install libgz-tools2)可选:
+#   有则 export_sdf 用 `gz sdf -p` 做 URDF→SDF 高保真转换 + `gz sdf --check`;
+#   缺则走自写转换器 fallback(5 tag,见 04 §11.3 / R3)。

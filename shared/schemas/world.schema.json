@@ -1,0 +1,129 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/baibai2013/build123d-cad/shared/schemas/world.schema.json",
+  "title": "world.yaml v1 — urdf → sdf (Gazebo world) handoff",
+  "description": "share/build123d-cad改造/04 §11.2 权威落盘版本; 由 export_sdf.py + tests 强校验. SDF 世界级参数(physics/ground/light/include/sensors/plugins).",
+  "type": "object",
+  "required": ["schema_version", "world_name"],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {"const": 1},
+    "sdformat_version": {"type": "string", "pattern": "^\\d+\\.\\d+$", "default": "1.12"},
+    "world_name": {"type": "string", "minLength": 1, "pattern": "^[a-z][a-z0-9_]*$"},
+
+    "physics": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "type": {"enum": ["ode", "bullet", "dart", "simbody"], "default": "ode"},
+        "max_step_size": {"type": "number", "exclusiveMinimum": 0, "default": 0.001},
+        "real_time_factor": {"type": "number", "exclusiveMinimum": 0, "default": 1.0},
+        "gravity": {"type": "array", "minItems": 3, "maxItems": 3, "items": {"type": "number"},
+                    "default": [0, 0, -9.81]}
+      }
+    },
+
+    "ground": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type"],
+      "properties": {
+        "type": {"enum": ["plane", "heightmap", "mesh"]},
+        "size": {"type": "array", "minItems": 2, "maxItems": 2, "items": {"type": "number", "exclusiveMinimum": 0}},
+        "friction": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "mu":  {"type": "number", "minimum": 0},
+            "mu2": {"type": "number", "minimum": 0}
+          }
+        }
+      }
+    },
+
+    "light": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["name", "type"],
+        "properties": {
+          "name": {"type": "string", "minLength": 1},
+          "type": {"enum": ["directional", "point", "spot"]},
+          "direction": {"type": "array", "minItems": 3, "maxItems": 3, "items": {"type": "number"}},
+          "cast_shadows": {"type": "boolean", "default": true}
+        }
+      }
+    },
+
+    "include_models": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["uri"],
+        "properties": {
+          "uri": {"type": "string", "minLength": 1},
+          "name": {"type": "string", "minLength": 1},
+          "pose": {"$ref": "#/$defs/pose"},
+          "static": {"type": "boolean", "default": false}
+        }
+      }
+    },
+
+    "sensors": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["link", "name", "type"],
+        "properties": {
+          "link": {"type": "string", "minLength": 1},
+          "name": {"type": "string", "minLength": 1},
+          "type": {"enum": ["camera", "depth_camera", "lidar", "gpu_lidar", "imu", "contact", "force_torque"]},
+          "pose": {"$ref": "#/$defs/pose"},
+          "update_rate": {"type": "number", "exclusiveMinimum": 0},
+          "camera": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "horizontal_fov": {"type": "number", "exclusiveMinimum": 0},
+              "image": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "width":  {"type": "integer", "exclusiveMinimum": 0},
+                  "height": {"type": "integer", "exclusiveMinimum": 0}
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+
+    "plugins": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["filename", "name"],
+        "properties": {
+          "filename": {"type": "string", "minLength": 1},
+          "name": {"type": "string", "minLength": 1}
+        }
+      }
+    }
+  },
+
+  "$defs": {
+    "pose": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "xyz": {"type": "array", "minItems": 3, "maxItems": 3, "items": {"type": "number"}},
+        "rpy": {"type": "array", "minItems": 3, "maxItems": 3, "items": {"type": "number"}}
+      }
+    }
+  }
+}
