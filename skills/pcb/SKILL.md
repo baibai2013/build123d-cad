@@ -1,83 +1,87 @@
 ---
 name: pcb
-description: PCB 板级电气设计 — KiCad 9.x CLI 集成 / skidl 脚本化原理图 / 一键出件。当前为 P3 占位
+description: PCB 板级电气设计 — KiCad 9.x CLI 集成 / skidl 脚本化原理图 / 一键出件
 owner: hardware
-status: WIP
-phase: P0-stub
-since: 2026-06-02
+status: scaffolded            # 脚本骨架已落地;真出件需装 KiCad 9.x + Gate 3 给真实项目
+phase: P3
+since: 2026-06-03
 ---
 
-# pcb 子技能(P3 占位)
+# pcb 子技能
 
-> **当前状态:WIP**。触发条件 = 用户给出第一个 PCB 项目 + Gate 3 通过。
-> P0 阶段不要调用本子技能,父级路由命中应回答「电子域 P3 启动,见
-> `share/build123d-cad改造/06-电子域扩展-pcb-eda-drc.md`」。
+板级电气设计**入口**:生成 KiCad 工程文件、命令行驱动一键出件。
+职责正交三件事不越界:DRC/ERC → `drc`;元件查料/选型 → `electronics-bom`;3D 渲染 → `viewer`。
+
+> **落地状态(2026-06-03)**:scripts 骨架已实现(`new_project.py` 无需 KiCad 即可跑;
+> 其余 kicad-cli/skidl 包装在工具缺失时 **fail-loud 给安装提示**,不静默)。
+> 真出件需 sysadmin 装 KiCad 9.x + Gate 3 给出首个真实 PCB 项目。
 
 ## 触发场景(关键词)
 
-父级 SKILL.md 路由命中本技能的关键词(与 [父级路由表](../../SKILL.md) 第 60 行同步):
-
+父级 SKILL.md 路由命中本技能(与 [父级路由表](../../SKILL.md) 同步):
 - 「PCB / 原理图 / Gerber / 出件 / kicad / 板子 / EDA」
-- 「skidl / kicad-cli / 板框 DXF」
-- 「板级电气 / 多层板 / 走线」
+- 「skidl / kicad-cli / 板框 DXF / 多层板 / 走线」
 
 不命中场景(走别的 skill):
-- 「DRC / ERC / 制造检查」 → 未来的 `drc` skill(P3 启动同期建)
+- 「DRC / ERC / 制造检查」 → `drc`(P3 同期建)
 - 「元件型号 / 封装 / JLCPCB / 找料」 → `electronics-bom`
-- 「PCB 3D 预览」 → `viewer`(本技能负责出 STEP/glTF,不做渲染)
+- 「PCB 3D 预览」 → `viewer`(本技能出 STEP/glTF,viewer 渲)
 
-## P3 路线图
+## 能力清单
 
-落地任务详见 [06 §3 P3 路线图](../../../share/build123d-cad改造/06-电子域扩展-pcb-eda-drc.md#3-p3-路线图落地任务卡):
-
-| # | 任务 | 工作量 | 验收 |
+| 能力 | 入口 | 输出 | 依赖 |
 |---|---|---|---|
-| P3-1 | KiCad CLI 任务模式 | 2d | 一条命令 `.kicad_pcb` → Gerber+STEP+3D |
-| P3-2 | skidl 脚本化原理图 | 2d | Python → `.net` → KiCad import |
-| P3-4 | DRC/ERC 自动化(KiBot) | 1d | YAML 一键出 DRC PDF |
-| P3-5 | 机械 ⇄ PCB 边框互导 | 1d | DXF 双向跑通 |
-| P3-6 | viewer/pcb 引擎对接 | 2d | 浏览器开 `.kicad_pcb` 看 3D + Gerber |
+| 起空白 KiCad 工程 | `scripts/new_project.py <name>` | `.kicad_pro/.kicad_pcb/.kicad_sch` 三件套 | 无(纯模板,可跑) |
+| skidl → 原理图网表 | `scripts/sch_from_skidl.py <design.py>` | `.net`(KiCad import 变 `.kicad_sch`) | skidl |
+| 一把出 fab | `scripts/export_fab.sh <board>.kicad_pcb` | gerbers.zip + STEP + glb + pos + bom | kicad-cli |
+| 仅出 STEP(给机械) | `scripts/pcb_to_step.sh <board>` | `<board>.step` | kicad-cli |
+| 仅出板框 DXF | `scripts/pcb_to_dxf.sh <board>` | `<board>.dxf`(Edge.Cuts) | kicad-cli |
+| 批量改既有工程 | `scripts/batch_edit.py <board> --rule rules.yaml` | 改后工程(默认 dry-run) | kicad-skip |
 
-主工具链选型(详见 [06 §4](../../../share/build123d-cad改造/06-电子域扩展-pcb-eda-drc.md#4-kicad-工具链选型预研gate-3-决策材料)):
+工具栈(06 §4 选型,无异议):主链 **KiCad 9.x `kicad-cli`**(命令行稳定,
+**不碰 IPC API** 见 `references/kicad-9-ipc-status.md`);原理图 **skidl**(新建)+
+**kicad-skip**(改既有);出件 kicad-cli(快 check)+ KiBot(release,归 `drc`)。
 
-| 决策项 | 推荐 | 理由(一句) |
-|---|---|---|
-| EDA 主工具 | **KiCad 9.x** | GPL + CLI 完整 + S-expression 文本(git 友好) |
-| 原理图脚本化 | **skidl + kicad-skip** | Pythonic + 与 build123d 风格一致 |
-| DRC / 出件 | **KiBot + kicad-cli** | 单测用 cli,release 用 KiBot |
-| 3D 模型源 | **packages3D + SnapEDA** | 主流料齐 + 自动下载 |
-| 机械⇄PCB | **DXF + STEP** | KiCad/build123d 双向直读 |
+## 输出物
 
-## 计划能力清单(P3 启动后填)
+全落 `output/<task>/electrical/`(08 §2.0):
+- 工程三件套 `<board>.{kicad_pro,kicad_pcb,kicad_sch}`
+- `fab/<board>-gerbers.zip`(Gerber + 钻孔)
+- `fab/<board>.step`(给 mechanical 装配)/ `fab/<board>.glb`(给 viewer 3D)
+- `fab/<board>.dxf`(板框,给 mechanical 挖孔)
+- `fab/<board>-pos.csv` / `fab/<board>-bom.csv`(贴片厂)
 
-P3-1 起本节膨胀为完整的 scripts / tests / 输出物表(见 [06 §3.3a.1](../../../share/build123d-cad改造/06-电子域扩展-pcb-eda-drc.md#33a1-skillspcb--板级电气设计入口))。
+## 与其他 skill 的接口(handoff)
 
-P0 阶段保留下面占位条目,P3 启动时由 hardware 替换为真实命令:
+- **→ mechanical**:`fab/<board>.dxf`(板框,build123d 读做外壳让位)+ `<board>.step`(装配间隙验证)
+- **→ viewer**:`<board>.glb`(engine=cad 3D)/ `.kicad_pcb`(engine=pcb,KiCanvas 直渲)
+- **→ drc**:出件后由用户/agent 显式调 `drc/run_drc.sh`,pcb **不**自动跑(职责分离)
+- **← electronics-bom(文件接口,非互引用)**:`sch_from_skidl.py --library library.json`
+  读 electronics-bom 落盘的 `output/<task>/electrical/library/library.json`(料→封装)。
+  **不** subprocess 反向调 `lookup.py` —— 那会违反 [08 §1](../../shared/handoff-protocols.md) 零互引用红线。
+  由 agent/父 SKILL 编排:先调 electronics-bom 出 library.json,再跑本技能。
+  (解了 06 §3.3a.2 标注的全项目唯一一处红线冲突。)
 
-- [ ] `scripts/new_project.py` — 起空白 KiCad 工程骨架(P3-1)
-- [ ] `scripts/sch_from_skidl.py` — skidl Python → 原理图(P3-2)
-- [ ] `scripts/export_fab.sh` — 一把出 Gerber+STEP+glTF+Pos+BOM(P3-1)
-- [ ] `scripts/pcb_to_step.sh` / `pcb_to_dxf.sh` — 给 mechanical 用(P3-5)
-- [ ] `scripts/batch_edit.py` — kicad-skip 批量改既有工程(P3-2)
+## viewer 预览页签(P3-6/P3-7,与本技能同期落地)
 
-## 与其他 skill 的接口(handoff,P3 起)
-
-- **本技能 → mechanical**:`output/<task>/electrical/fab/<board>.dxf`(板框)+ `<board>.step`
-- **本技能 → viewer**:`<board>.glb` 或 `.kicad_pcb` → engine=cad / engine=pcb
-- **本技能 → drc**(P3 新增):产出 `.kicad_pcb` 后由 drc skill 跑规则
-- **本技能 ← electronics-bom**:`sch_from_skidl.py` 通过 subprocess 调 `electronics-bom/scripts/lookup.py` 查料(命令行隔离,详见 [06 §3.3a.2](../../../share/build123d-cad改造/06-电子域扩展-pcb-eda-drc.md#33a2-skillselectronics-bom--元件库管理原-44-数据源策略的实现))
+viewer 路由已就位(`scripts/backend/router.mjs`:`.kicad_pcb`/`.gbr*`→engine=pcb,
+`.kicad_sch`/`.svg`→engine=sch,`.glb`→engine=cad),无需改路由,只换占位页:
+- **engine=pcb**:`tracespace` 渲 gerbers 2D(图层开关)+ **KiCanvas** 直渲 `.kicad_pcb` 3D;
+  pcb skill 出的 `.glb` 走 cad 引擎看带元件精细 3D。2D/3D 页签切换。
+- **engine=sch**:KiCanvas 渲 `.kicad_sch`。
+- 依赖纯前端(tracespace / KiCanvas 单 ESM bundle),**预构建 vendoring** 进 `engines/`,
+  不 npm install(00 §6 红线)。详见 viewer skill `engines/pcb/`。
 
 ## 不做什么
 
-- ❌ 自动布线(KiCad 自带 Freerouting 已可用)
-- ❌ 高速 SI/PI 仿真(超出本 super skill 范围,留 P4+)
+- ❌ 自动布线(KiCad 自带 Freerouting)
+- ❌ 高速 SI/PI 仿真(超范围,留 P4+)
 - ❌ 实时编辑器(viewer 只预览,编辑走 KiCad GUI)
-- ❌ DRC / ERC(归 drc skill,职责分离)
+- ❌ DRC/ERC(归 `drc`)
 
 ## 参考资料
 
-- KiCad CLI: https://docs.kicad.org/9.0/en/cli/cli.html
-- skidl: https://github.com/devbisme/skidl
-- kicad-skip: https://github.com/psychogenic/kicad-skip
-- KiBot: https://github.com/INTI-CMNB/KiBot
-- 选型材料: `share/build123d-cad改造/06-电子域扩展-pcb-eda-drc.md`
+- `references/kicad-cli-cheatsheet.md` — kicad-cli 全命令速查
+- `references/skidl-quickstart.md` — skidl 写第一份原理图 + 料库文件接口
+- `references/kicad-9-ipc-status.md` — 为什么只用 CLI 不用 IPC API
+- 选型材料:`share/build123d-cad改造/06-电子域扩展-pcb-eda-drc.md` §3.3a.1 / §4

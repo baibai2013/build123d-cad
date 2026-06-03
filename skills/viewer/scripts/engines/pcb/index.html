@@ -3,45 +3,126 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>PCB Viewer · 待实现</title>
+<title>PCB Viewer · build123d-cad</title>
 <style>
 :root { color-scheme: dark; }
 * { box-sizing: border-box; }
 body {
-  margin: 0; min-height: 100vh; display: grid; place-items: center;
+  margin: 0; min-height: 100vh; display: flex; flex-direction: column;
   font-family: -apple-system, "SF Pro Text", "Segoe UI", Helvetica, Arial, sans-serif;
-  background: linear-gradient(160deg, #0d1117 0%, #161b22 100%);
-  color: #c9d1d9;
+  background: #0d1117; color: #c9d1d9;
 }
-.card {
-  max-width: 540px; padding: 40px 44px; text-align: center;
-  border: 1px solid #30363d; border-radius: 12px; background: #161b22;
-  box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+header {
+  display: flex; align-items: center; gap: 16px; padding: 10px 16px;
+  border-bottom: 1px solid #30363d; background: #161b22;
 }
-.tag { display: inline-block; padding: 4px 10px; font-size: 12px;
-  background: #1f6feb33; color: #79c0ff; border-radius: 6px; letter-spacing: 0.5px; }
-h1 { margin: 18px 0 8px; font-size: 22px; font-weight: 600; }
-p { margin: 6px 0; font-size: 14px; line-height: 1.6; color: #8b949e; }
-code { background: #0d1117; padding: 2px 6px; border-radius: 4px; color: #d2a8ff; font-size: 13px; }
-a { color: #58a6ff; text-decoration: none; }
-a:hover { text-decoration: underline; }
-.file { margin-top: 16px; font-size: 13px; color: #6e7681; word-break: break-all; }
+header .title { font-weight: 600; font-size: 14px; }
+header .file { font-size: 12px; color: #8b949e; word-break: break-all; }
+.tabs { display: flex; gap: 4px; margin-left: auto; }
+.tab {
+  padding: 5px 14px; font-size: 13px; border: 1px solid #30363d; border-radius: 6px;
+  background: #0d1117; color: #8b949e; cursor: pointer;
+}
+.tab.active { background: #1f6feb33; color: #79c0ff; border-color: #1f6feb55; }
+main { flex: 1; position: relative; }
+.pane { position: absolute; inset: 0; display: none; }
+.pane.active { display: block; }
+kicanvas-embed, #gerber-mount { width: 100%; height: 100%; display: block; }
+#gerber-mount { overflow: auto; padding: 12px; }
+.notice {
+  max-width: 620px; margin: 48px auto; padding: 28px 32px; text-align: left;
+  border: 1px solid #30363d; border-radius: 12px; background: #161b22; line-height: 1.7;
+}
+.notice h2 { margin: 0 0 10px; font-size: 17px; color: #e6edf3; }
+.notice code, pre { background: #0d1117; border-radius: 6px; color: #d2a8ff; font-size: 13px; }
+pre { padding: 12px 14px; overflow: auto; }
+a { color: #58a6ff; }
 </style>
 </head>
 <body>
-<main class="card">
-  <span class="tag">engine = pcb · 待实现</span>
-  <h1>PCB 预览引擎(P3 落地)</h1>
-  <p>当前为占位页。P3 阶段将集成 <code>tracespace</code>(2D Gerber)+ <code>kicad-cli pcb export gltf</code>(3D)。</p>
-  <p class="file" id="file"></p>
-  <p style="margin-top: 22px;">
-    规格:<a href="https://github.com/liyijiang/build123d-cad/blob/main/docs/superpowers/specs/03-viewer.md" target="_blank">03-viewer 多引擎子技能 §8</a>
-  </p>
+<header>
+  <span class="title">PCB Viewer</span>
+  <span class="file" id="file"></span>
+  <div class="tabs">
+    <div class="tab active" data-pane="view3d">3D 板(KiCanvas)</div>
+    <div class="tab" data-pane="gerber">2D Gerber(tracespace)</div>
+  </div>
+</header>
+<main>
+  <div class="pane active" id="pane-view3d"></div>
+  <div class="pane" id="pane-gerber"><div id="gerber-mount"></div></div>
 </main>
-<script>
-  const p = new URLSearchParams(location.search);
-  const f = p.get('file');
-  if (f) document.getElementById('file').textContent = '文件:' + decodeURIComponent(f);
+
+<script type="module">
+// 引擎页约定(与 server.mjs 一致):?file=<相对名> & ?dir=<workspace 内目录>。
+// 文件字节走父 server 代理通道 /files/<name>?dir=<dir>(后缀白名单 + 防穿越)。
+const qs = new URLSearchParams(location.search);
+const file = qs.get('file') || '';
+const dir = qs.get('dir') || '';
+const ext = (file.split('.').pop() || '').toLowerCase();
+const base = file.split('/').pop() || file;
+document.getElementById('file').textContent =
+  file ? ('文件:' + decodeURIComponent(file)) : '(未指定 ?file=)';
+
+const fileUrl = file
+  ? `/files/${encodeURIComponent(base)}?dir=${encodeURIComponent(dir)}`
+  : '';
+
+// 页签切换
+document.querySelectorAll('.tab').forEach(t => t.onclick = () => {
+  document.querySelectorAll('.tab').forEach(x => x.classList.toggle('active', x === t));
+  document.querySelectorAll('.pane').forEach(p =>
+    p.classList.toggle('active', p.id === 'pane-' + t.dataset.pane));
+});
+
+// vendored bundle 缺失时统一提示(不 npm install,走预构建 vendoring,见 vendor/README.md)。
+function vendorMissing(paneId, tool, bundle) {
+  document.getElementById(paneId).innerHTML = `
+    <div class="notice">
+      <h2>${tool} 前端 bundle 未 vendoring</h2>
+      <p>本引擎按项目「不 npm install、dist 预构建 vendoring」红线(00 §6),
+         需先把 <code>${bundle}</code> 拉进 <code>engines/pcb/vendor/</code>。</p>
+      <pre>bash skills/viewer/scripts/engines/pcb/vendor/vendor_assets.sh</pre>
+      <p>vendoring 后本页即可渲染;详见 <code>engines/pcb/vendor/README.md</code>。</p>
+    </div>`;
+}
+
+// ── 3D:KiCanvas 直渲 .kicad_pcb(零导出步骤)──────────────────────────────
+async function mount3D() {
+  const pane = document.getElementById('pane-view3d');
+  if (ext === 'glb' || ext === 'gltf') {
+    pane.innerHTML = `<div class="notice"><h2>这是 .glb 3D 模型</h2>
+      <p>带元件的精细 3D 走 <b>cad 引擎</b>(.glb 已路由 engine=cad):</p>
+      <pre>viewer/start.sh ${decodeURIComponent(file)}</pre></div>`;
+    return;
+  }
+  try {
+    await import('./vendor/kicanvas.js');        // 注册 <kicanvas-embed> web component
+    const el = document.createElement('kicanvas-embed');
+    el.setAttribute('src', fileUrl);
+    el.setAttribute('controls', 'full');
+    pane.appendChild(el);
+  } catch (e) {
+    vendorMissing('pane-view3d', 'KiCanvas', 'kicanvas.js');
+  }
+}
+
+// ── 2D:tracespace 渲 Gerber(gerbers.zip / .gbr)─────────────────────────
+async function mount2D() {
+  try {
+    const ts = await import('./vendor/tracespace.js');  // @tracespace/view
+    if (ts && typeof ts.render === 'function') {
+      await ts.render(fileUrl, document.getElementById('gerber-mount'));
+    } else {
+      vendorMissing('pane-gerber', 'tracespace', 'tracespace.js');
+    }
+  } catch (e) {
+    vendorMissing('pane-gerber', 'tracespace', 'tracespace.js');
+  }
+}
+
+mount3D();
+mount2D();
 </script>
 </body>
 </html>
