@@ -15,9 +15,13 @@ bash skills/viewer/scripts/start.sh /abs/path/to/<file> [workspace_root]
 ```
 
 ```python
-from web_preview import start
-url = start("/abs/path/to/hip_bracket.step")  # 拿 URL 直接打开
+from web_preview import start, snapshot
+url = start("/abs/path/to/hip_bracket.step")          # 拿 URL 直接打开
+res = snapshot("/abs/path/to/hip_bracket.step")        # 无浏览器时降级出图,见 headless-fallback.md
+# res = {"tier":1|2|3, "kind":"url"|"png"|"json", "path":..., "fallback_reason":..., "duration_ms":...}
 ```
+
+`snapshot(mode=auto)` 三档降级(P1-5 已落地):Tier 1 chromium 截图 → Tier 2 OCP/VTK PNG → Tier 3 dimensions JSON,逐级回落不静默。CLI:`python web_preview.py --mode=auto|web|snapshot|probe <file>`。
 
 ## 后缀路由表(33 后缀 / 21 条目权威表见 `scripts/backend/router.mjs`)
 
@@ -70,6 +74,7 @@ cd skills/viewer && pytest tests/ -v
 
 CI 必跑(无浏览器,~9s):`test_routing` / `test_url_assembly` / `test_placeholders`
 本地必跑(起 server):`test_start` / `test_server_reuse` / `test_cad_engine`
+P1-5 降级链:`test_headless_fallback`(纯逻辑 CI 必跑 / 真渲染缺 OCP·vtk 时 skip)
 P3 待落地:`test_{pcb,sch,sim}_engine.py`(skip)
 
 ## 子页面索引
@@ -78,7 +83,7 @@ P3 待落地:`test_{pcb,sch,sim}_engine.py`(skip)
 - `references/routing.md` — 路由表(扩展核心)
 - `references/server-reuse.md` — 端口/pid/git/workspace 复用规则
 - `references/cad-engine.md` — Three.js + 各 loader 集成
-- `references/headless-fallback.md` — P1:Web → OCP → VTK 降级链
+- `references/headless-fallback.md` — P1-5 ✅:`snapshot()` 三档降级链(chromium URL → OCP/VTK PNG → dimensions JSON)
 - `references/viewer-features.md` `moveit2-server.md` — 复刻 cad-viewer 细节
 - `references/pcb-engine.md` `sch-engine.md` `sim-engine.md` — P3 路线
 
