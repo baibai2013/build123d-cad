@@ -190,6 +190,15 @@ def _build_visual_or_collision(tag: str, link: dict[str, Any], data: dict[str, A
     else:
         mesh.set("filename", f"meshes/{link['name']}.stl")
     mesh.set("scale", scale)
+    # 材质颜色:仅 visual 输出。link.material → materials_library.color_rgba。
+    # 同时给 name(引用顶层定义)+ 内联 <color>(loader 内联优先,见 04 §7)。
+    if tag == "visual":
+        mat_name = link.get("material")
+        if mat_name:
+            mat_elem = ET.SubElement(elem, "material", {"name": mat_name})
+            rgba = ((data.get("materials_library") or {}).get(mat_name) or {}).get("color_rgba")
+            if rgba and len(rgba) == 4:
+                ET.SubElement(mat_elem, "color").set("rgba", _fmt_vec(rgba))
     return elem
 
 
@@ -221,6 +230,16 @@ def build_urdf(data: dict[str, Any]) -> tuple[ET.Element, list[str]]:
         "INERTIAL-FALLBACK: links missing inertial use 1kg + 0.001*I diagonal. "
         "See share/build123d-cad改造/04 §7.3."
     )
+
+    # 顶层材质定义:被 link visual 的 <material name=.../> 引用(URDF 规范做法)。
+    # 仅输出 materials_library 中有 color_rgba 且被 link 引用的材质。
+    materials_lib = data.get("materials_library") or {}
+    used_materials = {ln.get("material") for ln in data["links"] if ln.get("material")}
+    for mname in sorted(m for m in used_materials if m):
+        rgba = (materials_lib.get(mname) or {}).get("color_rgba")
+        if rgba and len(rgba) == 4:
+            mat_def = ET.SubElement(robot, "material", {"name": mname})
+            ET.SubElement(mat_def, "color").set("rgba", _fmt_vec(rgba))
 
     for link in data["links"]:
         link_elem = ET.SubElement(robot, "link", {"name": link["name"]})
