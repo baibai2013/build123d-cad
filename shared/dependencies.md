@@ -27,3 +27,27 @@ parts-catalog ─STEP─▶ mechanical   (现成件并入装配)
 ## 独立（无下游）
 
 `bambu-labs`、`gcode`、`sendcutsend`、`srdf`、`sdf` 为链路末端，改动只需自测。
+
+## 高扇入接口登记
+
+### viewer URL 协议(P0-3 fullstack 2026-06-02 落地)
+
+所有上游(mechanical / urdf / gcode / sendcutsend)只产文件路径,**不直接拼 URL**;
+URL 拼装由 `skills/viewer/scripts/start.sh` / `web_preview.py` 统一生成。
+
+```
+http://127.0.0.1:<port>/?engine=<cad|pcb|sch|sim>&dir=<abs-dir>&file=<rel-file>
+```
+
+- 字段规约:见 `skills/viewer/references/url-protocol.md`
+- 健康协议:`GET /__cad/server` → `app="build123d-cad/viewer" + serverApiVersion=2`
+- 退出码契约:`0/2/3/4` 见 url-protocol.md §退出码
+
+**改动须知**:viewer URL 协议 / `serverApiVersion` / `engines` 枚举 / `engineImpl` 字段任一改动,
+必须在本节升级版本号 + @全员 + 跑各上游 smoke。当前版本 `serverApiVersion=2`(2026-06-02)。
+
+### 后续登记(占位)
+
+- joints schema(P0-4 algorithm,4 + 8)
+- output 路径约定(P0-6 tech_lead,§7)
+- mechanical→urdf/gcode handoff(P0-2 mechanical,见 02 §X)

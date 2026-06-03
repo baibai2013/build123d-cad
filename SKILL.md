@@ -1,17 +1,3 @@
-<!--
-父级 SKILL.md 草稿（≤ 220 行约束）。
-
-用法：P0-2(mechanical Owner) 把现根 SKILL.md 的 mechanical 专属内容迁到
-`skills/mechanical/SKILL.md` 之后，由 tech_lead 用本文件覆盖根 SKILL.md。
-
-现在不替换：根 SKILL.md (1535 行) 仍是生效的机械技能；提前替换会让现有 mechanical
-能力立即失效，违反 01 §7 风险 R7。
-
-本草稿权威来源：`share/build123d-cad改造/00-总览与目标架构.md` §4 父级 SKILL 模板，
-关键词路由表与 `shared/multi-skill-router.md` 双向同步（任一改动需同步另一份并在
-`shared/CHANGELOG.md` 登记）。
--->
-
 ---
 name: build123d-cad
 description: |
