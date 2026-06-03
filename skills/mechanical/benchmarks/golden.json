@@ -2,9 +2,9 @@
   "_meta": {
     "schema_version": 1,
     "generator": "skills/mechanical/benchmarks/run_all.py",
-    "frozen_by": "<待 Dave 签字>",
+    "frozen_by": "Dave (mechanical) 2026-06-02 — 复核 full 10/10 对齐 golden;enclosure_box=5 / impeller_3blade=4 solid_count 经验证符合预期(子体相切不熔合,P0 简化)",
     "frozen_at_seed": "2026-06-02T08:09:14+0800",
-    "_note": "首版种子,Dave 审过后改 frozen_by + commit"
+    "_note": "首版种子 testing 自动 freeze;Dave 2026-06-02 复核签字。checksum_sha256 因 STEP 头时间戳每跑会变,compare_golden 不校验,仅信息记录。P1:螺柱/叶片加微过盈使真熔合后 solid_count→1,需同步更新本基线"
   },
   "calibration_block": {
     "version": 1,
