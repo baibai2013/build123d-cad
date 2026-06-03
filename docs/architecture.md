@@ -38,12 +38,12 @@ conftest 分两层：子技能级 fixture（`skills/<name>/tests/conftest.py`）
 
 ## 阶段
 
-| 阶段 | 范围 |
-|---|---|
-| P0 | 骨架 + mechanical 迁移 + viewer/urdf/parts-catalog 复刻 + tests 骨架 |
-| P1 | srdf/sdf/gcode/sendcutsend + 数据源/代码源补齐 |
-| P2 | bambu-labs / Playbook 治理 |
-| P3 | 电子域：pcb/eda/drc（用户给第一个 PCB 项目时启动） |
+| 阶段 | 范围 | 状态 |
+|---|---|---|
+| P0 | 骨架 + mechanical 迁移 + viewer/urdf/parts-catalog 复刻 + tests 骨架 | ✅ 完成（shared docs 补全收尾中） |
+| P1 | srdf/sdf/gcode/sendcutsend + 数据源/代码源补齐 | ✅ 子技能全落地；agent-eval CI 注册待外部解阻 |
+| P2 | bambu-labs / Playbook 治理 | 按需触发 |
+| P3 | 电子域：pcb/eda/drc（用户给第一个 PCB 项目时启动） | 🟡 占位，待 Gate 3 |
 
 ## 关键决策
 
