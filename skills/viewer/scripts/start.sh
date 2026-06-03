@@ -60,6 +60,72 @@ process.stdout.write(r || '');
 ")"
 [[ -n "$ENGINE" ]] || { echo "error: unsupported extension for $FILE_PATH" >&2; exit 2; }
 
+# 1.5) cad 引擎 + STEP 源:确保 GLB 预览 sidecar 就位。
+# cad 引擎渲染读隐藏 sidecar `.<name>.step.glb`(正常由 cadpy 生成);项目 venv 没装
+# cadpy 时,用 build123d 自带 export_gltf 兜底生成,否则前端会 404。
+# 找不到 build123d → 自动装进【隔离专用 venv】(绝不碰 company 生产 venv,见内存约定)。
+# 关 VIEWER_AUTO_INSTALL=0 可禁用自动安装。日志全走 stderr,保持 stdout 唯一一行 URL。
+VIEWER_CAD_VENV="${VIEWER_CAD_VENV:-$HOME/.cache/build123d-cad/viewer-venv}"
+
+_find_build123d_py() {
+  local cand
+  for cand in "${VIEWER_PY:-}" "$VIEWER_CAD_VENV/bin/python" python3 python; do
+    [[ -n "$cand" ]] || continue
+    if command -v "$cand" >/dev/null 2>&1 && "$cand" -c "import build123d" >/dev/null 2>&1; then
+      printf '%s' "$cand"; return 0
+    fi
+  done
+  return 1
+}
+
+_provision_build123d_py() {
+  # 「自动添加」:找不到库 → 在隔离 venv 装 build123d。一次性,后续复用。
+  [[ "${VIEWER_AUTO_INSTALL:-1}" != "0" ]] || { echo "warn: VIEWER_AUTO_INSTALL=0,跳过自动安装" >&2; return 1; }
+  local base_py
+  base_py="$(command -v python3 || command -v python || true)"
+  [[ -n "$base_py" ]] || { echo "warn: 无 python3,无法自动装 build123d" >&2; return 1; }
+  echo "info: 未找到带 build123d 的 python → 自动安装到隔离 venv(一次性,体积较大)" >&2
+  echo "info: venv=$VIEWER_CAD_VENV (隔离,不碰 company 生产 venv)" >&2
+  if [[ ! -x "$VIEWER_CAD_VENV/bin/python" ]]; then
+    "$base_py" -m venv "$VIEWER_CAD_VENV" >&2 2>&1 || { echo "warn: venv 创建失败" >&2; return 1; }
+  fi
+  "$VIEWER_CAD_VENV/bin/python" -m pip install -q --upgrade pip >&2 2>&1 || true
+  if "$VIEWER_CAD_VENV/bin/python" -m pip install -q build123d >&2 2>&1 \
+     && "$VIEWER_CAD_VENV/bin/python" -c "import build123d" >/dev/null 2>&1; then
+    printf '%s' "$VIEWER_CAD_VENV/bin/python"; return 0
+  fi
+  echo "warn: build123d 自动安装失败(网络?)" >&2; return 1
+}
+
+ensure_step_sidecar() {
+  local src="$1" ext_lc dir base sidecar py
+  ext_lc="$(printf '%s' "${src##*.}" | tr '[:upper:]' '[:lower:]')"
+  [[ "$ENGINE" == "cad" && ( "$ext_lc" == "step" || "$ext_lc" == "stp" ) ]] || return 0
+  dir="$(dirname "$src")"; base="$(basename "$src")"
+  sidecar="$dir/.${base}.glb"
+  [[ -f "$sidecar" ]] && return 0          # cadpy 或上次已生成,不重复
+  py="$(_find_build123d_py || true)"
+  [[ -z "$py" ]] && py="$(_provision_build123d_py || true)"
+  if [[ -z "${py:-}" ]]; then
+    echo "warn: 缺 GLB 预览 sidecar 且无可用 build123d;cad 引擎可能 404" >&2
+    return 0
+  fi
+  echo "info: 生成 GLB 预览 sidecar via $py export_gltf …" >&2
+  if "$py" - "$src" "$sidecar" >&2 2>&1 <<'PY'
+import sys
+from build123d import import_step, export_gltf
+src, out = sys.argv[1], sys.argv[2]
+export_gltf(import_step(src), out, binary=True)
+PY
+  then
+    echo "info: sidecar 就位 $sidecar" >&2
+  else
+    rm -f "$sidecar"   # 半成品清掉,避免坏文件
+    echo "warn: sidecar 生成失败;cad 引擎可能 404" >&2
+  fi
+}
+ensure_step_sidecar "$FILE_PATH"
+
 # git ID(用于复用判定)
 GIT_DIR="$(git -C "$WORKSPACE_ROOT" rev-parse --git-dir 2>/dev/null || echo '')"
 if [[ -n "$GIT_DIR" ]]; then
