@@ -1,0 +1,107 @@
+<?xml version="1.0"?>
+<!--
+  最小四足 URDF 拓扑 fixture(12-DoF 机器狗),仅用于 srdf 静态碰撞矩阵 + export 测试。
+  link/joint 命名与 tests/fixtures/quadruped_min.srdf 对齐。
+  无 inertial/geometry —— SRDF 只面对 link/joint 名,拓扑足矣。
+  每条腿:base_link → *_hip_yaw → *_hip_pitch → *_knee → *_foot(末端 fixed)。
+-->
+<robot name="quadruped">
+  <link name="base_link"/>
+
+  <link name="fl_hip_yaw_link"/>
+  <link name="fl_hip_pitch_link"/>
+  <link name="fl_knee_link"/>
+  <link name="fl_foot_link"/>
+  <link name="fr_hip_yaw_link"/>
+  <link name="fr_hip_pitch_link"/>
+  <link name="fr_knee_link"/>
+  <link name="fr_foot_link"/>
+  <link name="rl_hip_yaw_link"/>
+  <link name="rl_hip_pitch_link"/>
+  <link name="rl_knee_link"/>
+  <link name="rl_foot_link"/>
+  <link name="rr_hip_yaw_link"/>
+  <link name="rr_hip_pitch_link"/>
+  <link name="rr_knee_link"/>
+  <link name="rr_foot_link"/>
+
+  <joint name="fl_hip_yaw_joint" type="revolute">
+    <parent link="base_link"/><child link="fl_hip_yaw_link"/>
+    <origin xyz="0.2 0.1 0" rpy="0 0 0"/><axis xyz="0 0 1"/>
+    <limit lower="-0.6" upper="0.6" effort="12" velocity="6"/>
+  </joint>
+  <joint name="fl_hip_pitch_joint" type="revolute">
+    <parent link="fl_hip_yaw_link"/><child link="fl_hip_pitch_link"/>
+    <origin xyz="0 0 -0.02" rpy="0 0 0"/><axis xyz="0 1 0"/>
+    <limit lower="-1.57" upper="1.57" effort="12" velocity="6"/>
+  </joint>
+  <joint name="fl_knee_joint" type="revolute">
+    <parent link="fl_hip_pitch_link"/><child link="fl_knee_link"/>
+    <origin xyz="0 0 -0.08" rpy="0 0 0"/><axis xyz="0 1 0"/>
+    <limit lower="0" upper="2.4" effort="12" velocity="6"/>
+  </joint>
+  <joint name="fl_foot_joint" type="fixed">
+    <parent link="fl_knee_link"/><child link="fl_foot_link"/>
+    <origin xyz="0 0 -0.08" rpy="0 0 0"/>
+  </joint>
+
+  <joint name="fr_hip_yaw_joint" type="revolute">
+    <parent link="base_link"/><child link="fr_hip_yaw_link"/>
+    <origin xyz="0.2 -0.1 0" rpy="0 0 0"/><axis xyz="0 0 1"/>
+    <limit lower="-0.6" upper="0.6" effort="12" velocity="6"/>
+  </joint>
+  <joint name="fr_hip_pitch_joint" type="revolute">
+    <parent link="fr_hip_yaw_link"/><child link="fr_hip_pitch_link"/>
+    <origin xyz="0 0 -0.02" rpy="0 0 0"/><axis xyz="0 1 0"/>
+    <limit lower="-1.57" upper="1.57" effort="12" velocity="6"/>
+  </joint>
+  <joint name="fr_knee_joint" type="revolute">
+    <parent link="fr_hip_pitch_link"/><child link="fr_knee_link"/>
+    <origin xyz="0 0 -0.08" rpy="0 0 0"/><axis xyz="0 1 0"/>
+    <limit lower="0" upper="2.4" effort="12" velocity="6"/>
+  </joint>
+  <joint name="fr_foot_joint" type="fixed">
+    <parent link="fr_knee_link"/><child link="fr_foot_link"/>
+    <origin xyz="0 0 -0.08" rpy="0 0 0"/>
+  </joint>
+
+  <joint name="rl_hip_yaw_joint" type="revolute">
+    <parent link="base_link"/><child link="rl_hip_yaw_link"/>
+    <origin xyz="-0.2 0.1 0" rpy="0 0 0"/><axis xyz="0 0 1"/>
+    <limit lower="-0.6" upper="0.6" effort="12" velocity="6"/>
+  </joint>
+  <joint name="rl_hip_pitch_joint" type="revolute">
+    <parent link="rl_hip_yaw_link"/><child link="rl_hip_pitch_link"/>
+    <origin xyz="0 0 -0.02" rpy="0 0 0"/><axis xyz="0 1 0"/>
+    <limit lower="-1.57" upper="1.57" effort="12" velocity="6"/>
+  </joint>
+  <joint name="rl_knee_joint" type="revolute">
+    <parent link="rl_hip_pitch_link"/><child link="rl_knee_link"/>
+    <origin xyz="0 0 -0.08" rpy="0 0 0"/><axis xyz="0 1 0"/>
+    <limit lower="0" upper="2.4" effort="12" velocity="6"/>
+  </joint>
+  <joint name="rl_foot_joint" type="fixed">
+    <parent link="rl_knee_link"/><child link="rl_foot_link"/>
+    <origin xyz="0 0 -0.08" rpy="0 0 0"/>
+  </joint>
+
+  <joint name="rr_hip_yaw_joint" type="revolute">
+    <parent link="base_link"/><child link="rr_hip_yaw_link"/>
+    <origin xyz="-0.2 -0.1 0" rpy="0 0 0"/><axis xyz="0 0 1"/>
+    <limit lower="-0.6" upper="0.6" effort="12" velocity="6"/>
+  </joint>
+  <joint name="rr_hip_pitch_joint" type="revolute">
+    <parent link="rr_hip_yaw_link"/><child link="rr_hip_pitch_link"/>
+    <origin xyz="0 0 -0.02" rpy="0 0 0"/><axis xyz="0 1 0"/>
+    <limit lower="-1.57" upper="1.57" effort="12" velocity="6"/>
+  </joint>
+  <joint name="rr_knee_joint" type="revolute">
+    <parent link="rr_hip_pitch_link"/><child link="rr_knee_link"/>
+    <origin xyz="0 0 -0.08" rpy="0 0 0"/><axis xyz="0 1 0"/>
+    <limit lower="0" upper="2.4" effort="12" velocity="6"/>
+  </joint>
+  <joint name="rr_foot_joint" type="fixed">
+    <parent link="rr_knee_link"/><child link="rr_foot_link"/>
+    <origin xyz="0 0 -0.08" rpy="0 0 0"/>
+  </joint>
+</robot>

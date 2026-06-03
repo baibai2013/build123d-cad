@@ -1,0 +1,117 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/baibai2013/build123d-cad/shared/schemas/srdf.schema.json",
+  "title": "srdf.yaml v1 — urdf → srdf (MoveIt2 语义层) handoff",
+  "description": "share/build123d-cad改造/04 §10.3 权威落盘版本; 由 export_srdf.py + tests 强校验. planning groups / group_states / virtual_joints / end_effectors / passive_joints / disabled_collisions.",
+  "type": "object",
+  "required": ["schema_version", "robot", "urdf"],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {"const": 1},
+    "robot": {"type": "string", "minLength": 1, "pattern": "^[a-z][a-z0-9_]*$",
+              "description": "必须等于上游 URDF 的 <robot name>"},
+    "urdf": {"type": "string", "minLength": 1, "description": "相对 srdf.yaml 同目录的 URDF 路径"},
+
+    "virtual_joints": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["name", "parent_frame", "child_link", "type"],
+        "properties": {
+          "name": {"type": "string", "minLength": 1},
+          "parent_frame": {"type": "string", "minLength": 1},
+          "child_link": {"type": "string", "minLength": 1},
+          "type": {"enum": ["fixed", "floating", "planar"]}
+        }
+      }
+    },
+
+    "groups": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["name"],
+        "properties": {
+          "name": {"type": "string", "minLength": 1},
+          "chain": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["base_link", "tip_link"],
+            "properties": {
+              "base_link": {"type": "string", "minLength": 1},
+              "tip_link": {"type": "string", "minLength": 1}
+            }
+          },
+          "joints": {"type": "array", "items": {"type": "string", "minLength": 1}},
+          "links": {"type": "array", "items": {"type": "string", "minLength": 1}},
+          "subgroups": {"type": "array", "items": {"type": "string", "minLength": 1}}
+        },
+        "anyOf": [
+          {"required": ["chain"]},
+          {"required": ["joints"]},
+          {"required": ["links"]},
+          {"required": ["subgroups"]}
+        ]
+      }
+    },
+
+    "group_states": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["name", "group", "values"],
+        "properties": {
+          "name": {"type": "string", "minLength": 1},
+          "group": {"type": "string", "minLength": 1},
+          "values": {
+            "type": "object",
+            "minProperties": 1,
+            "additionalProperties": {"type": "number"}
+          }
+        }
+      }
+    },
+
+    "end_effectors": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["name", "parent_group", "parent_link", "group"],
+        "properties": {
+          "name": {"type": "string", "minLength": 1},
+          "parent_group": {"type": "string", "minLength": 1},
+          "parent_link": {"type": "string", "minLength": 1},
+          "group": {"type": "string", "minLength": 1}
+        }
+      }
+    },
+
+    "passive_joints": {"type": "array", "items": {"type": "string", "minLength": 1}},
+
+    "disabled_collisions": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "enable_default_adjacent": {"type": "boolean", "default": true},
+        "static_rules": {"type": "array", "items": {"type": "string"}},
+        "pairs": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["link1", "link2"],
+            "properties": {
+              "link1": {"type": "string", "minLength": 1},
+              "link2": {"type": "string", "minLength": 1},
+              "reason": {"type": "string", "default": "user"}
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,4 @@
+# L1 元数据助手复用 shared/python/cadpy_metadata(R5,不 vendor 第三份)
+--editable ../../shared/python/cadpy_metadata
+pyyaml>=6.0
+jsonschema>=4.20

@@ -1,0 +1,116 @@
+<?xml version="1.0"?>
+<!--
+  最小四足 SRDF 范例 — 12-DoF 机器狗。
+  搭配的 URDF 必须命名为 "quadruped",含以下 link/joint:
+    base_link
+    {fl,fr,rl,rr}_hip_yaw_link / _hip_yaw_joint
+    {fl,fr,rl,rr}_hip_pitch_link / _hip_pitch_joint
+    {fl,fr,rl,rr}_knee_link / _knee_joint
+    {fl,fr,rl,rr}_foot_link (fixed joint 末端)
+  group_state 数值仅作模板,需机械标定后回填。
+-->
+<robot name="quadruped">
+
+  <!-- 浮动基座 -->
+  <virtual_joint name="floating_base" type="floating"
+                 parent_frame="world" child_link="base_link"/>
+
+  <!-- 4 条腿独立 chain group -->
+  <group name="front_left_leg">
+    <chain base_link="base_link" tip_link="fl_foot_link"/>
+  </group>
+  <group name="front_right_leg">
+    <chain base_link="base_link" tip_link="fr_foot_link"/>
+  </group>
+  <group name="rear_left_leg">
+    <chain base_link="base_link" tip_link="rl_foot_link"/>
+  </group>
+  <group name="rear_right_leg">
+    <chain base_link="base_link" tip_link="rr_foot_link"/>
+  </group>
+
+  <!-- 整机:四条腿组合,12-DoF -->
+  <group name="all_legs">
+    <group name="front_left_leg"/>
+    <group name="front_right_leg"/>
+    <group name="rear_left_leg"/>
+    <group name="rear_right_leg"/>
+  </group>
+
+  <!-- 命名虚位姿:home -->
+  <group_state name="home" group="all_legs">
+    <joint name="fl_hip_yaw_joint"   value="0"/>
+    <joint name="fl_hip_pitch_joint" value="0"/>
+    <joint name="fl_knee_joint"      value="0"/>
+    <joint name="fr_hip_yaw_joint"   value="0"/>
+    <joint name="fr_hip_pitch_joint" value="0"/>
+    <joint name="fr_knee_joint"      value="0"/>
+    <joint name="rl_hip_yaw_joint"   value="0"/>
+    <joint name="rl_hip_pitch_joint" value="0"/>
+    <joint name="rl_knee_joint"      value="0"/>
+    <joint name="rr_hip_yaw_joint"   value="0"/>
+    <joint name="rr_hip_pitch_joint" value="0"/>
+    <joint name="rr_knee_joint"      value="0"/>
+  </group_state>
+
+  <!-- 命名虚位姿:stand (-45° hip pitch / +90° knee) -->
+  <group_state name="stand" group="all_legs">
+    <joint name="fl_hip_yaw_joint"   value="0"/>
+    <joint name="fl_hip_pitch_joint" value="-0.785"/>
+    <joint name="fl_knee_joint"      value="1.571"/>
+    <joint name="fr_hip_yaw_joint"   value="0"/>
+    <joint name="fr_hip_pitch_joint" value="-0.785"/>
+    <joint name="fr_knee_joint"      value="1.571"/>
+    <joint name="rl_hip_yaw_joint"   value="0"/>
+    <joint name="rl_hip_pitch_joint" value="-0.785"/>
+    <joint name="rl_knee_joint"      value="1.571"/>
+    <joint name="rr_hip_yaw_joint"   value="0"/>
+    <joint name="rr_hip_pitch_joint" value="-0.785"/>
+    <joint name="rr_knee_joint"      value="1.571"/>
+  </group_state>
+
+  <!-- 命名虚位姿:sit (后腿下蹲) -->
+  <group_state name="sit" group="all_legs">
+    <joint name="fl_hip_yaw_joint"   value="0"/>
+    <joint name="fl_hip_pitch_joint" value="-0.785"/>
+    <joint name="fl_knee_joint"      value="1.571"/>
+    <joint name="fr_hip_yaw_joint"   value="0"/>
+    <joint name="fr_hip_pitch_joint" value="-0.785"/>
+    <joint name="fr_knee_joint"      value="1.571"/>
+    <joint name="rl_hip_yaw_joint"   value="0"/>
+    <joint name="rl_hip_pitch_joint" value="-1.571"/>
+    <joint name="rl_knee_joint"      value="2.094"/>
+    <joint name="rr_hip_yaw_joint"   value="0"/>
+    <joint name="rr_hip_pitch_joint" value="-1.571"/>
+    <joint name="rr_knee_joint"      value="2.094"/>
+  </group_state>
+
+  <!-- Adjacent 碰撞白名单(12 对) -->
+  <disable_collisions link1="base_link" link2="fl_hip_yaw_link" reason="Adjacent"/>
+  <disable_collisions link1="base_link" link2="fr_hip_yaw_link" reason="Adjacent"/>
+  <disable_collisions link1="base_link" link2="rl_hip_yaw_link" reason="Adjacent"/>
+  <disable_collisions link1="base_link" link2="rr_hip_yaw_link" reason="Adjacent"/>
+
+  <disable_collisions link1="fl_hip_yaw_link"   link2="fl_hip_pitch_link" reason="Adjacent"/>
+  <disable_collisions link1="fl_hip_pitch_link" link2="fl_knee_link"      reason="Adjacent"/>
+  <disable_collisions link1="fl_knee_link"      link2="fl_foot_link"      reason="Adjacent"/>
+
+  <disable_collisions link1="fr_hip_yaw_link"   link2="fr_hip_pitch_link" reason="Adjacent"/>
+  <disable_collisions link1="fr_hip_pitch_link" link2="fr_knee_link"      reason="Adjacent"/>
+  <disable_collisions link1="fr_knee_link"      link2="fr_foot_link"      reason="Adjacent"/>
+
+  <disable_collisions link1="rl_hip_yaw_link"   link2="rl_hip_pitch_link" reason="Adjacent"/>
+  <disable_collisions link1="rl_hip_pitch_link" link2="rl_knee_link"      reason="Adjacent"/>
+  <disable_collisions link1="rl_knee_link"      link2="rl_foot_link"      reason="Adjacent"/>
+
+  <disable_collisions link1="rr_hip_yaw_link"   link2="rr_hip_pitch_link" reason="Adjacent"/>
+  <disable_collisions link1="rr_hip_pitch_link" link2="rr_knee_link"      reason="Adjacent"/>
+  <disable_collisions link1="rr_knee_link"      link2="rr_foot_link"      reason="Adjacent"/>
+
+  <!-- 对侧腿 Never 类(几何上够不到,setup_assistant 通常会采样补全更多对) -->
+  <disable_collisions link1="fl_foot_link" link2="fr_foot_link" reason="Never"/>
+  <disable_collisions link1="rl_foot_link" link2="rr_foot_link" reason="Never"/>
+  <disable_collisions link1="fl_foot_link" link2="rl_foot_link" reason="Never"/>
+  <disable_collisions link1="fr_foot_link" link2="rr_foot_link" reason="Never"/>
+
+</robot>
