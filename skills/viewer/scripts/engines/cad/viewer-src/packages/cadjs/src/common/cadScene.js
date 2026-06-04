@@ -859,7 +859,7 @@ export function readBoundsCenter(THREE, bounds) {
   );
 }
 
-function applyObjectMatrix(THREE, object3d, matrix) {
+export function applyObjectMatrix(THREE, object3d, matrix) {
   if (!object3d || !(matrix instanceof THREE.Matrix4)) {
     return;
   }

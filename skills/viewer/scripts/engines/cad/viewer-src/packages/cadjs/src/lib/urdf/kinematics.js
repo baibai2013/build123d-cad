@@ -581,6 +581,11 @@ export function buildUrdfMeshGeometry(urdfData, meshesByUrl) {
       color: visualColor,
       meshUrl,
       partFileRef,
+      // 纹理旁路直渲(per-link textures):合并管线会丢弃 GLB 自带材质/UV,
+      // 这里把每个 visual 对应 GLB 是否带贴图、及其源 URL 透传给 CadViewer,
+      // 供其用 GLTFLoader 直渲保留 baseColor 贴图。primitive(无 GLB)恒为 false。
+      hasTextures: !!partMesh?.hasTextures,
+      textureSourceUrl: String(partMesh?.sourceUrl || meshUrl || ""),
       linkName,
       localTransform: toTransformArray(visual?.localTransform),
       sourceBounds: partMesh.bounds,

@@ -122,8 +122,10 @@ import { useViewerPicking } from "./viewer/hooks/useViewerPicking";
 import { useViewerRuntime } from "./viewer/hooks/useViewerRuntime";
 import { normalizeViewerRenderState } from "./viewer/renderState";
 import {
+  applyObjectMatrix,
   buildModel
 } from "cadjs/common/cadScene";
+import { buildGlbToCadCalibrationMatrix } from "cadjs/lib/render/glbMeshData";
 import {
   resolveTopologyDisplayEdgeRuntimes,
   shouldRenderTopologyDisplayEdges,
@@ -139,6 +141,7 @@ import {
 } from "cadjs/common/stepModule";
 import {
   applyStepModuleEffectsToRecords,
+  buildPartTransformMatrix,
   buildStepModuleContext,
   createStepModuleEffectsApi,
   displayTransformForPart,
@@ -294,6 +297,135 @@ function meshNeedsPartRenderingForSourceColors(meshData) {
     return false;
   }
   return partColors.length !== parts.length || new Set(partColors).size > 1;
+}
+
+// ── URDF per-link 纹理旁路直渲 ──────────────────────────────────────────────
+// 合并管线(buildUrdfMeshGeometry)丢弃 GLB 自带材质/UV,机器人看不到贴图。
+// 对带 baseColorTexture 的 link,这里用标准 GLTFLoader 直渲原始 gltf.scene(保留贴图),
+// 套上「GLB→CAD 标定矩阵」+ 运动学 part.transform 定位,parent 到 cadScene.modelGroup,
+// 从而与被隐藏的灰色合并网格逐顶点重合,并跟随关节运动。无纹理 link 仍走合并快路径。
+
+function disposeTextureValues(material) {
+  if (!material) {
+    return;
+  }
+  for (const key of Object.keys(material)) {
+    const value = material[key];
+    if (value && value.isTexture) {
+      value.dispose?.();
+    }
+  }
+  material.dispose?.();
+}
+
+function disposeUrdfTexturedGroups(runtime) {
+  const groups = runtime?.urdfTexturedGroups;
+  if (!(groups instanceof Map)) {
+    return;
+  }
+  for (const entry of groups.values()) {
+    const outer = entry?.outer;
+    outer?.removeFromParent?.();
+    outer?.traverse?.((object) => {
+      object.geometry?.dispose?.();
+      const material = object.material;
+      (Array.isArray(material) ? material : [material]).forEach(disposeTextureValues);
+    });
+  }
+  groups.clear();
+}
+
+// 重建场景时调用:为每个带纹理的 URDF part 同步建一个外层 group(局部矩阵 = part.transform)
+// 并挂入场景(故随后的 syncUrdfTexturedGroups 可立即隐藏对应灰网格,无闪烁);再异步用
+// GLTFLoader 加载其原始 GLB(同一 URL 只下载解析一次,克隆复用),套标定矩阵后挂入。
+function mountUrdfTexturedGroups(THREE, runtime, cadScene, meshData) {
+  if (!(runtime.urdfTexturedGroups instanceof Map)) {
+    runtime.urdfTexturedGroups = new Map();
+  }
+  const parts = Array.isArray(meshData?.parts) ? meshData.parts : [];
+  const texturedParts = parts.filter((part) => part?.hasTextures && part?.textureSourceUrl);
+  if (!texturedParts.length || !cadScene?.modelGroup) {
+    return;
+  }
+  const texModelKey = runtime.activeModelKey || "";
+  const mounted = [];
+  for (const part of texturedParts) {
+    const partId = String(part?.id || "");
+    if (!partId) {
+      continue;
+    }
+    const outer = new THREE.Group();
+    applyObjectMatrix(THREE, outer, buildPartTransformMatrix(THREE, part.transform));
+    cadScene.modelGroup.add(outer);
+    runtime.urdfTexturedGroups.set(partId, { outer, partId });
+    mounted.push({ partId, outer, url: part.textureSourceUrl });
+  }
+  if (!mounted.length) {
+    return;
+  }
+  import("three/examples/jsm/loaders/GLTFLoader.js").then(({ GLTFLoader }) => {
+    const loader = new GLTFLoader();
+    const gltfByUrl = new Map();
+    for (const { partId, outer, url } of mounted) {
+      let pending = gltfByUrl.get(url);
+      if (!pending) {
+        pending = new Promise((resolve, reject) => loader.load(url, resolve, undefined, reject));
+        gltfByUrl.set(url, pending);
+      }
+      pending
+        .then((gltf) => {
+          if (runtime.activeModelKey !== texModelKey || runtime.urdfTexturedGroups.get(partId)?.outer !== outer) {
+            return; // 模型已切换 / group 已回收或被替换
+          }
+          const calib = new THREE.Group();
+          applyObjectMatrix(THREE, calib, buildGlbToCadCalibrationMatrix(THREE, gltf));
+          calib.add(gltf.scene.clone(true));
+          outer.add(calib);
+          outer.updateMatrixWorld(true);
+          runtime.requestRender?.();
+        })
+        .catch(() => {
+          // 加载失败:撤掉空 group,回退显示灰色合并网格
+          outer.removeFromParent();
+          if (runtime.urdfTexturedGroups.get(partId)?.outer === outer) {
+            runtime.urdfTexturedGroups.delete(partId);
+          }
+          runtime.requestRender?.();
+        });
+    }
+  });
+}
+
+// 每次显示状态/关节位姿更新后调用:把纹理 group 重定位到当前 part.transform(跟随关节),
+// 按 hiddenPartIds 同步显隐,并强制隐藏对应的灰色合并网格(applyPartVisualState 每次会按
+// hiddenPartIds 复位 record.mesh.visible,故必须在其之后重新隐藏)。
+function syncUrdfTexturedGroups(THREE, runtime, meshData, partVisualState) {
+  const groups = runtime?.urdfTexturedGroups;
+  if (!(groups instanceof Map) || !groups.size) {
+    return;
+  }
+  const parts = Array.isArray(meshData?.parts) ? meshData.parts : [];
+  const partsById = new Map(parts.map((part) => [String(part?.id || ""), part]).filter(([id]) => id));
+  const hidden = new Set(Array.isArray(partVisualState?.hiddenPartIds) ? partVisualState.hiddenPartIds : []);
+  const recordsById = new Map(
+    (Array.isArray(runtime.displayRecords) ? runtime.displayRecords : [])
+      .map((record) => [String(record?.partId || ""), record])
+      .filter(([id]) => id)
+  );
+  for (const [partId, entry] of groups.entries()) {
+    const part = partsById.get(partId);
+    if (part) {
+      applyObjectMatrix(THREE, entry.outer, buildPartTransformMatrix(THREE, part.transform));
+      entry.outer.updateMatrixWorld(true);
+    }
+    entry.outer.visible = !hidden.has(partId);
+    const record = recordsById.get(partId);
+    if (record) {
+      if (record.mesh) record.mesh.visible = false;
+      if (record.edges) record.edges.visible = false;
+      if (record.silhouette) record.silhouette.visible = false;
+    }
+  }
 }
 
 function getPixelRatioCap(cap) {
@@ -2032,6 +2164,7 @@ const CadViewer = forwardRef(function CadViewer({
       cancelCameraTransition(runtime);
       runtime.cadScene?.dispose?.();
       runtime.cadScene = null;
+      disposeUrdfTexturedGroups(runtime);
       clearSceneGroup(runtime.stageGroup);
       clearSceneGroup(modelGroup);
       clearSceneGroup(edgesGroup);
@@ -2215,6 +2348,9 @@ const CadViewer = forwardRef(function CadViewer({
         });
       }
     }
+    // URDF per-link 纹理:为带 baseColorTexture 的 link 建直渲 group(无纹理 link 走合并快路径)。
+    mountUrdfTexturedGroups(THREE, runtime, cadScene, meshData);
+
     const initialEdgeRuntimes = resolveTopologyDisplayEdgeRuntimes({
       selectorRuntime,
       displayEdgeRuntime,
@@ -2308,6 +2444,7 @@ const CadViewer = forwardRef(function CadViewer({
         focusedPartId: [],
         selectedPartIds: []
       });
+    syncUrdfTexturedGroups(THREE, runtime, meshData, partVisualStateRef.current);
     modelGroup.updateMatrixWorld(true);
     edgesGroup.updateMatrixWorld(true);
 
@@ -2432,6 +2569,7 @@ const CadViewer = forwardRef(function CadViewer({
     );
     updateSpotLightTarget(runtime);
     updateStageEffects(runtime, viewerTheme, normalizedThemeSettings, radius, runtime.gridFloorZ ?? 0, resolvedFloorMode);
+    syncUrdfTexturedGroups(runtime.THREE, runtime, meshData, partVisualStateRef.current);
     runtime.requestRender();
   }, [
     meshData?.parts,
@@ -2453,6 +2591,7 @@ const CadViewer = forwardRef(function CadViewer({
     }
 
     applyPartVisualState(runtime.THREE, runtime.displayRecords, partVisualStateRef.current);
+    syncUrdfTexturedGroups(runtime.THREE, runtime, meshData, partVisualStateRef.current);
     runtime.requestRender();
   }, [viewerReadyTick, partVisualStateEnabled, recordEdgesVisible, focusedPartIds, hiddenPartIds, hoveredPartId, pickMode, pickableParts, selectedPartIds, viewerTheme, visualEdgeSettings, normalizedDisplayMode]);
 
@@ -2546,6 +2685,7 @@ const CadViewer = forwardRef(function CadViewer({
         applyDisplayRecordTransform(runtime.THREE, record, runtime.modelRadius || 1);
       }
       applyPartVisualState(runtime.THREE, runtime.displayRecords, partVisualStateRef.current);
+      syncUrdfTexturedGroups(runtime.THREE, runtime, meshData, partVisualStateRef.current);
       const baseTopologyDisplayEdgesVisible = shouldRenderTopologyDisplayEdges({
         edgesVisible,
         wireframeMode,
@@ -2646,6 +2786,7 @@ const CadViewer = forwardRef(function CadViewer({
       applyDisplayRecordTransform(runtime.THREE, record, runtime.modelRadius || 1);
     }
     applyPartVisualState(runtime.THREE, runtime.displayRecords, partVisualStateRef.current);
+    syncUrdfTexturedGroups(runtime.THREE, runtime, meshData, partVisualStateRef.current);
     runtime.topologyDisplayEdgeTransformByRecord = useRecordTopologyEdgeTransforms;
     syncTopologyDisplayEdgeLine(
       runtime,

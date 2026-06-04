@@ -371,12 +371,45 @@ function writeGlbPrimitive(THREE, descriptor, output, offsets) {
   return part;
 }
 
-function buildMeshDataFromGltf(THREE, gltf) {
-  const declaredMaterials = Array.isArray(gltf?.parser?.json?.materials) && gltf.parser.json.materials.length > 0;
-  const rawMaterials = Array.isArray(gltf?.parser?.json?.materials) ? gltf.parser.json.materials : [];
+// GLB 顶点 → CAD 空间的转换判定(单位缩放与 Y-up→Z-up / build123d 轴校正)。
+// 合并管线(buildMeshDataFromGltf)与纹理旁路直渲(buildGlbToCadCalibrationMatrix)
+// 共用此判定,确保两条路径的轴向/单位逻辑单一真相、不漂移。
+function resolveGlbCadConversion(THREE, gltf) {
   const rootCorrection = buildGlbCadRootCorrection(THREE, gltf?.scene);
   const hasStepTopology = !!gltf?.parser?.json?.extensions?.STEP_topology;
   const convertYUpToCad = !hasStepTopology && !sceneHasCadOccurrenceIds(gltf?.scene) && !rootCorrection;
+  return { rootCorrection, convertYUpToCad, hasStepTopology };
+}
+
+// 返回一个 Matrix4:左乘到 gltf.scene 根上后,场景顶点与「合并管线产出的 CAD 空间顶点」逐点重合。
+// 推导:合并管线每顶点 = cadVectorFromGlbVector(matrixWorld · raw),其中
+// matrixWorld = rootCorrection ? rootCorrection·mesh.matrixWorld : mesh.matrixWorld。
+// 因 mesh.matrixWorld 在 gltf.scene 层级中天然保留,只需把
+//   C_map · (rootCorrection || I)   ( C_map = Scale(1000) · [Y-up→Z-up if convertYUpToCad] )
+// 作为根标定矩阵即可。
+export function buildGlbToCadCalibrationMatrix(THREE, gltf) {
+  const { rootCorrection, convertYUpToCad } = resolveGlbCadConversion(THREE, gltf);
+  const scale = new THREE.Matrix4().makeScale(GLB_CAD_UNIT_SCALE, GLB_CAD_UNIT_SCALE, GLB_CAD_UNIT_SCALE);
+  let cMap = scale;
+  if (convertYUpToCad) {
+    // {x, y, z} → {x, -z, y}(与 cadVectorFromGlbVector 完全一致;等价绕 X 轴旋转 +90°)。
+    const yUpToCad = new THREE.Matrix4().set(
+      1, 0, 0, 0,
+      0, 0, -1, 0,
+      0, 1, 0, 0,
+      0, 0, 0, 1
+    );
+    cMap = new THREE.Matrix4().multiplyMatrices(scale, yUpToCad);
+  }
+  return rootCorrection
+    ? new THREE.Matrix4().multiplyMatrices(cMap, rootCorrection)
+    : cMap;
+}
+
+function buildMeshDataFromGltf(THREE, gltf) {
+  const declaredMaterials = Array.isArray(gltf?.parser?.json?.materials) && gltf.parser.json.materials.length > 0;
+  const rawMaterials = Array.isArray(gltf?.parser?.json?.materials) ? gltf.parser.json.materials : [];
+  const { rootCorrection, convertYUpToCad, hasStepTopology } = resolveGlbCadConversion(THREE, gltf);
   const descriptors = [];
   const colorSet = new Set();
   let totalVertexCount = 0;
