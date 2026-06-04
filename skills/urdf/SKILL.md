@@ -21,6 +21,7 @@ Use this skill for URDF robot-description outputs. Treat URDF work as constraine
 6. Do not infer spatial transforms, mesh units, handedness, axes, or joint signs from vague prose. Use CAD transforms, dimensioned drawings, measured values, existing source data, or explicit documented assumptions.
 7. Prefer simple, auditable generator code over clever XML construction. Keep constants named by physical meaning, not by arbitrary numbers.
 8. For physical links, model `inertial`, `visual`, and `collision` separately when the target consumer needs them. Frame-only links may intentionally omit mass and geometry.
+9. **生成期校验不够,必做渲染自验**:每个新建/修改的 `.urdf`(生成的 / 纯 primitive 无网格 / STL / GLB / 纹理 都要)落地后必须在 cad-viewer 里渲染自验 —— 跑 `scripts/verify_urdf.py`,核对无报错渲出、link 齐全、朝向/居中/原点对、关节绕正确轴动(mimic 联动、有纹理则贴图跟随)。发现问题改 `gen_urdf()` 源、重生成、再验,直到通过。朝向/单位/关节轴/网格加载这类问题只有渲染才暴露。完整闭环与故障表见 `references/urdf-workflow.md`「Render-Verify + Fix Loop」。
 
 ## CAD Viewer Handoff
 
@@ -36,7 +37,8 @@ After completing URDF work that creates or modifies a `.urdf`, you must ALWAYS h
 6. Let generation-time validation fail fast on XML, graph, joint, geometry, mesh-reference, and inertial problems.
 7. When geometry or mesh references depend on changed CAD or exported mesh outputs, regenerate those explicit artifacts with the owning CAD or mesh workflow, then regenerate the affected URDF target.
 8. When available, run a consumer smoke test appropriate to the target: RViz display, robot_state_publisher tree, Gazebo/Ignition loading, or MoveIt model loading.
-9. Report remaining assumptions, unchecked spatial data, and validation/smoke-test gaps.
+9. **必做渲染自验**:跑 `scripts/verify_urdf.py <urdf>`(headless,起 cad-viewer + 截静态/驱动关节小图 + 抓报错),按核对清单确认;有问题改源重生成再验,直到通过。见 `references/urdf-workflow.md`「Render-Verify + Fix Loop」。
+10. Report remaining assumptions, unchecked spatial data, and validation/smoke-test gaps.
 
 ## Commands
 
@@ -55,6 +57,15 @@ Plain Python targets write a sibling `.urdf` beside the source. `-o`/`--output` 
 Relative source targets and CLI output overrides are resolved from the current working directory. When running from outside this skill directory, prefix the launcher path so target files still resolve from the intended workspace.
 
 The launcher executes only `gen_urdf()` and validates the generated URDF output. It does not provide a separate validation-only command.
+
+生成后**必做渲染自验**(任何 URDF;需装 playwright+chromium 的解释器,如 build123d-parts-lib 的 .venv):
+
+```bash
+<venv>/bin/python scripts/verify_urdf.py path/to/robot.urdf [--joint NAME] [--deg 60]
+```
+
+起 cad-viewer → 截 `static.png` + 驱动关节 `driven.png`(640×460 小图省 token)→ 抓控制台报错 → 打印核对清单。
+制作纹理 URDF 用 `scripts/texturize_urdf.py`(见 `references/textures.md`)。
 
 ## References
 
