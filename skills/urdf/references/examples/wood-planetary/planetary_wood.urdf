@@ -1,0 +1,181 @@
+<?xml version="1.0"?>
+<robot name="planetary_gear_wood">
+  <material name="blue">
+    <color rgba="0.25 0.45 0.85 1" />
+  </material>
+  <material name="gray">
+    <color rgba="0.55 0.55 0.58 1" />
+  </material>
+  <material name="green">
+    <color rgba="0.25 0.7 0.3 1" />
+  </material>
+  <material name="red">
+    <color rgba="0.85 0.2 0.2 1" />
+  </material>
+  <link name="ring">
+    <inertial>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <mass value="0.13221" />
+      <inertia ixx="9.845e-05" ixy="0" ixz="0" iyy="9.845e-05" iyz="0" izz="0.00019469" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="wood_meshes/ring.glb" />
+      </geometry>
+      <material name="blue">
+        <color rgba="0.25 0.45 0.85 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="wood_meshes/ring.glb" />
+      </geometry>
+    </collision>
+  </link>
+  <link name="sun">
+    <inertial>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <mass value="0.06674" />
+      <inertia ixx="9.24e-06" ixy="0" ixz="0" iyy="9.45e-06" iyz="0" izz="1.758e-05" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="wood_meshes/sun.glb" />
+      </geometry>
+      <material name="red">
+        <color rgba="0.85 0.2 0.2 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="wood_meshes/sun.glb" />
+      </geometry>
+    </collision>
+  </link>
+  <link name="carrier">
+    <inertial>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <mass value="0.04226" />
+      <inertia ixx="1.831e-05" ixy="0" ixz="0" iyy="1.831e-05" iyz="0" izz="3.651e-05" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="wood_meshes/carrier.glb" />
+      </geometry>
+      <material name="gray">
+        <color rgba="0.55 0.55 0.58 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="wood_meshes/carrier.glb" />
+      </geometry>
+    </collision>
+  </link>
+  <link name="planet_1">
+    <inertial>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <mass value="0.03041" />
+      <inertia ixx="2.24e-06" ixy="0" ixz="0" iyy="2.24e-06" iyz="0" izz="3.97e-06" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="wood_meshes/planet_1.glb" />
+      </geometry>
+      <material name="green">
+        <color rgba="0.25 0.7 0.3 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="wood_meshes/planet_1.glb" />
+      </geometry>
+    </collision>
+  </link>
+  <link name="planet_2">
+    <inertial>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <mass value="0.03041" />
+      <inertia ixx="2.24e-06" ixy="0" ixz="0" iyy="2.24e-06" iyz="0" izz="3.97e-06" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="wood_meshes/planet_2.glb" />
+      </geometry>
+      <material name="green">
+        <color rgba="0.25 0.7 0.3 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="wood_meshes/planet_2.glb" />
+      </geometry>
+    </collision>
+  </link>
+  <link name="planet_3">
+    <inertial>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <mass value="0.03041" />
+      <inertia ixx="2.24e-06" ixy="0" ixz="0" iyy="2.24e-06" iyz="0" izz="3.97e-06" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="wood_meshes/planet_3.glb" />
+      </geometry>
+      <material name="green">
+        <color rgba="0.25 0.7 0.3 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="wood_meshes/planet_3.glb" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="j_sun" type="continuous">
+    <parent link="ring" />
+    <child link="sun" />
+    <origin xyz="0 0 0" rpy="0 0 0" />
+    <axis xyz="0 0 1" />
+  </joint>
+  <joint name="j_carrier" type="continuous">
+    <parent link="ring" />
+    <child link="carrier" />
+    <origin xyz="0 0 -0.012" rpy="0 0 0" />
+    <axis xyz="0 0 1" />
+    <mimic joint="j_sun" multiplier="0.3" />
+  </joint>
+  <joint name="j_spin_1" type="continuous">
+    <parent link="carrier" />
+    <child link="planet_1" />
+    <origin xyz="0.03 0 0.012" rpy="0 0 0" />
+    <axis xyz="0 0 1" />
+    <mimic joint="j_sun" multiplier="-1.05" />
+  </joint>
+  <joint name="j_spin_2" type="continuous">
+    <parent link="carrier" />
+    <child link="planet_2" />
+    <origin xyz="-0.015 0.0259808 0.012" rpy="0 0 0" />
+    <axis xyz="0 0 1" />
+    <mimic joint="j_sun" multiplier="-1.05" />
+  </joint>
+  <joint name="j_spin_3" type="continuous">
+    <parent link="carrier" />
+    <child link="planet_3" />
+    <origin xyz="-0.015 -0.0259808 0.012" rpy="0 0 0" />
+    <axis xyz="0 0 1" />
+    <mimic joint="j_sun" multiplier="-1.05" />
+  </joint>
+</robot>

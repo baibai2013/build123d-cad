@@ -64,3 +64,4 @@ The launcher executes only `gen_urdf()` and validates the generated URDF output.
 - URDF generation command: `references/gen-urdf.md`
 - URDF edit workflow: `references/urdf-workflow.md`
 - Generation-time validation expectations: `references/validation.md`
+- 制作纹理 URDF(每 link 贴图 + 关节动画)工作流: `references/textures.md`(示例 `references/examples/wood-planetary/`)
