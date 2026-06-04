@@ -254,7 +254,12 @@ export async function loadRenderGlb(url, { signal, preferWorker = false } = {}) 
     assertNotGitLfsPointer(buffer, url, "GLB render asset");
     return buildMeshDataFromGlbBuffer(buffer);
   }, { cachePending: !signal });
-  return finalizeCached(glbCache, url, meshData);
+  const finalized = finalizeCached(glbCache, url, meshData);
+  // approach B:带上源 URL,主线程 textured passthrough 用 GLTFLoader 重新加载该 GLB
+  if (finalized && typeof finalized === "object" && !finalized.sourceUrl) {
+    try { finalized.sourceUrl = url; } catch { /* frozen 对象忽略 */ }
+  }
+  return finalized;
 }
 
 export function peekRenderGlb(url) {

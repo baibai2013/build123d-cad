@@ -2177,6 +2177,44 @@ const CadViewer = forwardRef(function CadViewer({
     runtime.displayRecords = cadScene.displayRecords;
     runtime.hasVisibleModel = true;
     runtime.activeModelKey = modelKey || "";
+    // ── approach B:带 baseColorTexture / 透射的 GLB,自定义管线渲不出(无 UV/贴图),
+    //    改用标准 GLTFLoader 直渲 gltf.scene,Box3 对齐自定义网格包围盒后隐藏调色板网格。──
+    if (runtime.texturedModel) {
+      runtime.scene.remove(runtime.texturedModel);
+      runtime.texturedModel.traverse?.((o) => {
+        o.geometry?.dispose?.();
+        const m = o.material; (Array.isArray(m) ? m : [m]).forEach((x) => x?.dispose?.());
+      });
+      runtime.texturedModel = null;
+    }
+    if (meshData?.hasTextures && meshData?.sourceUrl) {
+      const texModelKey = modelKey || "";
+      cadScene.modelGroup.updateWorldMatrix(true, true);
+      const target = new THREE.Box3().setFromObject(cadScene.modelGroup);
+      if (!target.isEmpty()) {
+        const tCenter = target.getCenter(new THREE.Vector3());
+        const tSize = target.getSize(new THREE.Vector3());
+        const worldQuat = cadScene.modelGroup.getWorldQuaternion(new THREE.Quaternion());
+        import("three/examples/jsm/loaders/GLTFLoader.js").then(({ GLTFLoader }) => {
+          new GLTFLoader().load(meshData.sourceUrl, (gltf) => {
+            if (runtime.activeModelKey !== texModelKey) return; // 模型已切换,放弃
+            const src = gltf.scene;
+            src.quaternion.copy(worldQuat);
+            src.updateWorldMatrix(true, true);
+            let box = new THREE.Box3().setFromObject(src);
+            const sSize = box.getSize(new THREE.Vector3());
+            const k = Math.min(tSize.x / (sSize.x || 1), tSize.y / (sSize.y || 1), tSize.z / (sSize.z || 1));
+            if (Number.isFinite(k) && k > 0) src.scale.multiplyScalar(k);
+            src.updateWorldMatrix(true, true);
+            box = new THREE.Box3().setFromObject(src);
+            src.position.add(tCenter.clone().sub(box.getCenter(new THREE.Vector3())));
+            cadScene.modelGroup.visible = false; // 隐藏调色板网格,只显示带贴图的
+            runtime.scene.add(src);
+            runtime.texturedModel = src;
+          }, undefined, () => { /* GLTFLoader 失败:保留原渲染 */ });
+        });
+      }
+    }
     const initialEdgeRuntimes = resolveTopologyDisplayEdgeRuntimes({
       selectorRuntime,
       displayEdgeRuntime,

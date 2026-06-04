@@ -459,6 +459,12 @@ function buildMeshDataFromGltf(THREE, gltf) {
     parts,
     has_source_colors: colorSet.size > 0,
     sourceColor: colorSet.size === 1 ? [...colorSet][0] : "",
+    // 旁路直渲(approach B):材质带 baseColorTexture / 透射时,自定义管线渲不出,
+    // 主线程改用 GLTFLoader 直渲 gltf.scene。这里只标记,见 CadViewer 的 textured passthrough。
+    hasTextures: rawMaterials.some((m) => (
+      m?.pbrMetallicRoughness?.baseColorTexture != null ||
+      m?.extensions?.KHR_materials_transmission != null
+    )),
   };
 }
 

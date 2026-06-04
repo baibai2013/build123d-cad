@@ -185,7 +185,12 @@ export async function loadRenderGlb(url, { signal } = {}) {
     assertNotGitLfsPointer(buffer, url, "GLB render asset");
     return buildMeshDataFromGlbBuffer(buffer);
   }, { cachePending: !signal });
-  return finalizeCached(glbCache, url, meshData);
+  const finalized = finalizeCached(glbCache, url, meshData);
+  // approach B:带上源 URL(textured passthrough 用)
+  if (finalized && typeof finalized === "object" && !finalized.sourceUrl) {
+    try { finalized.sourceUrl = url; } catch { /* frozen 忽略 */ }
+  }
+  return finalized;
 }
 
 function parseGlbContainer(arrayBuffer) {
