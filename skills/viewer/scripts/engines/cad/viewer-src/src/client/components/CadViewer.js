@@ -2199,7 +2199,7 @@ const CadViewer = forwardRef(function CadViewer({
           new GLTFLoader().load(meshData.sourceUrl, (gltf) => {
             if (runtime.activeModelKey !== texModelKey) return; // 模型已切换,放弃
             const src = gltf.scene;
-            src.quaternion.copy(worldQuat);
+            src.rotation.x = -Math.PI / 2;  // glTF 轴=Z → 转成轴朝上(用户确认朝向)
             src.updateWorldMatrix(true, true);
             let box = new THREE.Box3().setFromObject(src);
             const sSize = box.getSize(new THREE.Vector3());
