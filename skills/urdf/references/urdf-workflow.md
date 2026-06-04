@@ -123,3 +123,34 @@ After generation-time validation, use the most relevant available smoke test:
 - load in MoveIt only after URDF structure is stable, then handle semantic data through the SRDF workflow.
 
 Report the smoke tests run and any skipped checks that would materially affect confidence.
+
+## Render-Verify + Fix Loop(自我验证闭环,适用任何 URDF)
+
+无论 URDF 是 `gen_urdf()` 生成的、纯 primitive(box/cylinder/sphere,无网格文件)、还是引用 STL/GLB/
+纹理网格——**落地后都应在 cad-viewer 里自我渲染验证一遍,发现问题就改、再验,直到通过**。不要只靠
+生成期 XML 校验(那只查结构,查不出朝向/单位/关节轴/网格加载这些只有渲染才暴露的问题)。
+
+固化脚本(headless,勿弹可见标签页):
+```
+~/work/build123d-parts-lib/.venv/bin/python scripts/verify_urdf.py <urdf> [--joint NAME] [--deg 60]
+```
+自动起服务 → 截 `static.png` + 驱动一个关节的 `driven.png`(默认 640×460 小图省 AI token)→ 抓控制台
+报错 → 打印核对清单。需用装了 playwright + chromium 的解释器(build123d-parts-lib 的 .venv)。
+
+核对清单:① 无报错且渲出来(没 `Failed to load render mesh`)② 每个 link 都在、形状对 ③ 朝向对
+④ 居中、相对位置/原点对 ⑤ 关节面板列出可动关节,驱动后对应 link 绕正确轴动、mimic 联动对
+(有纹理再加查贴图显示+跟随)。
+
+常见故障 → 对症修复:
+
+| 现象 | 根因 | 修法 |
+|---|---|---|
+| `Failed to load render mesh` / `Invalid typed array length` / `allocation failed` | 网格 URL 扩展名在 `?file=` query,格式判定回落 STL 把 GLB 当 STL 解析 | 已修 viewer `meshLoaders.js`;复发查该处 |
+| 某 link 不显示 | 网格路径错/文件缺;或被其它 link 遮挡 | 核对 `filename` 相对路径与文件存在;换视角确认是否遮挡 |
+| GLB 网格的 link 缩在原点/重叠、转动不对 | viewer 把 GLB ×1000 但关节原点是米,几何放大 1000× | GLB 顶点 ×1e-6(见 `references/textures.md` §2.3);根因是 viewer 既有单位 bug |
+| GLB 网格的 link 朝向歪 90° | GLB 不是 Y-up | 生成 GLB 时 Z-up→Y-up `(x,y,z)→(x,z,-y)` |
+| 关节面板「No movable joints」 | 关节全 fixed/mimic,或 URDF 解析失败 | 确认有非 fixed、非纯 mimic 关节;先排查渲染报错 |
+| 关节驱动后 link 绕错轴/不动/穿插 | `<axis>`、`origin`、parent/child 或 mimic multiplier 错 | 核对 frame-semantics;改 `gen_urdf()` 源重生成再验 |
+| 「没居中/朝向不对」但模型其实对 | viewer 按文件名记住相机,复用了上次手动视角 | 换文件名=默认框定;gizmo 顶端切俯视;工具栏准星复位 |
+
+改 URDF 一律改 `gen_urdf()` 源、重生成,再跑本验证;不手改 XML。

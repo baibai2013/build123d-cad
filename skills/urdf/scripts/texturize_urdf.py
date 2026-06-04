@@ -70,7 +70,7 @@ def main():
     open(out_urdf, "w").write(new_text)
     print(f"\n纹理 URDF: {out_urdf}")
     print(f"网格目录: {mesh_out_dir}")
-    print("验证: python verify_textured_urdf.py " + out_urdf)
+    print("验证: python verify_urdf.py " + out_urdf)
 
 if __name__ == "__main__":
     main()

@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
-"""Headless 验证纹理 URDF:起 viewer → 截静态图 + 驱动关节图(小尺寸省 AI token)→ 打印核对清单。
+"""Headless 验证任意 URDF(生成的 / 纯 primitive 无网格文件 / STL / GLB / 纹理,皆可):
+起 viewer → 截静态图 + 驱动关节图(小尺寸省 AI token)→ 抓控制台报错 → 打印核对清单。
+配合 references/urdf-workflow.md「Render-Verify + Fix Loop」用——任何 URDF 落地后都应跑一遍。
 
 用法(需用装了 playwright+chromium 的解释器,如 build123d-parts-lib 的 .venv):
-    <venv>/bin/python verify_textured_urdf.py <urdf> [--joint NAME] [--deg 60]
-                                              [--outdir DIR] [--width 640] [--height 460]
+    <venv>/bin/python verify_urdf.py <urdf> [--joint NAME] [--deg 60]
+                                    [--outdir DIR] [--width 640] [--height 460]
 
 要点:勿弹可见标签页(headless);截图视口默认 640×460(~390 token/张,1100×760≈1100)。
 """
@@ -70,9 +72,13 @@ def main():
     else:
         print("未找到可动关节输入框(无关节或选择器不匹配)")
     if real_errs:
-        print("控制台报错:", real_errs[:5])
-    print("\n核对清单:① 每个纹理 link 显示贴图(非灰模)② 朝向平躺 XY(X/Y≫Z)"
-          "③ 居中(装配中心在 0,0)④ 咬合/相对位置 ⑤ 驱动后纹理 link 跟随运动")
+        print("控制台报错(⚠ 渲染失败的首要线索):", real_errs[:5])
+    else:
+        print("控制台无报错")
+    print("\n核对清单(任何 URDF):① 无报错且模型渲出来(没 'Failed to load render mesh')"
+          " ② 每个 link 都在、形状对 ③ 朝向对(轴/平面符合预期) ④ 居中、相对位置/原点对"
+          " ⑤ 关节面板列出可动关节,驱动后对应 link 绕正确轴运动(mimic 联动对)"
+          "  —— 若有纹理另查:贴图显示(非灰模)+ 随关节跟随。")
 
 if __name__ == "__main__":
     main()
