@@ -34,16 +34,22 @@ GLB 必须同时满足三点,缺一即出问题:
 URDF 引用:`<mesh filename="meshes/x.glb"/>`,**不要再写 scale**(缩放已烘进 GLB);关节/mimic/origin 照旧。
 按本技能常规:改 `gen_urdf()` 源,不手改 XML。
 
-工具:`scripts/stl_to_wood_glb.py <in.stl> <out.glb> <scale> <tone>`(scale 用 `1e-6`)——解析二进制
-STL、程序化木纹 PNG、平面投影 UV、Z-up→Y-up、写 GLB。照搬改贴图来源即可(**用户提供贴图时**把
-`make_wood_png()` 换成读取用户的 PNG 字节直接嵌入)。
+**固化脚本(优先用,已内置上面三约束):**
+- 一键编排:`scripts/texturize_urdf.py <in.urdf> [--tones ring=oak,sun=cherry,...]` —— 读 URDF、把各
+  STL 转纹理 GLB(Y-up + 1e-6 + 按 mesh 分木种)、改写引用去 scale、输出 `<stem>_textured.urdf`。
+- 单网格底层:`scripts/stl_to_wood_glb.py <in.stl> <out.glb> [scale=1e-6] [tone]`(被上面 import)。
+  **用户提供贴图时**把其中 `make_wood_png()` 换成读取用户 PNG 字节直接嵌入即可。
 
 ## 3. 验证(headless,勿弹可见标签页)
 
-起服务:交给 `$cad-viewer`,或 `bash skills/viewer/scripts/start.sh <abs.urdf>` → 输出唯一 URL。
+**固化脚本(优先用)**:
+```
+~/work/build123d-parts-lib/.venv/bin/python scripts/verify_textured_urdf.py <urdf> [--joint NAME] [--deg 60]
+```
+自动起服务 → 截 `static.png` + 驱动关节 `driven.png`(默认 640×460 小图省 token)→ 打印核对清单。
+必须用装了 playwright+chromium 的解释器(build123d-parts-lib 的 .venv)。
 
-headless 截图(playwright headless chromium;用 `~/work/build123d-parts-lib/.venv/bin/python`,已装
-chromium;`web_preview._chromium_installed()` 有 PATH bug,直接用 playwright):
+底层等价逻辑(脚本封装的就是这段;`web_preview._chromium_installed()` 有 PATH bug 故不走它):
 
 ```python
 from playwright.sync_api import sync_playwright

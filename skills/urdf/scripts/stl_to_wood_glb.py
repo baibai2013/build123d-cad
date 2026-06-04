@@ -121,12 +121,17 @@ def zup_to_yup(seq):
     # 故这里把 Z-up 顶点预转成 Y-up:(x,y,z)→(x,z,-y),让 viewer 转回后正好复原 Z-up 朝向。
     return [(x, z, -y) for (x, y, z) in seq]
 
-inp, outp = sys.argv[1], sys.argv[2]
-scale = float(sys.argv[3]) if len(sys.argv) > 3 else 0.001
-tone = sys.argv[4] if len(sys.argv) > 4 else "oak"
-pos, nrm = parse_binary_stl(inp, scale)
-uv = planar_uv(pos)               # UV 用齿轮面 (x,y) 算,木纹落在齿轮正面
-pos = zup_to_yup(pos)
-nrm = zup_to_yup(nrm)
-nv = write_glb(outp, pos, nrm, uv, tone)
-print(f"{outp}: {nv} verts, tone={tone}, Y-up")
+def convert(inp, outp, scale=1e-6, tone="oak"):
+    """STL → 木纹 GLB(Y-up + 平面 UV + baseColorTexture)。scale=1e-6 抵消 viewer 对 GLB 的 ×1000。"""
+    pos, nrm = parse_binary_stl(inp, scale)
+    uv = planar_uv(pos)               # UV 用零件正面 (x,y) 算,纹理落在正面
+    pos = zup_to_yup(pos)
+    nrm = zup_to_yup(nrm)
+    return write_glb(outp, pos, nrm, uv, tone)
+
+if __name__ == "__main__":
+    inp, outp = sys.argv[1], sys.argv[2]
+    scale = float(sys.argv[3]) if len(sys.argv) > 3 else 1e-6
+    tone = sys.argv[4] if len(sys.argv) > 4 else "oak"
+    nv = convert(inp, outp, scale, tone)
+    print(f"{outp}: {nv} verts, tone={tone}, scale={scale}, Y-up")
