@@ -17,9 +17,15 @@
 
 <br>
 
+<img src="planetary_wood.gif" alt="木纹行星减速器 — 网页预览 + 纹理 URDF 关节动画" width="420">
+
+*木纹行星减速器 — **viewer 子技能网页预览**（浏览器，纹理 URDF + 关节联动动画，毫米级真实装配）*
+
+<br>
+
 <img src="preview.png" alt="build123d 直齿轮示例 — OCP CAD Viewer" width="720">
 
-*直齿轮 — OCP CAD Viewer 实时预览（mechanical 子技能产物）*
+*直齿轮 — **OCP CAD Viewer 实时预览**（VS Code 内，mechanical 子技能建模即时反馈）*
 
 <br>
 
@@ -45,6 +51,12 @@
 详细架构与决策见 [`docs/architecture.md`](docs/architecture.md) 与
 `share/build123d-cad改造/00-总览与目标架构.md`（公司内部规划文档）。
 
+### 核心亮点
+
+- 🖥️ **OCP CAD Viewer 预览**（VS Code 内实时）：build123d 建模即时反馈，所见即所得。
+- 🌐 **网页预览**（viewer 子技能）：浏览器多引擎（CAD / PCB / 原理图 / 仿真），headless 截图；**URDF 每 link 纹理 + 关节联动动画**（毫米级真实装配，见上方木纹行星减速器 GIF）。
+- 📦 **标准件库**：本地 `build123d-parts-lib` 收录 **8 类 66 种** 参数化标准件（紧固件 21 · 作动器 19 · 传动 9 · 轴承 7 · 销 4 · 舵机 3 · 挡圈 2 · 密封 1），另接 McMaster-Carr / GrabCAD / TraceParts 在线源。
+
 ---
 
 ## 子技能集合（11 个）
@@ -54,7 +66,7 @@
 | **mechanical**     | build123d Python CAD 全栈：参数化建模 / 装配 / 爆炸动画 / 仿真 / Playbook 方法论 | [skills/mechanical](skills/mechanical/) | P0 根基 |
 | **viewer**         | 网页多引擎预览容器（CAD / PCB / 原理图 / 仿真），headless 截图；URDF 每 link GLB 纹理渲染（关节可动、米制单位） | [skills/viewer](skills/viewer/) | P0 |
 | **urdf**           | build123d → URDF 自动导出（link/joint/mesh）+ pybullet 加载 + 纹理 URDF 工作流（木纹/贴图 + 渲染自验） | [skills/urdf](skills/urdf/) | P0 |
-| **parts-catalog**  | 找现成 STEP 零件（McMaster / step.parts / 厂商库 / 本地 build123d-parts-lib） | [skills/parts-catalog](skills/parts-catalog/) | P0 |
+| **parts-catalog**  | 找现成标准件：本地 **build123d-parts-lib（8 类 66 种参数化标件）** + McMaster / GrabCAD / TraceParts 在线源 | [skills/parts-catalog](skills/parts-catalog/) | P0 |
 | **srdf**           | MoveIt 规划组 + 自碰撞矩阵生成 | [skills/srdf](skills/srdf/) | P1 |
 | **sdf**            | Gazebo 仿真世界（SDF 格式） | [skills/sdf](skills/sdf/) | P1 |
 | **gcode**          | FDM 切片预检（壁厚 / 悬臂 / 打印估时） | [skills/gcode](skills/gcode/) | P1 |
