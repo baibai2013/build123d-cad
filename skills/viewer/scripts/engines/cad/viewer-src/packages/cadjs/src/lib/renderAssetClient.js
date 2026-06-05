@@ -236,9 +236,13 @@ export function peekRenderArrayBuffer(url) {
   return peekCached(arrayBufferCache, url);
 }
 
-export async function loadRenderGlb(url, { signal, preferWorker = false } = {}) {
-  const meshData = await loadCached(glbCache, url, async () => {
-    if (preferWorker) {
+export async function loadRenderGlb(url, { signal, preferWorker = false, unitScale = 1000 } = {}) {
+  // unitScale:GLB 顶点单位换算。CAD/STEP 默认 1000(米→毫米);URDF 机器人网格传 1(保持米,
+  // 与米制关节原点一致,靠 URDF <mesh scale> 接 mm 网格)。非默认单位用独立 cache key,且只能走
+  // 主线程解析(worker 固定 ×1000)。
+  const cacheKey = unitScale === 1000 ? url : `${url}::u${unitScale}`;
+  const meshData = await loadCached(glbCache, cacheKey, async () => {
+    if (preferWorker && unitScale === 1000) {
       const workerMeshData = loadGlbMeshDataInWorker(url, { signal });
       if (workerMeshData) {
         try {
@@ -252,9 +256,9 @@ export async function loadRenderGlb(url, { signal, preferWorker = false } = {}) 
     }
     const buffer = await loadRenderArrayBuffer(url, { signal });
     assertNotGitLfsPointer(buffer, url, "GLB render asset");
-    return buildMeshDataFromGlbBuffer(buffer);
+    return buildMeshDataFromGlbBuffer(buffer, { unitScale });
   }, { cachePending: !signal });
-  const finalized = finalizeCached(glbCache, url, meshData);
+  const finalized = finalizeCached(glbCache, cacheKey, meshData);
   // approach B:带上源 URL,主线程 textured passthrough 用 GLTFLoader 重新加载该 GLB
   if (finalized && typeof finalized === "object" && !finalized.sourceUrl) {
     try { finalized.sourceUrl = url; } catch { /* frozen 对象忽略 */ }

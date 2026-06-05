@@ -21,7 +21,7 @@
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="wood_meshes/ring.glb" />
+        <mesh filename="wood_meshes/ring.glb" scale="0.001 0.001 0.001" />
       </geometry>
       <material name="blue">
         <color rgba="0.25 0.45 0.85 1" />
@@ -30,7 +30,7 @@
     <collision>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="wood_meshes/ring.glb" />
+        <mesh filename="wood_meshes/ring.glb" scale="0.001 0.001 0.001" />
       </geometry>
     </collision>
   </link>
@@ -43,7 +43,7 @@
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="wood_meshes/sun.glb" />
+        <mesh filename="wood_meshes/sun.glb" scale="0.001 0.001 0.001" />
       </geometry>
       <material name="red">
         <color rgba="0.85 0.2 0.2 1" />
@@ -52,7 +52,7 @@
     <collision>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="wood_meshes/sun.glb" />
+        <mesh filename="wood_meshes/sun.glb" scale="0.001 0.001 0.001" />
       </geometry>
     </collision>
   </link>
@@ -65,7 +65,7 @@
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="wood_meshes/carrier.glb" />
+        <mesh filename="wood_meshes/carrier.glb" scale="0.001 0.001 0.001" />
       </geometry>
       <material name="gray">
         <color rgba="0.55 0.55 0.58 1" />
@@ -74,7 +74,7 @@
     <collision>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="wood_meshes/carrier.glb" />
+        <mesh filename="wood_meshes/carrier.glb" scale="0.001 0.001 0.001" />
       </geometry>
     </collision>
   </link>
@@ -87,7 +87,7 @@
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="wood_meshes/planet_1.glb" />
+        <mesh filename="wood_meshes/planet_1.glb" scale="0.001 0.001 0.001" />
       </geometry>
       <material name="green">
         <color rgba="0.25 0.7 0.3 1" />
@@ -96,7 +96,7 @@
     <collision>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="wood_meshes/planet_1.glb" />
+        <mesh filename="wood_meshes/planet_1.glb" scale="0.001 0.001 0.001" />
       </geometry>
     </collision>
   </link>
@@ -109,7 +109,7 @@
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="wood_meshes/planet_2.glb" />
+        <mesh filename="wood_meshes/planet_2.glb" scale="0.001 0.001 0.001" />
       </geometry>
       <material name="green">
         <color rgba="0.25 0.7 0.3 1" />
@@ -118,7 +118,7 @@
     <collision>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="wood_meshes/planet_2.glb" />
+        <mesh filename="wood_meshes/planet_2.glb" scale="0.001 0.001 0.001" />
       </geometry>
     </collision>
   </link>
@@ -131,7 +131,7 @@
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="wood_meshes/planet_3.glb" />
+        <mesh filename="wood_meshes/planet_3.glb" scale="0.001 0.001 0.001" />
       </geometry>
       <material name="green">
         <color rgba="0.25 0.7 0.3 1" />
@@ -140,7 +140,7 @@
     <collision>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="wood_meshes/planet_3.glb" />
+        <mesh filename="wood_meshes/planet_3.glb" scale="0.001 0.001 0.001" />
       </geometry>
     </collision>
   </link>

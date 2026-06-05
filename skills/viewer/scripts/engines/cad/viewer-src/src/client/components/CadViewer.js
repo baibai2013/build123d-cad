@@ -378,7 +378,8 @@ function mountUrdfTexturedGroups(THREE, runtime, cadScene, meshData) {
             return; // 模型已切换 / group 已回收或被替换
           }
           const calib = new THREE.Group();
-          applyObjectMatrix(THREE, calib, buildGlbToCadCalibrationMatrix(THREE, gltf));
+          // URDF 走米制(unitScale=1):纹理直渲 group 不 ×1000,与合并几何(也 unitScale=1)一致。
+          applyObjectMatrix(THREE, calib, buildGlbToCadCalibrationMatrix(THREE, gltf, 1));
           calib.add(gltf.scene.clone(true));
           outer.add(calib);
           outer.updateMatrixWorld(true);

@@ -38,6 +38,9 @@ env/
 *.tmp
 *.log
 
+# verify_urdf.py 的 headless 验证截图(临时产物)
+_verify/
+
 # Cache
 .mypy_cache/
 __pycache__/

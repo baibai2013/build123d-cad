@@ -121,8 +121,10 @@ def zup_to_yup(seq):
     # 故这里把 Z-up 顶点预转成 Y-up:(x,y,z)→(x,z,-y),让 viewer 转回后正好复原 Z-up 朝向。
     return [(x, z, -y) for (x, y, z) in seq]
 
-def convert(inp, outp, scale=1e-6, tone="oak"):
-    """STL → 木纹 GLB(Y-up + 平面 UV + baseColorTexture)。scale=1e-6 抵消 viewer 对 GLB 的 ×1000。"""
+def convert(inp, outp, scale=1.0, tone="oak"):
+    """STL → 木纹 GLB(Y-up + 平面 UV + baseColorTexture)。
+    scale=1 保持源单位(STL 通常毫米)→ GLB 也毫米,URDF 里用 <mesh scale="0.001"> 接到米制。
+    (viewer 现对 URDF GLB 按 unitScale=1 渲染、不再 ×1000,故无需早期的 1e-6 抵消。)"""
     pos, nrm = parse_binary_stl(inp, scale)
     uv = planar_uv(pos)               # UV 用零件正面 (x,y) 算,纹理落在正面
     pos = zup_to_yup(pos)
@@ -131,7 +133,7 @@ def convert(inp, outp, scale=1e-6, tone="oak"):
 
 if __name__ == "__main__":
     inp, outp = sys.argv[1], sys.argv[2]
-    scale = float(sys.argv[3]) if len(sys.argv) > 3 else 1e-6
+    scale = float(sys.argv[3]) if len(sys.argv) > 3 else 1.0
     tone = sys.argv[4] if len(sys.argv) > 4 else "oak"
     nv = convert(inp, outp, scale, tone)
     print(f"{outp}: {nv} verts, tone={tone}, scale={scale}, Y-up")

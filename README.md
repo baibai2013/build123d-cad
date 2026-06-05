@@ -52,8 +52,8 @@
 | 子技能 | 一句话定位 | 路径 | 优先级 |
 |---|---|---|---|
 | **mechanical**     | build123d Python CAD 全栈：参数化建模 / 装配 / 爆炸动画 / 仿真 / Playbook 方法论 | [skills/mechanical](skills/mechanical/) | P0 根基 |
-| **viewer**         | 网页多引擎预览容器（CAD / PCB / 原理图 / 仿真），headless 截图 | [skills/viewer](skills/viewer/) | P0 |
-| **urdf**           | build123d → URDF 自动导出（link/joint/mesh）+ pybullet 加载 | [skills/urdf](skills/urdf/) | P0 |
+| **viewer**         | 网页多引擎预览容器（CAD / PCB / 原理图 / 仿真），headless 截图；URDF 每 link GLB 纹理渲染（关节可动、米制单位） | [skills/viewer](skills/viewer/) | P0 |
+| **urdf**           | build123d → URDF 自动导出（link/joint/mesh）+ pybullet 加载 + 纹理 URDF 工作流（木纹/贴图 + 渲染自验） | [skills/urdf](skills/urdf/) | P0 |
 | **parts-catalog**  | 找现成 STEP 零件（McMaster / step.parts / 厂商库 / 本地 build123d-parts-lib） | [skills/parts-catalog](skills/parts-catalog/) | P0 |
 | **srdf**           | MoveIt 规划组 + 自碰撞矩阵生成 | [skills/srdf](skills/srdf/) | P1 |
 | **sdf**            | Gazebo 仿真世界（SDF 格式） | [skills/sdf](skills/sdf/) | P1 |

@@ -73,5 +73,5 @@ export async function loadRenderMeshByUrl(url, options = {}) {
   if (format === RENDER_FORMAT.THREE_MF) {
     return loadRender3Mf(url, options);
   }
-  return loadRenderGlb(url, options);
+  return loadRenderGlb(url, options);  // options 透传 unitScale(URDF 传 1)
 }

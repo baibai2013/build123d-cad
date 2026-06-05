@@ -104,7 +104,9 @@ async function loadRenderRobotMeshes(meshUrls, { signal, onProgress } = {}) {
       throw abortError();
     }
     await browserYield();
-    const mesh = await loadRenderMeshByUrl(meshUrl, { signal, fallback: RENDER_FORMAT.STL });
+    // URDF 关节原点是米;GLB 传 unitScale:1 让其保持文件单位(毫米,不再被 ×1000),
+    // 靠 URDF <mesh scale="0.001"> 把毫米网格接到米制关节原点(否则放大 1000 倍而缩在原点)。STL/3MF 忽略该参数。
+    const mesh = await loadRenderMeshByUrl(meshUrl, { signal, fallback: RENDER_FORMAT.STL, unitScale: 1 });
     completed += 1;
     onProgress?.(completed, total);
     await browserYield();

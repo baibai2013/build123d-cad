@@ -159,10 +159,10 @@ function sceneHasCadOccurrenceIds(scene) {
   return found;
 }
 
-function cadVectorFromGlbVector(vector, convertYUpToCad) {
-  const x = vector.x * GLB_CAD_UNIT_SCALE;
-  const y = vector.y * GLB_CAD_UNIT_SCALE;
-  const z = vector.z * GLB_CAD_UNIT_SCALE;
+function cadVectorFromGlbVector(vector, convertYUpToCad, unitScale = GLB_CAD_UNIT_SCALE) {
+  const x = vector.x * unitScale;
+  const y = vector.y * unitScale;
+  const z = vector.z * unitScale;
   return convertYUpToCad
     ? { x, y: -z, z: y }
     : { x, y, z };
@@ -306,7 +306,7 @@ function writeGlbPrimitive(THREE, descriptor, output, offsets) {
       if (descriptor.matrixWorld) {
         positionVector.applyMatrix4(descriptor.matrixWorld);
       }
-      const cadPosition = cadVectorFromGlbVector(positionVector, descriptor.convertYUpToCad);
+      const cadPosition = cadVectorFromGlbVector(positionVector, descriptor.convertYUpToCad, descriptor.unitScale);
       const x = cadPosition.x;
       const y = cadPosition.y;
       const z = cadPosition.z;
@@ -387,9 +387,9 @@ function resolveGlbCadConversion(THREE, gltf) {
 // 因 mesh.matrixWorld 在 gltf.scene 层级中天然保留,只需把
 //   C_map · (rootCorrection || I)   ( C_map = Scale(1000) · [Y-up→Z-up if convertYUpToCad] )
 // 作为根标定矩阵即可。
-export function buildGlbToCadCalibrationMatrix(THREE, gltf) {
+export function buildGlbToCadCalibrationMatrix(THREE, gltf, unitScale = GLB_CAD_UNIT_SCALE) {
   const { rootCorrection, convertYUpToCad } = resolveGlbCadConversion(THREE, gltf);
-  const scale = new THREE.Matrix4().makeScale(GLB_CAD_UNIT_SCALE, GLB_CAD_UNIT_SCALE, GLB_CAD_UNIT_SCALE);
+  const scale = new THREE.Matrix4().makeScale(unitScale, unitScale, unitScale);
   let cMap = scale;
   if (convertYUpToCad) {
     // {x, y, z} → {x, -z, y}(与 cadVectorFromGlbVector 完全一致;等价绕 X 轴旋转 +90°)。
@@ -406,7 +406,7 @@ export function buildGlbToCadCalibrationMatrix(THREE, gltf) {
     : cMap;
 }
 
-function buildMeshDataFromGltf(THREE, gltf) {
+function buildMeshDataFromGltf(THREE, gltf, unitScale = GLB_CAD_UNIT_SCALE) {
   const declaredMaterials = Array.isArray(gltf?.parser?.json?.materials) && gltf.parser.json.materials.length > 0;
   const rawMaterials = Array.isArray(gltf?.parser?.json?.materials) ? gltf.parser.json.materials : [];
   const { rootCorrection, convertYUpToCad, hasStepTopology } = resolveGlbCadConversion(THREE, gltf);
@@ -444,6 +444,7 @@ function buildMeshDataFromGltf(THREE, gltf) {
       if (!descriptor) {
         return;
       }
+      descriptor.unitScale = unitScale;  // URDF 传 1(保持米),CAD/STEP 默认 1000(米→毫米)
       descriptors.push(descriptor);
       totalVertexCount += descriptor.vertexCount;
       totalIndexCount += descriptor.triangleCount * 3;
@@ -508,11 +509,11 @@ function parseGlb(GLTFLoader, buffer) {
   });
 }
 
-export async function buildMeshDataFromGlbBuffer(buffer) {
+export async function buildMeshDataFromGlbBuffer(buffer, { unitScale = GLB_CAD_UNIT_SCALE } = {}) {
   const [THREE, { GLTFLoader }] = await Promise.all([
     import("three"),
     import("three/examples/jsm/loaders/GLTFLoader.js"),
   ]);
   const gltf = await parseGlb(GLTFLoader, buffer);
-  return buildMeshDataFromGltf(THREE, gltf);
+  return buildMeshDataFromGltf(THREE, gltf, unitScale);
 }

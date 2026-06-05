@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
-"""一键把 URDF 的 STL 网格替换为带纹理的 GLB(Y-up + 单位 1e-6 + 按 mesh 分木种),输出纹理 URDF。
+"""一键把 URDF 的 STL 网格替换为带纹理的 GLB(Y-up + 保持毫米 + 按 mesh 分木种),输出纹理 URDF。
 
 用法:
     python texturize_urdf.py <in.urdf> [--out OUT.urdf] [--meshdir wood_meshes]
-                             [--scale 1e-6] [--tones ring=oak,sun=cherry,...]
+                             [--scale 1.0] [--tones ring=oak,sun=cherry,...]
 
 约束已内置(见 references/textures.md):
   - GLB 预转 Y-up(viewer 会 Y-up→Z-up)
-  - 顶点 ×1e-6 抵消 viewer 对 GLB 的 ×1000(否则带关节偏移的多 link 会缩在原点)
-  - 引用改为 GLB 且去掉 scale(缩放已烘进 GLB)
+  - 顶点保持 STL 源单位(通常毫米),scale=1.0;viewer 对 URDF GLB 按 unitScale=1 渲染(不再 ×1000)
+  - 引用改为 GLB 并写入 scale="0.001 0.001 0.001"(把毫米网格接到米制关节原点)
 默认每个不同 mesh 轮换木种以便区分;--tones 可逐个指定(键 = STL 去扩展名的 basename)。
 """
 import sys, os, re, argparse
@@ -24,7 +24,7 @@ def main():
     ap.add_argument("urdf")
     ap.add_argument("--out")
     ap.add_argument("--meshdir", default="wood_meshes")
-    ap.add_argument("--scale", type=float, default=1e-6)
+    ap.add_argument("--scale", type=float, default=1.0)
     ap.add_argument("--tones", default="", help="basename=tone,逗号分隔;余者按轮换")
     args = ap.parse_args()
 
@@ -62,10 +62,10 @@ def main():
             nv = convert(stl_abs, glb_abs, args.scale, assigned[base])
             print(f"  {base}.stl → {args.meshdir}/{base}.glb  ({nv} verts, {assigned[base]})")
 
-    # 改写引用:filename 指向 GLB,去 scale
+    # 改写引用:filename 指向 GLB,并写入 scale="0.001 0.001 0.001"(毫米网格→米制关节)
     def repl(m):
         base = os.path.basename(m.group("path"))
-        return f'filename="{args.meshdir}/{base}.glb"'
+        return f'filename="{args.meshdir}/{base}.glb" scale="0.001 0.001 0.001"'
     new_text = STL_REF.sub(repl, text)
     open(out_urdf, "w").write(new_text)
     print(f"\n纹理 URDF: {out_urdf}")

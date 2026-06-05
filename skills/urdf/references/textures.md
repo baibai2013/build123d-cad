@@ -27,17 +27,19 @@ GLB 必须同时满足三点,缺一即出问题:
 1. **带 UV + baseColorTexture**。STL 无 UV/材质,必须转 GLB 并烘贴图。
 2. **Y-up 朝向**。glTF 标准 Y-up,viewer 会 Y-up→Z-up({x,y,z}→{x,-z,y})。CAD/URDF 是 Z-up,
    故从 STL(Z-up)生成时先转 **(x,y,z)→(x,z,-y)**,viewer 再转回正好复原。漏了 → 零件立起来 90°。
-3. **单位**。viewer 把 GLB 顶点 **×1000**(假设 GLB 米→显示毫米),**但 URDF 关节原点仍是米**。
-   为让几何与关节原点同尺度,GLB 顶点应 authored 在 **米 ÷ 1000**(从 mm 源乘 `1e-6`)。漏了 →
-   几何相对关节间距放大 1000 倍,带非零关节偏移的多 link **全缩在原点重叠、看不见**(单 link 看不出)。
+3. **单位**。GLB 顶点保持 STL 源单位(通常**毫米**,`scale=1.0`)。viewer 对 URDF 的 GLB 按
+   **unitScale=1 渲染(不再 ×1000)**,毫米网格靠 URDF `<mesh scale="0.001 0.001 0.001">` 接到
+   **米制**关节原点。漏写 scale → 毫米网格直接当米、放大 1000 倍,带非零关节偏移的多 link **全缩在
+   原点重叠、看不见**(单 link 看不出)。
 
-URDF 引用:`<mesh filename="meshes/x.glb"/>`,**不要再写 scale**(缩放已烘进 GLB);关节/mimic/origin 照旧。
+URDF 引用:`<mesh filename="meshes/x.glb" scale="0.001 0.001 0.001"/>`(毫米网格→米制);关节/mimic/origin 照旧。
 按本技能常规:改 `gen_urdf()` 源,不手改 XML。
 
 **固化脚本(优先用,已内置上面三约束):**
 - 一键编排:`scripts/texturize_urdf.py <in.urdf> [--tones ring=oak,sun=cherry,...]` —— 读 URDF、把各
-  STL 转纹理 GLB(Y-up + 1e-6 + 按 mesh 分木种)、改写引用去 scale、输出 `<stem>_textured.urdf`。
-- 单网格底层:`scripts/stl_to_wood_glb.py <in.stl> <out.glb> [scale=1e-6] [tone]`(被上面 import)。
+  STL 转纹理 GLB(Y-up + 保持毫米 + 按 mesh 分木种)、改写引用为 GLB 并写入 `scale="0.001 0.001 0.001"`、
+  输出 `<stem>_textured.urdf`。
+- 单网格底层:`scripts/stl_to_wood_glb.py <in.stl> <out.glb> [scale=1.0] [tone]`(被上面 import)。
   **用户提供贴图时**把其中 `make_wood_png()` 换成读取用户 PNG 字节直接嵌入即可。
 
 ## 3. 验证(headless,勿弹可见标签页)
@@ -75,7 +77,7 @@ node 里 import cadjs 需 `globalThis.self=globalThis`(three 用 self)。
 | 现象 | 根因 | 修法 |
 |---|---|---|
 | 零件立起来 90° | GLB 不是 Y-up | 生成时 (x,y,z)→(x,z,-y) |
-| 多 link 缩在原点/看不见、转动不对 | GLB×1000 vs 关节米制,几何放大 1000× | GLB 顶点乘 `1e-6` |
+| 多 link 缩在原点/看不见、转动不对 | 毫米 GLB 漏写 `<mesh scale>`,当米用放大 1000× | URDF mesh 加 `scale="0.001 0.001 0.001"` |
 | `Invalid typed array length`/`allocation failed` | mesh URL 扩展名在 `?file=` query,格式判定回落 STL 把 GLB 当 STL 解析 | 已修 viewer `meshLoaders.js`(回看 file query 扩展名);复发查此处 |
 | 各零件糊在一起分不清 | 同一种纹理 | 不同 link 不同色调/贴图 |
 | "没居中/朝向不对"但模型其实对 | viewer **按文件名记住相机**,复用了上次手动转到的视角 | 换文件名=默认框定;gizmo 顶端(Z)切俯视;工具栏"准星"复位 |
@@ -86,11 +88,16 @@ node 里 import cadjs 需 `globalThis.self=globalThis`(three 用 self)。
 - **主动提示是否演示纹理动画**:展示静态后,问用户「要不要看关节转动时纹理跟随的动画?」要的话用
   §3 的驱动法逐帧截图(尺寸压小)或让其点 ▶,呈现纹理随关节运动。
 
-## 6. 已知核心问题(建议单独修)
+## 6. 单位修复说明(已落地,曾是核心 bug)
 
-§2.3 单位不一致是 **viewer 对「GLB 网格 + 米制关节原点」URDF 的既有 bug**,合并路径同样中招,影响
-任何用 GLB 网格的 build123d URDF(含机器狗)。当前靠生成端 `1e-6` 缩放绕过。**正路是 viewer 核心修复**:
-让 URDF 渲染对 GLB 几何与关节原点采用一致单位(GLB-URDF 不 ×1000,或关节原点也 ×1000)。
-维护落点:`viewer-src/packages/cadjs/src/lib/render/glbMeshData.js`(`buildGlbToCadCalibrationMatrix`/
-`resolveGlbCadConversion`)、`lib/urdf/kinematics.js`、`components/CadViewer.js`
-(`mountUrdfTexturedGroups`/`syncUrdfTexturedGroups`)、`common/cadScene.js`(`applyObjectMatrix`)。
+历史上 viewer 对所有 GLB 一律 ×1000(假设 GLB 米→显示毫米),而 URDF 关节原点是米,导致
+「GLB 网格 + 米制关节原点」URDF 几何放大 1000×、多 link 缩在原点——只能靠生成端 `1e-6` 缩放绕过。
+
+**现已核心修复**:viewer 对 URDF 的 GLB 走 `unitScale=1`(不 ×1000),GLB 保持毫米源单位,靠 URDF
+`<mesh scale="0.001 0.001 0.001">` 接到米制关节。CAD/STEP 路径仍默认 `unitScale=1000`(米→毫米),不受影响。
+合并路径与纹理旁路直渲路径都传 `unitScale=1`,保持一致。
+落点:`render/glbMeshData.js`(`buildMeshDataFromGlbBuffer`/`buildGlbToCadCalibrationMatrix` 加 `unitScale` 形参)、
+`lib/renderAssetClient.js`(`loadRenderGlb` 的 `unitScale`,非默认值走独立 cache key + 主线程解析)、
+`components/CadViewer.js`(`mountUrdfTexturedGroups` 直渲传 `unitScale=1`)、
+`hooks/useCadAssets.js`(`loadRenderRobotMeshes` 传 `unitScale:1`)。
+**改完前端务必重构建**:`cd viewer-src && npm run build` 后把 `dist/` 同步到 `../dist`(server 实际 serve 该目录)。
