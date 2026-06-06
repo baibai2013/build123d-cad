@@ -7,31 +7,33 @@
 > *「像机械师思考，而不是像程序员思考。」 — Dave Cowden*
 
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
-[![Claude Code](https://img.shields.io/badge/Claude%20Code-Skill-blueviolet)](https://claude.ai/code)
+[![Agent Skills](https://img.shields.io/badge/Agent%20Skills-SKILL.md-blueviolet)](https://github.com/obra/superpowers)
+[![Multi-Agent](https://img.shields.io/badge/Multi--Agent-Claude%20Code%20·%20Cursor%20·%20…-success)](#不只是-claude-code跨-agent-的-skillmd-标准)
 [![build123d](https://img.shields.io/badge/build123d-CAD-green)](https://github.com/gumyr/build123d)
-[![Nuwa](https://img.shields.io/badge/Made%20with-女娲.skill-orange)](https://github.com/alchaincyf/nuwa-skill)
+[![tscircuit](https://img.shields.io/badge/tscircuit-PCB-orange)](https://tscircuit.com)
 
 <br>
 
-**一次安装，11 个子技能。机械建模 → 网页预览 → 机器人描述 → 制造出工 → 电子域全链路。**
+**一次安装，11 个子技能。两条主线 — 🛠️ CAD 机械建模 · ⚡ PCB 板级电气 — 端到端打通；
+外加网页预览 / 机器人描述 / 制造出工。**
 
 <br>
 
 <img src="planetary_wood.gif" alt="木纹行星减速器 — 网页预览 + 纹理 URDF 关节动画" width="420">
 
-*木纹行星减速器 — **viewer 子技能网页预览**（浏览器，纹理 URDF + 关节联动动画，毫米级真实装配）*
+*木纹行星减速器 — **viewer 网页预览**（浏览器，纹理 URDF + 关节联动动画，毫米级真实装配）*
 
 <br>
 
 <img src="preview.png" alt="build123d 直齿轮示例 — OCP CAD Viewer" width="720">
 
-*直齿轮 — **OCP CAD Viewer 实时预览**（VS Code 内，mechanical 子技能建模即时反馈）*
+*直齿轮 — **OCP CAD Viewer 实时预览**（VS Code 内，CAD 建模即时反馈）*
 
 <br>
 
 <img src="enclosure_explode.gif" alt="壳体爆炸动画 — 装配与展开演示" width="720">
 
-*壳体爆炸动画 — mechanical 子技能装配能力*
+*壳体爆炸动画 — CAD 装配能力*
 
 <br>
 
@@ -41,21 +43,85 @@
 
 ## 这是什么
 
-`build123d-cad` 是一个 **Claude Code Super Skill**：一个父技能下面挂 N 个子技能（monorepo 模块化）。
-一次 `npx skills add` 安装即得多技能；每个子技能独立 `SKILL.md / references / scripts / tests`，可单独 `pytest` 回归。
+`build123d-cad` 是一个 **硬件设计 Super Skill**：一个父技能下面挂 11 个子技能（monorepo 模块化）。
+一次 `npx skills add` 安装即得全部能力；每个子技能独立 `SKILL.md / references / scripts / tests`，可单独 `pytest` 回归。
 
-设计来由与对照（与 `earthtojake/text-to-cad` 的横向 sibling skills 形态相比）：
-- **横向铺**——能力多但安装分散、无统一方法论；
-- **纵向深**(本仓库) ——一次安装即得多技能 + 共享方法论 + 子技能可独立测试。
+父级 `SKILL.md` 只做关键词路由（≤ 220 行），进子技能再读细节——**两层路由**，避免一次性把整套实现塞进上下文。
 
-详细架构与决策见 [`docs/architecture.md`](docs/architecture.md) 与
-`share/build123d-cad改造/00-总览与目标架构.md`（公司内部规划文档）。
+---
 
-### 核心亮点
+## 🚩 两条主线：CAD 与 PCB
 
-- 🖥️ **OCP CAD Viewer 预览**（VS Code 内实时）：build123d 建模即时反馈，所见即所得。
-- 🌐 **网页预览**（viewer 子技能）：浏览器多引擎（CAD / PCB / 原理图 / 仿真），headless 截图；**URDF 每 link 纹理 + 关节联动动画**（毫米级真实装配，见上方木纹行星减速器 GIF）。
-- 📦 **标准件库**：本地 `build123d-parts-lib` 收录 **8 类 66 种** 参数化标准件（紧固件 21 · 作动器 19 · 传动 9 · 轴承 7 · 销 4 · 舵机 3 · 挡圈 2 · 密封 1），另接 McMaster-Carr / GrabCAD / TraceParts 在线源。
+这套技能围绕硬件研发的两个核心域构建，**机械（CAD）** 与 **电气（PCB）** 各成闭环、又能互相 handoff。
+
+### 🛠️ CAD — 机械建模全栈（`mechanical`）
+
+用 **build123d**（Python 代码即 CAD）做参数化建模，不靠鼠标拉草图：
+
+- **参数化建模 → 装配 → 爆炸动画 → 仿真预检**，全程代码可复现、可 diff、可回归。
+- **双预览**：VS Code 内 *OCP CAD Viewer* 实时反馈；浏览器 *viewer* 多引擎截图自验（headless，可进 CI）。
+- **标准件库**：本地 `build123d-parts-lib` 收录 **8 类 66 种** 参数化标准件（紧固件 21 · 作动器 19 · 传动 9 · 轴承 7 · 销 4 · 舵机 3 · 挡圈 2 · 密封 1），另接 McMaster-Carr / GrabCAD / TraceParts 在线源。
+- **出工闭环**：导 STEP/DXF → 3D 打印切片预检（`gcode`）/ 激光切割报价（`sendcutsend`）/ Bambu 上传（`bambu-labs`）。
+- **机器人描述**：build123d → URDF（每 link 纹理 GLB、米制单位、关节可动）+ MoveIt 规划组（`srdf`）+ Gazebo 世界（`sdf`）。
+
+```
+> 帮我建一个法兰盘，6 个螺栓孔均匀分布，导成 STEP 在浏览器里看
+> 这个支架激光切多少钱
+> 把这台机器人导成 URDF + 加载到 pybullet 看看关节
+```
+
+### ⚡ PCB — 代码即电路，端到端造板（`pcb`）
+
+用 **tscircuit**（React/TypeScript 写电路）一把 `tsci` CLI 打通 **authoring → check/DRC → web 预览 → 出件 → 嘉立创下单**：
+
+- **写 TSX 即电路**：`<board>` 里放元件 + 布局 props + `<trace>` 连线，参数（尺寸/电压）定义在顶部。
+- **check 才算数**：`tsci build` 跑 DRC + 本地 DFM 比对嘉立创工艺，不靠肉眼。
+- **三路 3D/2D 预览**：`tsci dev`（PCB+原理图+3D）/ snapshot 出 PNG·SVG / 导 GLB 进 viewer 统一预览。
+- **一键出件**：Gerber / BOM / CPL / STEP / GLB 全套，从 `circuit.json` 派生（build 已自动配嘉立创料号）。
+- **嘉立创（JLCPCB）报价 + 下单**：经 `jlcpcb-mcp` 免 key 查料/报价 + 需 key 板级报价；**真实下单是 gate，必须 `--confirm`**，无 key 降级开网页、绝不假装成功。
+
+```tsx
+// index.circuit.tsx — 一个会亮的 LED 板
+export default () => (
+  <board width="20mm" height="15mm">
+    <led name="LED1" footprint="0603" pcbX={-3} schX={-2} />
+    <resistor name="R1" resistance="330" footprint="0402" pcbX={3} schX={2} />
+    <trace from="net.VCC" to=".R1 > .pin1" />
+    <trace from=".R1 > .pin2" to=".LED1 > .anode" />
+    <trace from=".LED1 > .cathode" to="net.GND" />
+  </board>
+)
+```
+
+```
+> 用代码写块 LED 板，0603 封装，发嘉立创报个价
+> 这块板出 Gerber + BOM + CPL，顺便给我看下 3D
+```
+
+> **CAD ↔ PCB handoff**：pcb 导 `.step` + 板框 `.dxf` → mechanical 读做外壳让位/装配间隙；
+> 二者在 viewer 里可双引擎并显。「PCB 外壳一起做」是这套技能的典型联动场景。
+
+---
+
+## 不只是 Claude Code：跨 Agent 的 SKILL.md 标准
+
+本仓库遵循开放的 **Agent Skills（`SKILL.md`）格式**——纯文件式技能（`SKILL.md` + `references/` + `scripts/`），
+**不绑定任何单一 Agent 运行时**。任何支持 Agent Skills 约定的编码 Agent 都能加载并执行：
+
+| Agent / 运行时 | 怎么用 |
+|---|---|
+| **Claude Code**（CLI / 桌面 / IDE 扩展） | `npx skills add baibai2013/build123d-cad`，关键词自动路由子技能 |
+| **Cursor / Windsurd 等支持 skills 的 IDE** | 同一份 `SKILL.md` 直接挂载，无需改写 |
+| **自建 Agent / LangGraph / 自研 harness** | 把 `skills/<name>/SKILL.md` 作为上下文注入 + `scripts/` 当工具调用 |
+| **纯命令行 / CI** | `scripts/*.sh|*.py` 全部 fail-loud、可独立跑，不依赖 LLM 也能出件 |
+
+之所以能跨 Agent，是因为我们守住了几条工程红线：
+
+- **能力即文件**：每个子技能 = `SKILL.md`（给 Agent 读）+ `scripts/`（确定性执行）+ `references/`（查询表）+ `tests/`（回归）。Agent 只是“读说明书 + 调脚本”的人，换个 Agent 不影响。
+- **脚本自治、fail-loud**：`scripts/` 不假设有 LLM 在场，缺工具直接报安装提示退出（如 `tsci`/`bun` 缺失），可在裸 CI 里跑。
+- **文件接口跨技能**：子技能之间不互调函数、不互引 references，一律走 `shared/` 约定的输出文件路径（如 `output/<task>/electrical/<board>.circuit.json`）。换 Agent、换语言都不破。
+
+> 一句话：**Claude Code 是首选驱动，但技能本身是 Agent-agnostic 的资产。**
 
 ---
 
@@ -63,8 +129,9 @@
 
 | 子技能 | 一句话定位 | 路径 | 优先级 |
 |---|---|---|---|
-| **mechanical**     | build123d Python CAD 全栈：参数化建模 / 装配 / 爆炸动画 / 仿真 / Playbook 方法论 | [skills/mechanical](skills/mechanical/) | P0 根基 |
-| **viewer**         | 网页多引擎预览容器（CAD / PCB / 原理图 / 仿真），headless 截图；URDF 每 link GLB 纹理渲染（关节可动、米制单位） | [skills/viewer](skills/viewer/) | P0 |
+| 🛠️ **mechanical**  | build123d Python CAD 全栈：参数化建模 / 装配 / 爆炸动画 / 仿真 / Playbook 方法论 | [skills/mechanical](skills/mechanical/) | P0 根基 |
+| ⚡ **pcb**          | tscircuit 端到端造板：写 TSX → check/DRC → web 预览 → 出件(Gerber/BOM/CPL) → 嘉立创报价/下单 | [skills/pcb](skills/pcb/) | **P1 ✅** |
+| 🌐 **viewer**       | 网页多引擎预览容器（CAD / PCB / 原理图 / tscircuit），headless 截图；URDF 每 link GLB 纹理渲染（关节可动、米制单位） | [skills/viewer](skills/viewer/) | P0 |
 | **urdf**           | build123d → URDF 自动导出（link/joint/mesh）+ pybullet 加载 + 纹理 URDF 工作流（木纹/贴图 + 渲染自验） | [skills/urdf](skills/urdf/) | P0 |
 | **parts-catalog**  | 找现成标准件：本地 **build123d-parts-lib（8 类 66 种参数化标件）** + McMaster / GrabCAD / TraceParts 在线源 | [skills/parts-catalog](skills/parts-catalog/) | P0 |
 | **srdf**           | MoveIt 规划组 + 自碰撞矩阵生成 | [skills/srdf](skills/srdf/) | P1 |
@@ -72,8 +139,7 @@
 | **gcode**          | FDM 切片预检（壁厚 / 悬臂 / 打印估时） | [skills/gcode](skills/gcode/) | P1 |
 | **sendcutsend**    | 激光切割预检 + DXF 报价 + kerf 补偿 | [skills/sendcutsend](skills/sendcutsend/) | P1 |
 | **bambu-labs**     | Bambu 打印机上传作业 / AMS 多色 | [skills/bambu-labs](skills/bambu-labs/) | P2 |
-| pcb (WIP)          | KiCad / DRC / Gerber 自动化（P3 占位，第一个 PCB 项目落地时启动） | [skills/pcb](skills/pcb/) | P3 |
-| electronics-bom (WIP) | 电子 BOM / 元件库 / JLCPCB · Octopart 接入 | [skills/electronics-bom](skills/electronics-bom/) | P3 |
+| electronics-bom (WIP) | 电子 BOM / curated 元件库 / JLCPCB · Octopart 接入（喂 pcb 的 `tsci import`） | [skills/electronics-bom](skills/electronics-bom/) | P3 占位 |
 
 ---
 
@@ -86,12 +152,16 @@ npx skills add baibai2013/build123d-cad
 依赖（按用到的子技能挑装）：
 
 ```bash
-# mechanical / urdf 必备
+# 🛠️ CAD：mechanical / urdf 必备
 pip install build123d ocp-vscode
 code --install-extension bernhard-42.ocp-cad-viewer
 
-# viewer (P0 后期)
-node --version  # 直跑 server.mjs，不用 npm install
+# ⚡ PCB：pcb 子技能（tscircuit 依赖 bun 运行时）
+bun add -g tscircuit                  # 提供 tsci CLI
+claude mcp add jlcpcb -- npx -y jlcpcb-mcp@0.3.3   # 嘉立创报价/下单(可选)
+
+# 🌐 viewer：直跑 server.mjs，不用 npm install
+node --version
 
 # urdf 加 pybullet 加载验证
 pip install pybullet numpy
@@ -99,16 +169,17 @@ pip install pybullet numpy
 
 ---
 
-## 用法（Claude Code 内）
+## 用法（Agent 内）
 
-父 SKILL.md 按关键词路由到子技能，进入子技能后再读细节：
+父 `SKILL.md` 按关键词路由到子技能，进入子技能后再读细节：
 
 ```
-> 帮我建一个法兰盘，6 个螺栓孔均匀分布     # → mechanical
-> 把这个 STEP 在浏览器里打开看看            # → viewer
-> 把这台机器人导成 URDF + 加载到 pybullet   # → urdf, viewer
-> 这个支架激光切多少钱                       # → mechanical → sendcutsend
-> 帮我找一个 608 轴承的 STEP 文件            # → parts-catalog → mechanical
+> 帮我建一个法兰盘，6 个螺栓孔均匀分布          # → mechanical (CAD)
+> 用代码写块 LED 板并发嘉立创报价               # → pcb (tscircuit 端到端)
+> 把这个 STEP / circuit.json 在浏览器里打开看看  # → viewer
+> 把这台机器人导成 URDF + 加载到 pybullet        # → urdf, viewer
+> 这个支架激光切多少钱                            # → mechanical → sendcutsend
+> PCB 外壳一起做                                  # → pcb(电气) + mechanical(外壳) + viewer(双引擎)
 ```
 
 ---
@@ -130,28 +201,30 @@ build123d-cad/
 ├── SKILL.md                          # 父级路由（≤ 220 行）：关键词 → 子技能
 ├── README.md                         # 本文件（开发者视角）
 ├── skills/                           # 子技能集合（11 个），每个可独立 pytest
-│   ├── mechanical/                   #   build123d 建模 / 装配 / 仿真 / Playbook
+│   ├── mechanical/                   #   🛠️ build123d 建模 / 装配 / 仿真 / Playbook
+│   ├── pcb/                          #   ⚡ tscircuit 端到端造板（legacy-kicad/ 为归档旧路线）
 │   ├── viewer/                       #   网页多引擎预览
-│   │   └── scripts/engines/{cad,pcb,sch,sim}/
+│   │   └── scripts/engines/{cad,pcb,sch,sim,tscircuit}/
 │   ├── urdf/  srdf/  sdf/            #   机器人描述
 │   ├── gcode/  sendcutsend/  bambu-labs/  parts-catalog/   # 制造出工
-│   └── pcb/  electronics-bom/        #   电子域（P3 占位）
+│   └── electronics-bom/              #   电子料库（P3 占位）
 ├── shared/                           # 跨子技能协议
 │   ├── handoff-protocols.md          #   文件接口 + 路径约定
 │   ├── multi-skill-router.md         #   关键词 → 子技能权威映射
 │   └── dependencies.md               #   依赖图与被依赖度
 ├── tests/                            # 父级跨子技能集成测试
 └── docs/                             # 架构与扩展指南
-    ├── architecture.md               #   架构说明
+    ├── architecture.md
     ├── adding-new-subskill.md        #   加新子技能 9 步
-    └── SKILL.parent.draft.md         #   父 SKILL.md 草稿（P0-2 完成后替换）
+    ├── pcb-tscircuit-workflow.md     #   PCB 端到端完整闭环
+    └── pcb-tscircuit-dev-plan.md
 ```
 
 ---
 
 ## 加一个新子技能
 
-未来扩 PCB / 电子 / 固件等域，流程固定（详见 [`docs/adding-new-subskill.md`](docs/adding-new-subskill.md)）：
+未来扩固件 / 仿真 / 其他域，流程固定（详见 [`docs/adding-new-subskill.md`](docs/adding-new-subskill.md)）：
 
 ```bash
 mkdir -p skills/<name>/{references,scripts,tests}
@@ -163,16 +236,19 @@ touch skills/<name>/{SKILL.md,README.md} skills/<name>/tests/conftest.py
 
 ---
 
-## 进度
+## 进度与路线
 
 | 阶段 | 范围 | 状态 |
 |---|---|---|
-| P0 | 骨架 + mechanical 迁移 + viewer/urdf/parts-catalog 复刻 + tests 骨架 | 进行中（2026-06-02 ~ 06-08） |
-| P1 | srdf/sdf/gcode/sendcutsend + 数据源/代码源补齐 + agent-eval | 排期中（2026-06-09 ~ 06-15） |
-| P2 | bambu-labs / Playbook 治理 / AIGC case 沉淀 | 按需 |
-| P3 | pcb / electronics-bom（电子域开张，需用户给第一个 PCB 项目） | 待 Gate 3 |
+| P0 | 骨架 + mechanical 迁移 + viewer/urdf/parts-catalog 复刻 + tests 骨架 | ✅ 已落地 |
+| P1 | srdf/sdf/gcode/sendcutsend + **pcb（tscircuit 端到端造板）** | ✅ pcb 已打通 authoring→出件→嘉立创 |
+| P2 | bambu-labs / Playbook 治理 / AIGC case 沉淀 | 进行中 |
+| **下一步 🎯 仿真（simulation）** | **把"生成机器人描述"升级为"真正跑动力学仿真"**：pybullet / MuJoCo / Gazebo 一键加载 build123d→URDF/SDF 产物，做关节力矩 / 步态 / 碰撞 / 稳定性的 predict-and-verify 闭环，截图自验进 CI | 🚧 排期中 |
+| P3 | electronics-bom（curated 料库喂 pcb 的 tsci import） | 待 Gate |
 
-实施细节见公司内部规划：`share/build123d-cad改造/01-分工与排期.md`。
+> **为什么下一个是仿真**：CAD 把"画对"闭环了，PCB 把"造得出 + 发得了"闭环了，
+> 但机器人/机构"动起来对不对"目前只停在描述层（URDF/SDF 生成）。下一阶段要把仿真器接成
+> 一等公民——和 viewer 一样 headless、可截图、可回归——让"设计 → 仿真验证"成为默认动作，而不是人工另开工具。
 
 ---
 
@@ -190,7 +266,9 @@ npx skills add alchaincyf/nuwa-skill
 
 ## 免责声明
 
-本项目以工程探索与学习交流为目的。AI 辅助生成的设计建议须结合专业工具评审，实际制造公差请根据工艺自行调整。上游依赖库持续演进，部分示例代码可能需要适配。
+本项目以工程探索与学习交流为目的。AI 辅助生成的设计建议须结合专业工具评审，实际制造公差请根据工艺自行调整。
+**真实下单/付款（PCB 打板等）一律需要显式确认（`--confirm`），无凭据时降级到官方网页，绝不假装成功。**
+上游依赖库（build123d / tscircuit / jlcpcb-mcp）持续演进，部分示例代码可能需要适配。
 
 ---
 
