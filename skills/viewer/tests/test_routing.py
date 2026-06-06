@@ -66,6 +66,8 @@ def _route(path: str):
     ("legacy.sch", "sch"),
     ("export.svg", "sch"),
     # ===== sim engine =====
+    ("r2d2.results.json", "sim"),     # 仿真回放仪表盘(必须先于 .json ambiguous)
+    ("DROP.RESULTS.JSON", "sim"),     # 大小写不敏感
     ("trace.csv", "sim"),
     ("clip.mp4", "sim"),
     ("rec.webm", "sim"),
@@ -141,6 +143,7 @@ def test_supported_extensions_pinned_count():
         ".kicad_pcb", ".gbr", ".ger", ".drl", ".gtl", ".gbl",
         ".kicad_sch", ".sch", ".svg", ".csv", ".mp4", ".webm",
         ".circuit.json",  # M2 tscircuit engine
+        ".results.json",  # sim engine 仿真回放
         ".json", ".yaml", ".yml",  # 配套配置
     }
     missing = must_have - exts

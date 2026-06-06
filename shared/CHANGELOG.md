@@ -24,6 +24,8 @@
 
 | 2026-06-06 | **新增 simulation 子技能(headless pybullet 动力学 MVP)** — ① `multi-skill-router.md` 加 simulation 行(✅ P1) + 消歧("仿真"按意图:解析 FK/IK→mechanical、物理跑判稳→simulation、出 Gazebo 世界→sdf);② `handoff-protocols.md` 产物表加 simulation 行(`output/<task>/simulation/`:results.json/frames/*.png/sim.mp4/_verify) + 链路 8/9(urdf→sim、sdf→sim);③ `dependencies.md` 依赖图加 `urdf──URDF──▶simulation`、`sdf──SDF──▶simulation`,simulation 列入末端(MVP 无下游);④ 父 SKILL.md 路由表 11→12 + 触发词/消歧;⑤ `pytest.ini` 加 `requires_pybullet` marker + testpaths 加 `skills/simulation/tests`。pybullet 为运行依赖(venv 已装),缺失 fail-loud/importorskip。 | simulation · urdf · sdf · (父级路由) | hardware | 非破坏(纯新增);MVP=headless p.DIRECT + ER_TINY 离屏渲染;MuJoCo/Gazebo 真跑/viewer 回放/完整步态 deferred;smoke 8/8 通过 |
 
+| 2026-06-06 | **仿真可预览(sim 数据面板 + cad 3D 回放接线)** — ① viewer `router.mjs` 加 `.results.json → sim`(先于 `.json` ambiguous);`engines/sim/dist/index.html` 由占位转**真引擎**(results.json 曲线 + 判稳徽章 + 帧 scrubber,零依赖),`engineImpl.sim` stub→ready;② simulation 新增 `to_trajectory.py`,run_sim 顺带产 `<robot>.trajectory.json`(cad 引擎原生回放格式),`handoff-protocols`/`dependencies` 加 `simulation──trajectory.json/results.json──▶viewer`,viewer 被依赖方加 simulation;③ 3D 回放复用 cad 引擎既有 `playUrdfTrajectory`(cad 引擎 `?trajectory=` + 时间轴改造见 docs/simulation-design.md,单独提交)。非破坏纯新增。 | viewer · simulation | hardware | 方案 doc: docs/simulation-design.md;预览归 viewer(simulation 边界不变);test_routing/test_start/test_sim_engine 同步 |
+
 ## 登记规则
 
 - 任何修改 shared/ 的 PR 必须新增一行,内容含日期 / 变更 / 影响子技能 / Owner / 备注

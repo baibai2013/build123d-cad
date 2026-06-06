@@ -1,0 +1,280 @@
+<!doctype html>
+<html lang="zh-cn">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Simulation Viewer · engine=sim</title>
+<style>
+:root { color-scheme: dark; }
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; }
+body {
+  font-family: -apple-system, "SF Pro Text", "Segoe UI", Helvetica, Arial, sans-serif;
+  background: #0d1117; color: #c9d1d9; display: flex; flex-direction: column; height: 100vh;
+}
+header {
+  padding: 8px 14px; border-bottom: 1px solid #30363d; background: #161b22;
+  display: flex; align-items: center; gap: 14px; flex-wrap: wrap; font-size: 13px;
+}
+header .title { font-weight: 600; font-size: 14px; }
+header .meta { color: #8b949e; }
+header .badges { margin-left: auto; display: flex; gap: 6px; flex-wrap: wrap; }
+.badge { padding: 3px 9px; border-radius: 6px; font-size: 12px; font-weight: 600; }
+.badge.pass { background: #1f6f3f55; color: #56d364; border: 1px solid #2ea04366; }
+.badge.fail { background: #6f1f1f55; color: #f85149; border: 1px solid #da363366; }
+.badge.na   { background: #30363d; color: #8b949e; border: 1px solid #444c56; }
+main { flex: 1; display: flex; min-height: 0; }
+.left  { width: 48%; display: flex; flex-direction: column; border-right: 1px solid #30363d; min-width: 0; }
+.right { flex: 1; overflow-y: auto; padding: 8px 10px; min-width: 0; }
+.frame-wrap { flex: 1; display: grid; place-items: center; background: #010409; min-height: 0; padding: 8px; }
+.frame-wrap img { max-width: 100%; max-height: 100%; image-rendering: auto; border-radius: 4px; }
+.frame-wrap .empty { color: #6e7681; font-size: 14px; text-align: center; }
+.scrub { padding: 10px 14px; border-top: 1px solid #30363d; background: #161b22; display: flex; align-items: center; gap: 10px; }
+.scrub button { font: 13px inherit; cursor: pointer; background: #21262d; color: #c9d1d9;
+  border: 1px solid #30363d; border-radius: 6px; padding: 5px 12px; }
+.scrub button:hover { background: #30363d; }
+.scrub input[type=range] { flex: 1; }
+.scrub .t { font-variant-numeric: tabular-nums; color: #8b949e; font-size: 12px; min-width: 92px; text-align: right; }
+.chart { margin-bottom: 10px; }
+.chart h3 { margin: 0 0 2px; font-size: 12px; font-weight: 600; color: #adbac7; }
+.chart canvas { width: 100%; height: 90px; display: block; background: #0d1117;
+  border: 1px solid #21262d; border-radius: 6px; }
+.legend { font-size: 11px; color: #8b949e; margin: 1px 0 0; }
+.summary { font-size: 12px; color: #8b949e; line-height: 1.7; border-top: 1px solid #21262d; margin-top: 8px; padding-top: 8px; }
+.summary b { color: #c9d1d9; }
+.err { color: #f85149; padding: 20px; font-size: 14px; white-space: pre-wrap; }
+video { width: 100%; max-height: 100%; }
+code { background: #161b22; padding: 1px 5px; border-radius: 4px; color: #d2a8ff; }
+</style>
+</head>
+<body>
+<div id="app"><div class="err" id="boot">Loading…</div></div>
+
+<script>
+const q = new URLSearchParams(location.search);
+const DIR = q.get("dir") || "";
+const FILE = q.get("file") || "";
+const filesUrl = (f) => `/files/${encodeURIComponent(f)}?dir=${encodeURIComponent(DIR)}`;
+const app = document.getElementById("app");
+const showErr = (m) => { app.innerHTML = `<div class="err">${m}</div>`; };
+
+const CHECK_LABELS = {
+  no_floor_tunnel: "没穿地",
+  no_blowup: "没爆炸",
+  joints_within_limits: "关节限位",
+  settled: "末态稳",
+};
+
+function deg(r) { return r * 180 / Math.PI; }
+
+async function main() {
+  if (!FILE) return showErr("缺 ?file= 参数");
+  const low = FILE.toLowerCase();
+
+  if (low.endsWith(".mp4") || low.endsWith(".webm")) {
+    app.innerHTML = `<video controls autoplay loop src="${filesUrl(FILE)}"></video>`;
+    return;
+  }
+  if (low.endsWith(".csv")) return renderCsv();
+
+  // 默认:results.json 仪表盘
+  let data;
+  try {
+    const r = await fetch(filesUrl(FILE));
+    if (!r.ok) throw new Error("HTTP " + r.status);
+    data = await r.json();
+  } catch (e) { return showErr("读 results.json 失败:" + e); }
+  renderDashboard(data);
+}
+
+async function renderCsv() {
+  try {
+    const r = await fetch(filesUrl(FILE));
+    const text = await r.text();
+    const rows = text.trim().split(/\r?\n/).map(l => l.split(","));
+    const head = rows.shift() || [];
+    app.innerHTML = `<div class="right" style="width:100%"><h3 class="chart">${FILE}</h3>` +
+      `<table style="font-size:12px;border-collapse:collapse">` +
+      `<thead><tr>${head.map(h=>`<th style="text-align:left;padding:4px 10px;color:#8b949e">${h}</th>`).join("")}</tr></thead>` +
+      `<tbody>${rows.slice(0,500).map(rw=>`<tr>${rw.map(c=>`<td style="padding:3px 10px;border-top:1px solid #21262d">${c}</td>`).join("")}</tr>`).join("")}</tbody>` +
+      `</table></div>`;
+  } catch (e) { showErr("读 CSV 失败:" + e); }
+}
+
+function badge(key, val) {
+  const label = CHECK_LABELS[key] || key;
+  if (val === true)  return `<span class="badge pass">✓ ${label}</span>`;
+  if (val === false) return `<span class="badge fail">✗ ${label}</span>`;
+  return `<span class="badge na">${label}</span>`;
+}
+
+function renderDashboard(d) {
+  const m = d.meta || {}, s = d.summary || {}, ts = d.timeseries || [], frames = d.frames || [];
+  const checks = d.checks || {};
+  const hasChecks = Object.keys(checks).length > 0;
+  const badgesHtml = Object.keys(CHECK_LABELS)
+    .map(k => badge(k, hasChecks ? checks[k] : null)).join("")
+    + (hasChecks ? "" : ` <span class="badge na" title="run_sim 单跑未自验,跑 verify_sim 填 checks">未自验</span>`);
+
+  const modeStr = m.mode + (m.mode === "gait" && m.gait ? `/${m.gait}` : "");
+  const modelName = (m.model || "").split("/").pop();
+
+  app.innerHTML = `
+    <header>
+      <span class="title">🤖 ${modelName || FILE}</span>
+      <span class="meta">mode <b>${modeStr}</b> · steps ${m.steps} · 采样 ${s.n_samples ?? ts.length} · pybullet ${m.pybullet_api ?? "?"}</span>
+      <span class="badges">${badgesHtml}</span>
+    </header>
+    <main>
+      <div class="left">
+        <div class="frame-wrap" id="framewrap">
+          ${frames.length ? `<img id="frame" alt="frame">` : `<div class="empty">无关键帧<br>(run_sim 加 <code>--fps</code> 出帧;或本次 <code>--no-video</code>)</div>`}
+        </div>
+        <div class="scrub">
+          <button id="play" ${frames.length ? "" : "disabled"}>▶ 播放</button>
+          <input type="range" id="slider" min="0" max="${Math.max(0, ts.length - 1)}" value="0" ${ts.length ? "" : "disabled"}>
+          <span class="t" id="tlabel">t=0.000s</span>
+        </div>
+      </div>
+      <div class="right" id="charts"></div>
+    </main>`;
+
+  if (!ts.length) return;
+
+  // ---- 曲线数据 ----
+  const tArr = ts.map(r => r.t);
+  const jointNames = (d.joints || []).filter(j => j.type === 0 || j.type === 1).map(j => j.name);
+  const charts = [
+    { title: "base z (m)", series: [{ name: "z", data: ts.map(r => r.base_pos[2]), color: "#58a6ff" }] },
+    { title: "base roll / pitch (deg)", series: [
+        { name: "roll",  data: ts.map(r => deg(r.base_rpy[0])), color: "#f0883e" },
+        { name: "pitch", data: ts.map(r => deg(r.base_rpy[1])), color: "#56d364" },
+      ] },
+    { title: "关节角 (rad)", series: jointNames.map((n, i) => ({
+        name: n, color: `hsl(${(i * 47) % 360} 70% 62%)`,
+        data: ts.map(r => r.joint_pos[i] ?? null),
+      })) },
+    { title: "接触法向力 (N)", series: [{ name: "Fn", data: ts.map(r => (r.contacts || {}).total_normal_force ?? 0), color: "#d2a8ff" }] },
+  ];
+  const chartsEl = document.getElementById("charts");
+  const canvases = [];
+  for (const c of charts) {
+    const wrap = document.createElement("div"); wrap.className = "chart";
+    const legend = c.series.length > 1
+      ? `<p class="legend">${c.series.map(se => `<span style="color:${se.color}">■</span> ${se.name}`).join("  ")}</p>` : "";
+    wrap.innerHTML = `<h3>${c.title}</h3><canvas></canvas>${legend}`;
+    chartsEl.appendChild(wrap);
+    const cv = wrap.querySelector("canvas");
+    canvases.push({ cv, spec: c });
+  }
+
+  // summary
+  const sumEl = document.createElement("div"); sumEl.className = "summary";
+  const rpy = (s.final_rpy || []).map(v => deg(v).toFixed(1)).join(", ");
+  sumEl.innerHTML = `min_base_z <b>${s.min_base_z}</b> · max|pos| <b>${s.max_pos}</b> · `
+    + `max|jvel| <b>${s.max_joint_vel}</b> · NaN/Inf <b>${s.nan_or_inf}</b>`
+    + (rpy ? ` · 末态 rpy° <b>[${rpy}]</b>` : "");
+  chartsEl.appendChild(sumEl);
+
+  // ---- 渲染 + 同步 ----
+  let cur = 0;
+  function drawAll() {
+    for (const { cv, spec } of canvases) drawChart(cv, spec, tArr, cur);
+  }
+  function showFrame(i) {
+    cur = i;
+    const img = document.getElementById("frame");
+    if (img && frames.length) {
+      // 帧采样率可能与 ts 不同步:按时间就近取帧
+      const t = tArr[i];
+      let best = 0, bd = Infinity;
+      for (let k = 0; k < frames.length; k++) {
+        const dd = Math.abs(frames[k].t - t);
+        if (dd < bd) { bd = dd; best = k; }
+      }
+      img.src = filesUrl(frames[best].path);
+    }
+    document.getElementById("tlabel").textContent = "t=" + (tArr[i] ?? 0).toFixed(3) + "s";
+    drawAll();
+  }
+
+  const slider = document.getElementById("slider");
+  slider.addEventListener("input", () => showFrame(+slider.value));
+
+  const playBtn = document.getElementById("play");
+  let timer = null;
+  if (playBtn) playBtn.addEventListener("click", () => {
+    if (timer) { clearInterval(timer); timer = null; playBtn.textContent = "▶ 播放"; return; }
+    playBtn.textContent = "⏸ 暂停";
+    const ms = 1000 / (m.fps || 20);
+    timer = setInterval(() => {
+      let v = (+slider.value + 1);
+      if (v > +slider.max) v = 0;
+      slider.value = v; showFrame(v);
+    }, ms);
+  });
+
+  // 初次 + 容器尺寸变化重绘
+  showFrame(0);
+  new ResizeObserver(drawAll).observe(chartsEl);
+}
+
+// ---- 手绘 line chart(零依赖)----
+function drawChart(canvas, spec, tArr, cursorIdx) {
+  const dpr = window.devicePixelRatio || 1;
+  const w = canvas.clientWidth, h = canvas.clientHeight;
+  if (!w || !h) return;
+  canvas.width = w * dpr; canvas.height = h * dpr;
+  const ctx = canvas.getContext("2d");
+  ctx.scale(dpr, dpr);
+  ctx.clearRect(0, 0, w, h);
+  const pad = { l: 38, r: 6, t: 6, b: 14 };
+  const W = w - pad.l - pad.r, H = h - pad.t - pad.b;
+
+  // y 范围
+  let lo = Infinity, hi = -Infinity;
+  for (const se of spec.series) for (const v of se.data)
+    if (v != null && isFinite(v)) { if (v < lo) lo = v; if (v > hi) hi = v; }
+  if (!isFinite(lo)) { lo = 0; hi = 1; }
+  if (lo === hi) { lo -= 1; hi += 1; }
+  const py = v => pad.t + H - (v - lo) / (hi - lo) * H;
+  const n = tArr.length;
+  const px = i => pad.l + (n <= 1 ? 0 : i / (n - 1) * W);
+
+  // 轴 + 0 线
+  ctx.strokeStyle = "#21262d"; ctx.lineWidth = 1;
+  ctx.strokeRect(pad.l, pad.t, W, H);
+  ctx.fillStyle = "#6e7681"; ctx.font = "10px system-ui"; ctx.textAlign = "right";
+  ctx.fillText(hi.toFixed(2), pad.l - 3, pad.t + 8);
+  ctx.fillText(lo.toFixed(2), pad.l - 3, pad.t + H);
+  if (lo < 0 && hi > 0) {
+    ctx.strokeStyle = "#30363d"; ctx.beginPath();
+    ctx.moveTo(pad.l, py(0)); ctx.lineTo(pad.l + W, py(0)); ctx.stroke();
+  }
+
+  // 序列
+  for (const se of spec.series) {
+    ctx.strokeStyle = se.color; ctx.lineWidth = 1.4; ctx.beginPath();
+    let started = false;
+    for (let i = 0; i < se.data.length; i++) {
+      const v = se.data[i];
+      if (v == null || !isFinite(v)) { started = false; continue; }
+      const X = px(i), Y = py(v);
+      if (!started) { ctx.moveTo(X, Y); started = true; } else ctx.lineTo(X, Y);
+    }
+    ctx.stroke();
+  }
+
+  // 时间游标
+  if (cursorIdx != null && n > 1) {
+    const X = px(cursorIdx);
+    ctx.strokeStyle = "#e3b341"; ctx.lineWidth = 1; ctx.setLineDash([3, 3]);
+    ctx.beginPath(); ctx.moveTo(X, pad.t); ctx.lineTo(X, pad.t + H); ctx.stroke();
+    ctx.setLineDash([]);
+  }
+}
+
+main();
+</script>
+</body>
+</html>

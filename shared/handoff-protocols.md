@@ -15,7 +15,7 @@
 | sendcutsend | 报价/DXF | `output/<task>/<part>.dxf` + `quote.json` |
 | parts-catalog | 现成件 | L1 返回模块路径 + 实例化参数（不下 STEP）；L2+ 落盘 `output/<task>/parts/<id>.step` |
 | pcb | PCB 出件/3D/预览 | `output/<task>/electrical/`：`fab/<board>-gerbers.zip`(+`-bom.csv`/`-cpl.csv`)、`3d/<board>.{step,glb}`、`preview/<board>.{pcb,schematic}.svg`、`<board>.circuit.json` + `<board>.bom.json`(viewer engine=tscircuit 统一预览,bom 经 jlcpcb-mcp 免key定价)、`<board>.quote.json` |
-| simulation | 动力学仿真记录 | `output/<task>/simulation/`：`<robot>.results.json`(时序+汇总+checks) + `frames/*.png`(+ `manifest.json`) + `<robot>.sim.mp4`(有 imageio/cv2 才出) + `_verify/{static.png,settled.png,checklist.txt}` |
+| simulation | 动力学仿真记录 | `output/<task>/simulation/`：`<robot>.results.json`(时序+汇总+checks) + `<robot>.trajectory.json`(cad 引擎 3D 回放格式) + `frames/*.png`(+ `manifest.json`) + `<robot>.sim.mp4`(有 imageio/cv2 才出) + `_verify/{static.png,settled.png,checklist.txt}` |
 
 ## 常见 handoff 链路
 
@@ -26,8 +26,9 @@
 5. **urdf → srdf**：`*.urdf` → srdf 静态推导自碰撞矩阵 + 规划组 → `*.srdf`。
 6. **urdf → sdf**：`*.urdf` + `world.yaml` → sdf 转换 → `world.sdf` + `model.sdf`（Gazebo）。
 7. **parts-catalog → mechanical**：找到现成件 → L1 模块路径直接装配 / L2+ STEP `import_step()` 并入。
-8. **urdf → simulation**：`*.urdf` + `meshes/` → pybullet headless 跑(base 目录进 search path 解析相对 mesh) → `simulation/<robot>.results.json` + 关键帧/截图。
+8. **urdf → simulation**：`*.urdf` + `meshes/` → pybullet headless 跑(base 目录进 search path 解析相对 mesh) → `simulation/<robot>.results.json` + `<robot>.trajectory.json` + 关键帧/截图。
 9. **sdf → simulation**：`world.sdf`/`model.sdf` → `loadSDF`(取 `ids[0]`,世界自带地面不叠 plane) → 同上产物。
+10. **simulation → viewer(3D 回放)**：`<robot>.trajectory.json` + 原 `*.urdf` → cad 引擎 `?trajectory=` 时间轴回放(关节随时序动);辅 `results.json → engine=sim` 数据面板。
 
 ## 规则
 

@@ -1,7 +1,7 @@
 // router.mjs — 纯函数,后缀 → 引擎 路由
 // 规格见 share/build123d-cad改造/03-viewer多引擎子技能.md §4 / §4.1
 //
-// 21 条目权威路由表(33 个后缀)。任何加/删/改一行,必须同步:
+// 22 条目权威路由表。任何加/删/改一行,必须同步:
 //   ① 03 §4.1 表(单一权威源)
 //   ② shared/CHANGELOG.md(跨技能影响登记)
 //   ③ tests/test_routing.py(单测覆盖)
@@ -33,9 +33,11 @@ export const ENGINE_ROUTES = [
   { ext: ['.kicad_sch', '.sch'],                    engine: 'sch' },  // P3 KiCanvas
   { ext: ['.svg'],                                  engine: 'sch' },  // P3 inline + 缩放(原理图导出场景)
 
-  // ===== sim engine(P3 占位)=====
-  { ext: ['.csv'],                                  engine: 'sim' },  // P3 plotly.js
-  { ext: ['.mp4', '.webm'],                         engine: 'sim' },  // P3 HTML5 video
+  // ===== sim engine(仿真回放:frame scrubber + canvas 曲线 + checks 徽章)=====
+  // '.results.json' 必须排在 '.json' ambiguous 之前(endsWith 顺序匹配,同 '.circuit.json')。
+  { ext: ['.results.json'],                         engine: 'sim' },  // simulation 时序回放仪表盘
+  { ext: ['.csv'],                                  engine: 'sim' },  // 时序 CSV 表格
+  { ext: ['.mp4', '.webm'],                         engine: 'sim' },  // HTML5 video 录屏
 
   // ===== tscircuit engine(M2:RunFrame 直引,PCB/原理图/3D + BOM/总价面板)=====
   // 必须排在 '.json' 之前:routeByExtension 按 endsWith 顺序匹配,

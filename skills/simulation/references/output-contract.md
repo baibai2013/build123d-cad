@@ -9,6 +9,7 @@
 ```
 output/<task>/simulation/
 ├── <robot>.results.json        # 时序 + 汇总 + checks(权威产物)
+├── <robot>.trajectory.json     # cad 引擎原生回放格式(viewer 3D 回放用,run_sim 顺带产)
 ├── frames/
 │   ├── frame_0000.png …        # 按 --fps 采的关键帧(永远出,PIL/imageio)
 │   └── manifest.json           # 缺 imageio/cv2 时:帧列表 + ffmpeg 拼帧命令
@@ -17,6 +18,23 @@ output/<task>/simulation/
     ├── static.png              # 首帧(初始姿态)
     ├── settled.png             # 末帧(末态)
     └── checklist.txt           # 四项断言 PASS/FAIL + 看图清单
+```
+
+## trajectory.json schema（cad 引擎原生回放格式）
+
+viewer 的 cad 引擎已内建 `playUrdfTrajectory`,认这个格式(`to_trajectory.py` 从 results.json 转出):
+
+```jsonc
+{
+  "points": [
+    { "timeFromStartSec": 0.0,
+      "positionsByNameDeg": { "<joint>": <deg>, ... } }   // 关节角(度),按名
+  ],
+  "basePoses": [                                          // 基座位姿轨迹(后续驱动 root)
+    { "timeFromStartSec": 0.0, "positionXyz": [x,y,z], "rpyDeg": [r,p,y] }
+  ],
+  "meta": { "model": "...", "mode": "...", "source": "build123d-cad/simulation" }
+}
 ```
 
 `run_sim.py`/`verify_sim.py` 不传 `--outdir` 时默认落模型同目录的 `simulation/`。
@@ -62,7 +80,8 @@ output/<task>/simulation/
 |---|---|
 | **urdf → simulation** | `output/<task>/<robot>.urdf` + `meshes/` → `loadURDF`（base 目录进 search path 解析相对 mesh） |
 | **sdf → simulation** | `output/<task>/{world,model}.sdf` → `loadSDF`（取 `ids[0]`，世界自带地面不叠 plane） |
-| **simulation → 用户/CI** | `results.json`（判稳数据）+ `frames/`/`mp4`（回放）+ `_verify/`（截图 + checklist） |
-| **simulation → viewer**（未来，非 MVP） | `mp4`/`results.json` → `?engine=sim` 回放（当前 sim 引擎占位，本期不实现） |
+| **simulation → 用户/CI** | `results.json`（判稳数据）+ `frames/`/`mp4` + `_verify/`（截图 + checklist） |
+| **simulation → viewer**（3D 回放，主） | `<robot>.trajectory.json` → cad 引擎 URDF + `?trajectory=` 时间轴回放（关节随时序动） |
+| **simulation → viewer**（数据面板，辅） | `results.json` → `?engine=sim`（曲线 + 判稳徽章 + 帧 scrubber） |
 
 规则（同 `shared/handoff-protocols.md`）：路径由调用方传入、被调方不臆造；不认识的后缀（非 `.urdf/.sdf`）明确报错不静默吞。

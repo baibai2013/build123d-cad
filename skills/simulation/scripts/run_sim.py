@@ -209,6 +209,15 @@ def simulate(model, *, mode="hold", steps=2400, gait="trot", fixed=False,
         json.dump(record, f, ensure_ascii=False, indent=2)
     record["_results_path"] = results_path
 
+    # cad 引擎原生轨迹(供 viewer 3D 回放),失败不致命
+    try:
+        import to_trajectory
+        traj_path = os.path.join(outdir, f"{stem}.trajectory.json")
+        to_trajectory.write_trajectory(results_path, traj_path)
+        record["_trajectory_path"] = traj_path
+    except Exception as e:
+        print(f"⚠ 轨迹文件生成失败(不影响 results.json): {e}", file=sys.stderr)
+
     # MP4 best-effort
     if not no_video and frames:
         mp4 = os.path.join(outdir, f"{stem}.sim.mp4")
@@ -246,6 +255,10 @@ def main(argv=None):
     print(f"  mode={rec['meta']['mode']} samples={s['n_samples']} "
           f"min_base_z={s['min_base_z']} max_pos={s['max_pos']} "
           f"max_joint_vel={s['max_joint_vel']} nan={s['nan_or_inf']}")
+    if rec.get("_trajectory_path"):
+        print(f"trajectory: {rec['_trajectory_path']}")
+        print("预览(3D 回放): 在 viewer cad 引擎打开 URDF 并带 "
+              f"?trajectory=<上面的 trajectory.json>;数据面板: viewer 打开 {os.path.basename(rec['_results_path'])}(engine=sim)")
     return 0
 
 

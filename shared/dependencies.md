@@ -14,6 +14,8 @@ urdf       ─────────▶ srdf         (MoveIt 规划组基于 U
 urdf       ─────────▶ sdf          (Gazebo 世界引用 URDF)
 urdf       ──URDF──▶ simulation    (无头动力学跑 + 自验稳定性)
 sdf        ──SDF───▶ simulation    (loadSDF 跑世界/模型)
+simulation ──trajectory.json──▶ viewer (cad 引擎 3D 回放:URDF + ?trajectory= 时间轴)
+simulation ──results.json─────▶ viewer (engine=sim 数据面板:曲线 + 判稳徽章)
 parts-catalog ─STEP─▶ mechanical   (现成件并入装配)
 pcb        ──circuit.json+bom.json──▶ viewer(engine=tscircuit 统一预览:PCB/原理图/3D + BOM/总价)
 pcb        ──glb/svg──▶ viewer      (engine=cad/pcb/sch 单产物预览)
@@ -25,15 +27,15 @@ electronics-bom ─library.json─▶ pcb (选料喂 tsci import,可选上游)
 
 | 子技能 | 被依赖方 | 改动影响面 |
 |---|---|---|
-| **viewer** | mechanical / urdf / pcb（所有要预览的） | 高——改 router/server 跑全量 viewer 测试 |
+| **viewer** | mechanical / urdf / pcb / simulation（所有要预览的） | 高——改 router/server 跑全量 viewer 测试 |
 | **mechanical** | viewer / urdf / gcode / sendcutsend | 高——是产物源头 |
 | urdf | srdf / sdf / viewer | 中 |
 | parts-catalog | mechanical | 低 |
 
 ## 独立（无下游）
 
-`bambu-labs`、`gcode`、`sendcutsend`、`srdf`、`sdf`、`simulation` 为链路末端，改动只需自测。
-（`simulation` 为 MVP 末端：消费 urdf/sdf 产物，无下游；未来 `simulation → viewer(engine=sim 回放)` 落地后再升。）
+`bambu-labs`、`gcode`、`sendcutsend`、`srdf`、`sdf` 为链路末端，改动只需自测。
+（`simulation` 消费 urdf/sdf 产物，下游产 `trajectory.json`/`results.json` 给 viewer 做 3D 回放/数据面板。）
 
 ## 高扇入接口登记
 

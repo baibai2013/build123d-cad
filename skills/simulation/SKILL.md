@@ -76,8 +76,9 @@ since: 2026-06-06
 
 | 脚本 | 职责 | 缺工具行为 |
 |---|---|---|
-| `run_sim.py <model> [--mode]` | p.DIRECT 跑 N 步 → `results.json` + `frames/` + mp4(best-effort) | 缺 pybullet → 安装提示退出 |
+| `run_sim.py <model> [--mode]` | p.DIRECT 跑 N 步 → `results.json` + `<robot>.trajectory.json`(cad 回放用) + `frames/` + mp4(best-effort) | 缺 pybullet → 安装提示退出 |
 | `verify_sim.py <model> [--mode]` | import run_sim 跑一次 + 断言稳定性 + 出 `_verify/` 小图 + checklist | 缺 pybullet→退 3;断言挂→退 1;输入错→退 2 |
+| `to_trajectory.py <results.json>` | results.json → cad 引擎原生轨迹格式 `{points:[{timeFromStartSec,positionsByNameDeg}]}`(run_sim 已顺带产出) | 输入缺→退 2 |
 | `sim_render.py`（helper / 可单跑） | `getCameraImage(ER_TINY)`→PNG(PIL→imageio→.npy 兜底);mp4(imageio→cv2 否则跳过+manifest) | 缺 PIL/imageio → .npy 兜底,绝不丢帧 |
 
 CLI 全参数读脚本顶部 docstring。常用:
@@ -92,8 +93,9 @@ CLI 全参数读脚本顶部 docstring。常用:
 |---|---|
 | **urdf → simulation** | `<robot>.urdf` + `meshes/` → `loadURDF`(base 目录进 search path 解析相对 mesh) |
 | **sdf → simulation** | `{world,model}.sdf` → `loadSDF` 取 `ids[0]`(世界自带地面,不叠 plane) |
-| **simulation → 用户/CI** | `results.json`(判稳数据) + `frames/`/`mp4`(回放) + `_verify/`(截图 + checklist) |
-| simulation → **viewer**（未来,非 MVP） | `mp4`/`results.json` → `?engine=sim` 回放(当前 sim 引擎占位) |
+| **simulation → 用户/CI** | `results.json`(判稳数据) + `frames/`/`mp4` + `_verify/`(截图 + checklist) |
+| simulation → **viewer**（3D 回放,主） | `<robot>.trajectory.json` → cad 引擎加载 URDF + `?trajectory=` 时间轴回放(关节随时序动,见 docs/simulation-design.md) |
+| simulation → **viewer**（数据面板,辅） | `results.json` → `?engine=sim`(曲线 + 判稳徽章 + 帧 scrubber) |
 
 输出全落 `output/<task>/simulation/`(布局/schema 见 `references/output-contract.md`)。
 
