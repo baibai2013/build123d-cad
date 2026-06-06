@@ -14,8 +14,8 @@
 
 <br>
 
-**一次安装，11 个子技能。两条主线 — 🛠️ CAD 机械建模 · ⚡ PCB 板级电气 — 端到端打通；
-外加网页预览 / 机器人描述 / 制造出工。**
+**一次安装，12 个子技能。两条主线 — 🛠️ CAD 机械建模 · ⚡ PCB 板级电气 — 端到端打通；
+外加网页预览 / 机器人描述 / 动力学仿真 / 制造出工。**
 
 <br>
 
@@ -43,7 +43,7 @@
 
 ## 这是什么
 
-`build123d-cad` 是一个 **硬件设计 Super Skill**：一个父技能下面挂 11 个子技能（monorepo 模块化）。
+`build123d-cad` 是一个 **硬件设计 Super Skill**：一个父技能下面挂 12 个子技能（monorepo 模块化）。
 一次 `npx skills add` 安装即得全部能力；每个子技能独立 `SKILL.md / references / scripts / tests`，可单独 `pytest` 回归。
 
 父级 `SKILL.md` 只做关键词路由（≤ 220 行），进子技能再读细节——**两层路由**，避免一次性把整套实现塞进上下文。
@@ -125,7 +125,7 @@ export default () => (
 
 ---
 
-## 子技能集合（11 个）
+## 子技能集合（12 个）
 
 | 子技能 | 一句话定位 | 路径 | 优先级 |
 |---|---|---|---|
@@ -136,6 +136,7 @@ export default () => (
 | **parts-catalog**  | 找现成标准件：本地 **build123d-parts-lib（8 类 66 种参数化标件）** + McMaster / GrabCAD / TraceParts 在线源 | [skills/parts-catalog](skills/parts-catalog/) | P0 |
 | **srdf**           | MoveIt 规划组 + 自碰撞矩阵生成 | [skills/srdf](skills/srdf/) | P1 |
 | **sdf**            | Gazebo 仿真世界（SDF 格式） | [skills/sdf](skills/sdf/) | P1 |
+| 🤖 **simulation**  | 无头动力学仿真：URDF/SDF 丢进 pybullet（`p.DIRECT`）跑 跌落/站立/步态 → 自验稳定性（没穿地/没爆炸/关节限位/没翻）+ 离屏渲染截图，可进 CI | [skills/simulation](skills/simulation/) | **P1 ✅** |
 | **gcode**          | FDM 切片预检（壁厚 / 悬臂 / 打印估时） | [skills/gcode](skills/gcode/) | P1 |
 | **sendcutsend**    | 激光切割预检 + DXF 报价 + kerf 补偿 | [skills/sendcutsend](skills/sendcutsend/) | P1 |
 | **bambu-labs**     | Bambu 打印机上传作业 / AMS 多色 | [skills/bambu-labs](skills/bambu-labs/) | P2 |
@@ -200,12 +201,13 @@ pip install pybullet numpy
 build123d-cad/
 ├── SKILL.md                          # 父级路由（≤ 220 行）：关键词 → 子技能
 ├── README.md                         # 本文件（开发者视角）
-├── skills/                           # 子技能集合（11 个），每个可独立 pytest
+├── skills/                           # 子技能集合（12 个），每个可独立 pytest
 │   ├── mechanical/                   #   🛠️ build123d 建模 / 装配 / 仿真 / Playbook
 │   ├── pcb/                          #   ⚡ tscircuit 端到端造板（legacy-kicad/ 为归档旧路线）
 │   ├── viewer/                       #   网页多引擎预览
 │   │   └── scripts/engines/{cad,pcb,sch,sim,tscircuit}/
 │   ├── urdf/  srdf/  sdf/            #   机器人描述
+│   ├── simulation/                   #   🤖 无头 pybullet 动力学仿真 + 稳定性自验
 │   ├── gcode/  sendcutsend/  bambu-labs/  parts-catalog/   # 制造出工
 │   └── electronics-bom/              #   电子料库（P3 占位）
 ├── shared/                           # 跨子技能协议
@@ -243,12 +245,14 @@ touch skills/<name>/{SKILL.md,README.md} skills/<name>/tests/conftest.py
 | P0 | 骨架 + mechanical 迁移 + viewer/urdf/parts-catalog 复刻 + tests 骨架 | ✅ 已落地 |
 | P1 | srdf/sdf/gcode/sendcutsend + **pcb（tscircuit 端到端造板）** | ✅ pcb 已打通 authoring→出件→嘉立创 |
 | P2 | bambu-labs / Playbook 治理 / AIGC case 沉淀 | 进行中 |
-| **下一步 🎯 仿真（simulation）** | **把"生成机器人描述"升级为"真正跑动力学仿真"**：pybullet / MuJoCo / Gazebo 一键加载 build123d→URDF/SDF 产物，做关节力矩 / 步态 / 碰撞 / 稳定性的 predict-and-verify 闭环，截图自验进 CI | 🚧 排期中 |
+| 🤖 **仿真（simulation）** | **把"生成机器人描述"升级为"真正跑动力学仿真"**：URDF/SDF 丢进 pybullet headless 跑 跌落/站立/步态，predict-and-verify 闭环（没穿地 / 没爆炸 / 关节限位 / 没翻），离屏渲染截图进 CI | ✅ MVP 已落地（pybullet headless） |
+| **下一步 🎯 仿真深化** | MuJoCo / Gazebo 真跑接入 · viewer `engine=sim` 回放（plotly 曲线 + 视频）· 完整 Bézier+IK 步态 + golden-diff 回归 | 🚧 排期中 |
 | P3 | electronics-bom（curated 料库喂 pcb 的 tsci import） | 待 Gate |
 
-> **为什么下一个是仿真**：CAD 把"画对"闭环了，PCB 把"造得出 + 发得了"闭环了，
-> 但机器人/机构"动起来对不对"目前只停在描述层（URDF/SDF 生成）。下一阶段要把仿真器接成
+> **为什么是仿真**：CAD 把"画对"闭环了，PCB 把"造得出 + 发得了"闭环了，
+> 但机器人/机构"动起来对不对"此前只停在描述层（URDF/SDF 生成）。`simulation` 子技能把仿真器接成
 > 一等公民——和 viewer 一样 headless、可截图、可回归——让"设计 → 仿真验证"成为默认动作，而不是人工另开工具。
+> MVP（pybullet headless 跌落/站立/步态 + 稳定性自验）已落地；下一步把 MuJoCo/Gazebo 真跑与 viewer 回放接上。
 
 ---
 
