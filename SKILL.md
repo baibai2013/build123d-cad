@@ -6,7 +6,7 @@ description: |
   覆盖机械建模 → 网页预览 → 机器人描述 → 制造出工 → 电子域全链路。
   触发词：build123d、CAD建模、做一个零件、参数化设计、装配、URDF、机器人描述、
   MoveIt、Gazebo、SDF、切片、3D打印、激光切割、SendCutSend、Bambu、找现成零件、
-  STEP、网页预览、分享链接、PCB、KiCad、Gerber、电子BOM。
+  STEP、网页预览、分享链接、PCB、tscircuit、代码写PCB、Gerber、嘉立创、JLCPCB、下单打板、电子BOM。
   父级只做路由，详细能力在 skills/<name>/SKILL.md。
 ---
 
@@ -43,7 +43,7 @@ description: |
 | gcode           | 切片 / FDM / G-code 预检 / 打印估时 / 支撑 / overhang             | skills/gcode/SKILL.md           | P1 |
 | sendcutsend     | 激光切割 / 钣金 / DXF 报价 / kerf / SendCutSend                  | skills/sendcutsend/SKILL.md     | P1 |
 | bambu-labs      | Bambu / 打印机 / 上传打印 / AMS / send to printer                | skills/bambu-labs/SKILL.md      | P2 |
-| pcb (WIP)       | PCB / 原理图 / DRC / KiCad / Gerber / EDA                        | skills/pcb/SKILL.md             | P3 占位 |
+| pcb             | PCB / 原理图 / tscircuit / 代码写PCB / TSX / Gerber / 出件 / 嘉立创 / JLCPCB / 下单打板 / PCB 3D / DFM / EDA | skills/pcb/SKILL.md | P1 ✅ tscircuit |
 | electronics-bom (WIP) | 电子 BOM / 元件库 / JLCPCB / Octopart / 元件型号           | skills/electronics-bom/SKILL.md | P3 占位 |
 
 > 关键词权威映射在 `shared/multi-skill-router.md`；本表是其精简映像，改动需双向同步。
@@ -67,7 +67,8 @@ description: |
 - 「找个 608 轴承装进去」 → parts-catalog（主） + mechanical（handoff：合并入装配）
 - 「这个支架能激光切吗，多少钱」 → mechanical（出 DXF） + sendcutsend（报价）
 - 「这个件 3D 打印能不能打出来」 → mechanical（已有 STEP） + gcode（FDM 切片预检）
-- 「PCB 外壳一起做」 → pcb（P3 启动后） + mechanical（外壳） + viewer（双引擎并显）
+- 「用代码写块板子并发嘉立创」 → pcb（主，tscircuit 端到端） + viewer（预览 handoff）
+- 「PCB 外壳一起做」 → pcb（电气） + mechanical（外壳） + viewer（双引擎并显）
 
 ---
 

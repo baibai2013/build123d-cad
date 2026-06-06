@@ -1,48 +1,51 @@
-# pcb — 开发者说明
+# pcb — 开发者说明(tscircuit 端到端造板)
 
-P3 占位子技能。落地触发条件 = 用户给出第一个 PCB 项目 + Gate 3 通过。
+板级电气设计子技能。**tech = tscircuit**(React/TS 写电路),端到端:
+写 TSX → check/DRC → 统一预览 → DFM → 一键出件 → 嘉立创(经 jlcpcb-mcp)报价/下单。
 
-详见 [SKILL.md](SKILL.md) 与 [share/06](../../../share/build123d-cad改造/06-电子域扩展-pcb-eda-drc.md)。
+详见 [SKILL.md](SKILL.md);开发方案与里程碑见
+[`docs/pcb-tscircuit-dev-plan.md`](../../docs/pcb-tscircuit-dev-plan.md),
+完整工作流见 [`docs/pcb-tscircuit-workflow.md`](../../docs/pcb-tscircuit-workflow.md)。
 
-## 当前状态
+## 历史:为什么换掉 KiCad
+
+旧栈 = KiCad-cli + skidl,硬伤是 **skidl 只能出网表 `.net`,layout 必须回 KiCad GUI 手工**,
+不是代码端到端。tscircuit 一把 `tsci` 从 TSX 直接出带布局的板 + Gerber,真正闭环。
+旧文件归档在 [`legacy-kicad/`](legacy-kicad/)(不参与路由/测试,需要 KiCad 兼容路线时可参考)。
+
+## 当前状态(M1)
 
 | 项 | 状态 |
 |---|---|
-| SKILL.md(占位 + 触发关键词 + 路线图) | ✅ |
-| references/ | 空(P3 起填 KiCad CLI cheatsheet 等) |
-| scripts/ | 空(P3 起填 new_project / sch_from_skidl / export_fab 等) |
-| tests/ | placeholder smoke 一条 |
-| benchmarks/ | 空(P3 起填出件耗时基准) |
+| SKILL.md(tscircuit,实测语法) | ✅ ≤250 行 |
+| references/(cli / syntax / workflow / jlcpcb-mcp / preview-3d) | ✅ 5 篇 |
+| scripts/(new_board / check_all / export_fab / dfm_check / jlc_order + _tsci_env) | ✅ |
+| tests/(结构 + dfm_check 单测 + fixtures) | ✅ 无需 tsci/key 即可 pytest |
+| 工具链 | node20 + bun + `tscircuit`(bin=tsci);`bun add -g tscircuit` |
+| 嘉立创 | `jlcpcb-mcp@0.3.3`;免 key 物料报价已验证,板级/下单代码就绪默认 disabled(决策①) |
 
-## P3 启动后做什么
+## 里程碑进度
 
-按 [06 §3.3a.1](../../../share/build123d-cad改造/06-电子域扩展-pcb-eda-drc.md#33a1-skillspcb--板级电气设计入口) 拆解:
+- M0 技术验证 ✅(`/tmp/pcb-spike/led-demo` 实跑通,见 dev-plan §4.1)
+- M1 子技能骨架 + 裸板闭环 + DFM/一键导出 ✅(本目录)
+- M2 统一预览(React 直引 RunFrame 进 viewer engine=tscircuit)✅(playwright headless 验证)
+- M3 BOM+总价面板(jlcpcb-mcp 免 key,读 `<board>.bom.json` sidecar)✅
+- M4 板级报价/下单(需 key,默认 disabled)— 待开
+- M5 SMT 贴片 — 待开
+- M6 布线算法 — 待开
 
-```
-skills/pcb/
-├── SKILL.md          # 膨胀到 ≤ 350 行(模板见 06 §2.6a.1)
-├── references/
-│   ├── kicad-cli-cheatsheet.md
-│   ├── skidl-quickstart.md
-│   └── kicad-9-ipc-status.md
-├── scripts/
-│   ├── new_project.py
-│   ├── sch_from_skidl.py
-│   ├── export_fab.sh
-│   ├── pcb_to_step.sh
-│   ├── pcb_to_dxf.sh
-│   └── batch_edit.py
-├── tests/
-│   ├── fixtures/minimal.kicad_pcb
-│   ├── test_export_fab_smoke.py
-│   ├── test_skidl_to_sch.py
-│   └── test_pcb_to_step_handoff.py
-└── benchmarks/
-    └── b01_export_minimal.py
+## 跑测试
+
+```bash
+cd skills/pcb && pytest tests/        # 结构 + dfm_check 单测(无需 tsci/key)
 ```
 
-## P0 期间不要做什么
+## 本机真链路(需 bun+tsci)
 
-- ❌ 不要写真实 KiCad 集成(等 Gate 3)
-- ❌ 不要拉 KiCad 9 toolchain 到 CI(P3 起再加 docker 镜像)
-- ❌ 不要 commit `.kicad_pcb` 测试 fixture(P3 起再加,目前只 placeholder)
+```bash
+bash scripts/new_board.sh demo && cd demo
+# 写 index.circuit.tsx …
+bash ../scripts/check_all.sh index.circuit.tsx
+bash ../scripts/export_fab.sh index.circuit.tsx demo
+python3 ../scripts/dfm_check.py output/demo/electrical/dist/index/circuit.json
+```

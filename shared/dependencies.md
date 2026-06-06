@@ -13,13 +13,17 @@ urdf       ──URDF──▶ viewer        (关节可视化)
 urdf       ─────────▶ srdf         (MoveIt 规划组基于 URDF)
 urdf       ─────────▶ sdf          (Gazebo 世界引用 URDF)
 parts-catalog ─STEP─▶ mechanical   (现成件并入装配)
+pcb        ──circuit.json+bom.json──▶ viewer(engine=tscircuit 统一预览:PCB/原理图/3D + BOM/总价)
+pcb        ──glb/svg──▶ viewer      (engine=cad/pcb/sch 单产物预览)
+pcb        ──step/dxf─▶ mechanical  (外壳让位/装配间隙)
+electronics-bom ─library.json─▶ pcb (选料喂 tsci import,可选上游)
 ```
 
 ## 被依赖度（改动需谨慎）
 
 | 子技能 | 被依赖方 | 改动影响面 |
 |---|---|---|
-| **viewer** | mechanical / urdf（所有要预览的） | 高——改 router/server 跑全量 viewer 测试 |
+| **viewer** | mechanical / urdf / pcb（所有要预览的） | 高——改 router/server 跑全量 viewer 测试 |
 | **mechanical** | viewer / urdf / gcode / sendcutsend | 高——是产物源头 |
 | urdf | srdf / sdf / viewer | 中 |
 | parts-catalog | mechanical | 低 |

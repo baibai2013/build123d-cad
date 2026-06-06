@@ -35,9 +35,10 @@ def test_health_endpoint(server):
     assert body["app"] == "build123d-cad/viewer"
     assert body["serverApiVersion"] >= 2
     assert body["schemaVersion"] >= 1
-    assert set(body["engines"]) == {"cad", "pcb", "sch", "sim"}
-    # cad 是 ready,其它是 stub(规格 §5.2)
+    assert set(body["engines"]) == {"cad", "pcb", "sch", "sim", "tscircuit"}
+    # cad / tscircuit 是 ready(有 dist/index.html),其它是 stub(规格 §5.2)
     assert body["engineImpl"]["cad"] == "ready"
+    assert body["engineImpl"]["tscircuit"] == "ready"
     for e in ("pcb", "sch", "sim"):
         assert body["engineImpl"][e] == "stub"
 

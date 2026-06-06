@@ -69,6 +69,9 @@ def _route(path: str):
     ("trace.csv", "sim"),
     ("clip.mp4", "sim"),
     ("rec.webm", "sim"),
+    # ===== tscircuit engine(M2:.circuit.json 必须先于 .json 命中)=====
+    ("led-demo.circuit.json", "tscircuit"),
+    ("board.CIRCUIT.JSON", "tscircuit"),
     # ===== ambiguous(哨兵,server 据此回 409 + 提示需 ?engine= 透传)=====
     ("trajectory.json", "ambiguous"),
     ("config.JSON", "ambiguous"),
@@ -115,8 +118,8 @@ def test_supported_engines_complete():
     data = json.loads(out)
     real_engines = set(data["seen"]) - {"ambiguous"}
     assert real_engines.issubset(set(data["engines"]))
-    # 4 个引擎都必须出现
-    for e in ("cad", "pcb", "sch", "sim"):
+    # 5 个引擎都必须出现
+    for e in ("cad", "pcb", "sch", "sim", "tscircuit"):
         assert e in data["seen"], f"engine {e} missing from ENGINE_ROUTES"
 
 
@@ -137,6 +140,7 @@ def test_supported_extensions_pinned_count():
         ".dxf", ".png", ".jpg", ".jpeg", ".webp",
         ".kicad_pcb", ".gbr", ".ger", ".drl", ".gtl", ".gbl",
         ".kicad_sch", ".sch", ".svg", ".csv", ".mp4", ".webm",
+        ".circuit.json",  # M2 tscircuit engine
         ".json", ".yaml", ".yml",  # 配套配置
     }
     missing = must_have - exts

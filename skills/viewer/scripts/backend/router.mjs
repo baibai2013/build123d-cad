@@ -37,12 +37,17 @@ export const ENGINE_ROUTES = [
   { ext: ['.csv'],                                  engine: 'sim' },  // P3 plotly.js
   { ext: ['.mp4', '.webm'],                         engine: 'sim' },  // P3 HTML5 video
 
+  // ===== tscircuit engine(M2:RunFrame 直引,PCB/原理图/3D + BOM/总价面板)=====
+  // 必须排在 '.json' 之前:routeByExtension 按 endsWith 顺序匹配,
+  // <board>.circuit.json 先命中 tscircuit,不落到 .json 的 'ambiguous'。
+  { ext: ['.circuit.json'],                         engine: 'tscircuit' },  // M2 单文件 RunFrame bundle
+
   // .json 后缀冲突(urdf 轨迹回放 ↔ 通用配置):router 不 sniff,
   // routeByExtension 返 'ambiguous',要求调用方 ?engine=sim 显式透传,否则 server 回 409。
   { ext: ['.json'],                                 engine: 'ambiguous' },
 ];
 
-export const SUPPORTED_ENGINES = ['cad', 'pcb', 'sch', 'sim'];
+export const SUPPORTED_ENGINES = ['cad', 'pcb', 'sch', 'sim', 'tscircuit'];
 
 // 把所有后缀拍平,给 server.mjs 的文件代理白名单用(去掉 'ambiguous' 哨兵也没事,白名单只查后缀)
 export const SUPPORTED_EXTENSIONS = (() => {

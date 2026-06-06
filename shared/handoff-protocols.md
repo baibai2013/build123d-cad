@@ -14,6 +14,7 @@
 | gcode | 切片报告 | `output/<task>/<part>.slice.json` |
 | sendcutsend | 报价/DXF | `output/<task>/<part>.dxf` + `quote.json` |
 | parts-catalog | 现成件 | L1 返回模块路径 + 实例化参数（不下 STEP）；L2+ 落盘 `output/<task>/parts/<id>.step` |
+| pcb | PCB 出件/3D/预览 | `output/<task>/electrical/`：`fab/<board>-gerbers.zip`(+`-bom.csv`/`-cpl.csv`)、`3d/<board>.{step,glb}`、`preview/<board>.{pcb,schematic}.svg`、`<board>.circuit.json` + `<board>.bom.json`(viewer engine=tscircuit 统一预览,bom 经 jlcpcb-mcp 免key定价)、`<board>.quote.json` |
 
 ## 常见 handoff 链路
 

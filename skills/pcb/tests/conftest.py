@@ -1,4 +1,8 @@
-"""pcb 子技能级 fixture(P3 落地:骨架 smoke 常跑 + kicad-cli 实跑 skip-if-absent)。"""
+"""pcb 子技能(tscircuit)级 fixture。
+
+骨架 smoke 常跑;dfm_check 用本地 fixtures 单测(无需 tsci/bun/key,CI 可跑)。
+真出件/报价的实跑类测试需 tsci/jlcpcb-mcp,标 p3 默认 skip。
+"""
 from __future__ import annotations
 
 import sys
@@ -8,13 +12,13 @@ import pytest
 
 SUBSKILL_ROOT = Path(__file__).resolve().parent.parent
 SCRIPTS = SUBSKILL_ROOT / "scripts"
-# 让 tests 能 import scripts/ 下的模块(new_project / pcb_common 等)。
+FIXTURES = Path(__file__).resolve().parent / "fixtures"
+# 让 tests 能 import scripts/ 下的模块(dfm_check)。
 sys.path.insert(0, str(SCRIPTS))
 
 
 @pytest.fixture(scope="session")
 def subskill_root() -> Path:
-    """本子技能根目录(skills/pcb/)。"""
     return SUBSKILL_ROOT
 
 
@@ -23,12 +27,6 @@ def scripts_dir() -> Path:
     return SCRIPTS
 
 
-@pytest.fixture
-def kicad_cli():
-    """kicad-cli 路径;未装则 skip(实跑类测试用)。"""
-    from pcb_common import which_kicad_cli
-
-    cli = which_kicad_cli(required=False)
-    if cli is None:
-        pytest.skip("kicad-cli(KiCad 9.x)未安装,跳过实跑出件测试")
-    return cli
+@pytest.fixture(scope="session")
+def fixtures_dir() -> Path:
+    return FIXTURES

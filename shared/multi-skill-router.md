@@ -17,7 +17,7 @@
 | sendcutsend | 激光切割、钣金、报价、SendCutSend、DXF 展开、折弯 | ✅ P1 |
 | parts-catalog | 找现成零件、在线 STEP、标准件下载、轴承/螺丝/舵机型号 | ✅ P0 |
 | bambu-labs | Bambu 打印机、上传打印、AMS | 🟡 P2 |
-| pcb (WIP) | PCB、EDA、Gerber、DRC、KiCad | 🟡 P3 占位 |
+| pcb | PCB、原理图、tscircuit、代码写PCB、TSX、Gerber、出件、嘉立创、JLCPCB、下单打板、PCB 3D、DFM、EDA | ✅ P1(tscircuit) |
 | electronics-bom (WIP) | 电子 BOM、元件选型、JLCPCB/Octopart | 🟡 P3 占位 |
 
 ## 路由规则
@@ -36,3 +36,4 @@
 - "放进 Gazebo 仿真世界跑一下" → urdf(前置) + sdf(主)
 - "这件能 3D 打印吗 / 估下打印时间" → mechanical(前置 STEP) + gcode(主)
 - "这块钣金激光切多少钱" → mechanical(前置 STEP) + sendcutsend(主)
+- "用代码写块板子并发嘉立创打样" → pcb(主,tscircuit 端到端) + viewer(预览 handoff)
