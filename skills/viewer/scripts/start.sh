@@ -27,13 +27,22 @@ LOG_DIR="${VIEWER_LOG_DIR:-/tmp/build123d-cad-viewer}"
 mkdir -p "$LOG_DIR"
 
 usage() {
-  echo "usage: bash start.sh <file_path> [workspace_root]" >&2
+  echo "usage: bash start.sh <file_path> [workspace_root] [--trajectory <rel_file>]" >&2
+  echo "  --trajectory: 仿真 3D 回放——cad 引擎加载 URDF 后按该轨迹文件(同 dir 下相对名)自动回放" >&2
   exit 2
 }
 
 [[ $# -ge 1 ]] || usage
 FILE_PATH="$1"
-WORKSPACE_ROOT="${2:-}"
+WORKSPACE_ROOT=""
+TRAJECTORY=""
+shift
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --trajectory) TRAJECTORY="${2:-}"; shift 2 ;;
+    *) [[ -z "$WORKSPACE_ROOT" ]] && WORKSPACE_ROOT="$1"; shift ;;
+  esac
+done
 
 [[ -e "$FILE_PATH" ]] || { echo "error: file not found: $FILE_PATH" >&2; exit 3; }
 
@@ -165,7 +174,13 @@ emit_url() {
   local url_dir url_file
   url_dir="$(node -e 'process.stdout.write(encodeURIComponent(process.argv[1]))' "$dir")"
   url_file="$(node -e 'process.stdout.write(encodeURIComponent(process.argv[1]))' "$file_rel")"
-  echo "http://127.0.0.1:${port}/?engine=${ENGINE}&dir=${url_dir}&file=${url_file}"
+  local traj_qs=""
+  if [[ -n "$TRAJECTORY" ]]; then
+    local url_traj
+    url_traj="$(node -e 'process.stdout.write(encodeURIComponent(process.argv[1]))' "$TRAJECTORY")"
+    traj_qs="&trajectory=${url_traj}"
+  fi
+  echo "http://127.0.0.1:${port}/?engine=${ENGINE}&dir=${url_dir}&file=${url_file}${traj_qs}"
 }
 
 # 1) 找兼容 server

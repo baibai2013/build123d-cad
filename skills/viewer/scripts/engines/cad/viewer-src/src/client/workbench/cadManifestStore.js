@@ -8,6 +8,7 @@ const CAD_CATALOG_FETCH_TIMEOUT_MS = 10_000;
 const CAD_GENERATION_STATUS_REFRESH_INTERVAL_MS = 750;
 const CAD_DIR_QUERY_PARAM = "dir";
 const CAD_FILE_QUERY_PARAM = "file";
+const CAD_TRAJECTORY_QUERY_PARAM = "trajectory";
 const HOSTED_CATALOG_BACKENDS = new Set(["vercel-blob"]);
 
 function viewerAssetBackendFromEnv() {
@@ -145,6 +146,12 @@ function readSearchParam(name) {
   } catch {
     return "";
   }
+}
+
+// 仿真 3D 回放:?trajectory=<相对文件名>(simulation 子技能产的 <robot>.trajectory.json)。
+// 纯附加;不传该参数时 cad 行为完全不变。
+export function readCadTrajectoryParam() {
+  return readSearchParam(CAD_TRAJECTORY_QUERY_PARAM);
 }
 
 export function readActiveCadDir({ assetBackend = viewerAssetBackendFromEnv() } = {}) {

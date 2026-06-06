@@ -234,6 +234,7 @@ import { checkMoveIt2ServerLive, moveit2ServerEnabled, requestMoveIt2Server } fr
 import {
   cadViewerUsesHostedCatalog,
   readActiveCadDir,
+  readCadTrajectoryParam,
   refreshCadCatalog,
   refreshCadGenerationStatus,
   requestStepArtifactGeneration,
@@ -5072,6 +5073,54 @@ export default function CadWorkspace({
   useEffect(() => () => {
     cancelUrdfTrajectoryPlayback();
   }, [cancelUrdfTrajectoryPlayback]);
+
+  // 仿真 3D 回放(纯附加):URL 带 ?trajectory=<file> 时,加载 URDF 后取该轨迹文件
+  // (simulation 子技能产的 <robot>.trajectory.json,格式见 docs/simulation-design.md),
+  // 用既有 playUrdfTrajectory 自动循环回放——关节随时序动。不传该参数时本效果空转,cad 行为不变。
+  const trajectoryAutoplayRef = useRef({ key: "", timer: 0 });
+  useEffect(() => {
+    const trajParam = readCadTrajectoryParam();
+    if (!trajParam || !selectedUrdfData || !selectedUrdfFileRef) {
+      return undefined;
+    }
+    const key = `${selectedUrdfFileRef}::${trajParam}`;
+    if (trajectoryAutoplayRef.current.key === key) {
+      return undefined;
+    }
+    trajectoryAutoplayRef.current.key = key;
+    const dir = readActiveCadDir();
+    const url = `/files/${encodeURIComponent(trajParam)}${dir ? `?dir=${encodeURIComponent(dir)}` : ""}`;
+    let cancelled = false;
+    fetch(url)
+      .then((r) => (r.ok ? r.json() : Promise.reject(new Error(`HTTP ${r.status}`))))
+      .then((traj) => {
+        if (cancelled) return;
+        const points = Array.isArray(traj?.points) ? traj.points : [];
+        if (!points.length) return;
+        // base/final 取自轨迹自身首尾点;**不**依赖 selectedUrdfJointValues
+        // (它在回放期间每帧变,放进 deps 会让本 effect 每帧重建、把循环 timer 拆掉)。
+        const baseVals = points[0].positionsByNameDeg || {};
+        const finalVals = points[points.length - 1].positionsByNameDeg || {};
+        const fileRef = selectedUrdfFileRef;
+        const playOnce = () => playUrdfTrajectory(fileRef, baseVals, traj, finalVals);
+        playOnce();
+        const durationSec = toFiniteNumber(points[points.length - 1].timeFromStartSec, 0);
+        if (durationSec > 0 && typeof setInterval === "function") {
+          trajectoryAutoplayRef.current.timer = setInterval(playOnce, Math.round((durationSec + 1) * 1000));
+        }
+      })
+      .catch(() => {
+        trajectoryAutoplayRef.current.key = "";
+      });
+    return () => {
+      cancelled = true;
+      if (trajectoryAutoplayRef.current.timer) {
+        clearInterval(trajectoryAutoplayRef.current.timer);
+        trajectoryAutoplayRef.current.timer = 0;
+      }
+    };
+    // 仅依赖稳定量:URDF 数据/文件引用/回放函数。selectedUrdfJointValues 故意不入 deps(见上)。
+  }, [selectedUrdfData, selectedUrdfFileRef, playUrdfTrajectory]);
 
   const syncUrdfMotionTargetToJointValues = useCallback((fileRef, nextJointValues) => {
     const normalizedFileRef = String(fileRef || "").trim();

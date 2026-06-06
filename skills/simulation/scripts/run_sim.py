@@ -85,19 +85,22 @@ def simulate(model, *, mode="hold", steps=2400, gait="trot", fixed=False,
 
     cid = p.connect(p.DIRECT)  # 永远 headless,绝不 GUI
     try:
-        p.setAdditionalSearchPath(pybullet_data.getDataPath())     # plane.urdf
-        p.setAdditionalSearchPath(os.path.dirname(model))          # 解析相对 meshes/
         p.setGravity(0, 0, -9.81)
         p.setTimeStep(DT)
 
+        # 注意:pybullet 的 setAdditionalSearchPath 只保留「最后一次」设的单一路径,不累加。
+        # 故先在 pybullet_data 路径下加载 plane,再切到模型目录加载模型(解析相对 meshes/)。
         plane = -1
         if ext == ".urdf":
+            p.setAdditionalSearchPath(pybullet_data.getDataPath())  # plane.urdf
             plane = p.loadURDF("plane.urdf")
+            p.setAdditionalSearchPath(os.path.dirname(model))       # 切到模型目录解析相对 mesh
             body = p.loadURDF(
                 model, basePosition=[0, 0, base_z], useFixedBase=fixed,
                 flags=(p.URDF_USE_SELF_COLLISION if self_collision else 0),
             )
         else:  # .sdf —— loadSDF 返回 tuple,世界自带地面,不再叠 plane
+            p.setAdditionalSearchPath(os.path.dirname(model))
             ids = p.loadSDF(model)
             if not ids:
                 sys.exit(f"loadSDF 没返回任何 body: {model}")
@@ -256,9 +259,11 @@ def main(argv=None):
           f"min_base_z={s['min_base_z']} max_pos={s['max_pos']} "
           f"max_joint_vel={s['max_joint_vel']} nan={s['nan_or_inf']}")
     if rec.get("_trajectory_path"):
+        traj_rel = os.path.basename(rec["_trajectory_path"])
         print(f"trajectory: {rec['_trajectory_path']}")
-        print("预览(3D 回放): 在 viewer cad 引擎打开 URDF 并带 "
-              f"?trajectory=<上面的 trajectory.json>;数据面板: viewer 打开 {os.path.basename(rec['_results_path'])}(engine=sim)")
+        print("预览(3D 回放): bash skills/viewer/scripts/start.sh "
+              f"{rec['meta']['model']} <workspace_root> --trajectory {traj_rel}")
+        print(f"      (数据面板: viewer 打开 {os.path.basename(rec['_results_path'])} → engine=sim)")
     return 0
 
 

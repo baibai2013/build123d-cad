@@ -15,8 +15,8 @@ import pytest
 VIEWER_ROOT = Path(__file__).resolve().parent.parent
 ENGINES = VIEWER_ROOT / "scripts" / "engines"
 
-# 仍为占位 stub 的引擎(pcb 已实现,移出)。
-PLACEHOLDER_ENGINES = ["sch", "sim"]
+# 仍为占位 stub 的引擎(pcb=tscircuit、sim=仿真回放/数据面板 已实现,移出)。
+PLACEHOLDER_ENGINES = ["sch"]
 
 
 @pytest.mark.parametrize("engine", PLACEHOLDER_ENGINES)
