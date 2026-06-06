@@ -22,6 +22,8 @@
 
 | 2026-06-06 | **viewer 新增 engine=tscircuit(M2/M3 统一预览)** — ① `router.mjs`:`SUPPORTED_ENGINES` 加 `tscircuit`,新增路由 `.circuit.json → tscircuit`(排在 `.json` ambiguous 之前,endsWith 先命中);② `engines/tscircuit/dist/index.html` 单文件 bundle(React 直引 `@tscircuit/runframe` CircuitJsonPreview,PCB/原理图/3D 三页 + 自建 BOM/总价面板读 `<board>.bom.json` sidecar);③ `test_routing.py`/`test_start.py` 同步(engines=5,tscircuit=ready)。pcb 出件追加 `<board>.circuit.json` + `bom_price.py` 产 `<board>.bom.json` | viewer · pcb | hardware/fullstack | 非破坏(纯新增引擎+路由);真链路 playwright headless 验证 9/9;预览统一入口=viewer engine=tscircuit |
 
+| 2026-06-06 | **新增 simulation 子技能(headless pybullet 动力学 MVP)** — ① `multi-skill-router.md` 加 simulation 行(✅ P1) + 消歧("仿真"按意图:解析 FK/IK→mechanical、物理跑判稳→simulation、出 Gazebo 世界→sdf);② `handoff-protocols.md` 产物表加 simulation 行(`output/<task>/simulation/`:results.json/frames/*.png/sim.mp4/_verify) + 链路 8/9(urdf→sim、sdf→sim);③ `dependencies.md` 依赖图加 `urdf──URDF──▶simulation`、`sdf──SDF──▶simulation`,simulation 列入末端(MVP 无下游);④ 父 SKILL.md 路由表 11→12 + 触发词/消歧;⑤ `pytest.ini` 加 `requires_pybullet` marker + testpaths 加 `skills/simulation/tests`。pybullet 为运行依赖(venv 已装),缺失 fail-loud/importorskip。 | simulation · urdf · sdf · (父级路由) | hardware | 非破坏(纯新增);MVP=headless p.DIRECT + ER_TINY 离屏渲染;MuJoCo/Gazebo 真跑/viewer 回放/完整步态 deferred;smoke 8/8 通过 |
+
 ## 登记规则
 
 - 任何修改 shared/ 的 PR 必须新增一行,内容含日期 / 变更 / 影响子技能 / Owner / 备注

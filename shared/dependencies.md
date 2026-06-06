@@ -12,6 +12,8 @@ mechanical ──STEP/DXF─▶ sendcutsend (钣金报价)
 urdf       ──URDF──▶ viewer        (关节可视化)
 urdf       ─────────▶ srdf         (MoveIt 规划组基于 URDF)
 urdf       ─────────▶ sdf          (Gazebo 世界引用 URDF)
+urdf       ──URDF──▶ simulation    (无头动力学跑 + 自验稳定性)
+sdf        ──SDF───▶ simulation    (loadSDF 跑世界/模型)
 parts-catalog ─STEP─▶ mechanical   (现成件并入装配)
 pcb        ──circuit.json+bom.json──▶ viewer(engine=tscircuit 统一预览:PCB/原理图/3D + BOM/总价)
 pcb        ──glb/svg──▶ viewer      (engine=cad/pcb/sch 单产物预览)
@@ -30,7 +32,8 @@ electronics-bom ─library.json─▶ pcb (选料喂 tsci import,可选上游)
 
 ## 独立（无下游）
 
-`bambu-labs`、`gcode`、`sendcutsend`、`srdf`、`sdf` 为链路末端，改动只需自测。
+`bambu-labs`、`gcode`、`sendcutsend`、`srdf`、`sdf`、`simulation` 为链路末端，改动只需自测。
+（`simulation` 为 MVP 末端：消费 urdf/sdf 产物，无下游；未来 `simulation → viewer(engine=sim 回放)` 落地后再升。）
 
 ## 高扇入接口登记
 

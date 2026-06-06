@@ -1,11 +1,12 @@
 ---
 name: build123d-cad
 description: |
-  硬件设计 Super Skill。一个父技能内含 11 个子技能（mechanical / viewer / urdf /
-  srdf / sdf / gcode / sendcutsend / parts-catalog / bambu-labs / pcb / electronics-bom），
-  覆盖机械建模 → 网页预览 → 机器人描述 → 制造出工 → 电子域全链路。
+  硬件设计 Super Skill。一个父技能内含 12 个子技能（mechanical / viewer / urdf /
+  srdf / sdf / simulation / gcode / sendcutsend / parts-catalog / bambu-labs / pcb / electronics-bom），
+  覆盖机械建模 → 网页预览 → 机器人描述 → 动力学仿真 → 制造出工 → 电子域全链路。
   触发词：build123d、CAD建模、做一个零件、参数化设计、装配、URDF、机器人描述、
-  MoveIt、Gazebo、SDF、切片、3D打印、激光切割、SendCutSend、Bambu、找现成零件、
+  MoveIt、Gazebo、SDF、动力学仿真、pybullet、跌落测试、步态仿真、headless sim、站得稳吗、
+  切片、3D打印、激光切割、SendCutSend、Bambu、找现成零件、
   STEP、网页预览、分享链接、PCB、tscircuit、代码写PCB、Gerber、嘉立创、JLCPCB、下单打板、电子BOM。
   父级只做路由，详细能力在 skills/<name>/SKILL.md。
 ---
@@ -30,7 +31,7 @@ description: |
 
 ---
 
-## 子技能集合（11 个）
+## 子技能集合（12 个）
 
 | 子 skill | 触发场景关键词（部分匹配即触发） | 路径 | 优先级 |
 |---|---|---|---|
@@ -40,6 +41,7 @@ description: |
 | parts-catalog   | 找现成件 / 标准件 / STEP 下载 / McMaster / 608 轴承 / M3 螺丝     | skills/parts-catalog/SKILL.md   | P0 |
 | srdf            | MoveIt / 规划组 / planning group / collision matrix              | skills/srdf/SKILL.md            | P1 |
 | sdf             | Gazebo / 仿真世界 / sim world / .sdf                             | skills/sdf/SKILL.md             | P1 |
+| simulation      | 动力学仿真 / pybullet / 跌落测试 / 站得稳吗 / 步态仿真 / headless sim / 会不会翻 / 关节限位 | skills/simulation/SKILL.md | P1 ✅ |
 | gcode           | 切片 / FDM / G-code 预检 / 打印估时 / 支撑 / overhang             | skills/gcode/SKILL.md           | P1 |
 | sendcutsend     | 激光切割 / 钣金 / DXF 报价 / kerf / SendCutSend                  | skills/sendcutsend/SKILL.md     | P1 |
 | bambu-labs      | Bambu / 打印机 / 上传打印 / AMS / send to printer                | skills/bambu-labs/SKILL.md      | P2 |
@@ -69,6 +71,8 @@ description: |
 - 「这个件 3D 打印能不能打出来」 → mechanical（已有 STEP） + gcode（FDM 切片预检）
 - 「用代码写块板子并发嘉立创」 → pcb（主，tscircuit 端到端） + viewer（预览 handoff）
 - 「PCB 外壳一起做」 → pcb（电气） + mechanical（外壳） + viewer（双引擎并显）
+- 「这机器人站得稳吗 / 丢进物理引擎跑一下 / 跑个步态看会不会翻」 → urdf（前置 URDF） + simulation（主，headless 跑 + 判稳）
+- 关键词「仿真」按意图分：解析 FK/IK → mechanical；丢进物理引擎跑判稳 → simulation；出 Gazebo 世界 → sdf
 
 ---
 

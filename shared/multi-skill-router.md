@@ -16,6 +16,7 @@
 | gcode | 切片、FDM、G-code 预检、打印时间估算、悬垂/overhang | ✅ P1 |
 | sendcutsend | 激光切割、钣金、报价、SendCutSend、DXF 展开、折弯 | ✅ P1 |
 | parts-catalog | 找现成零件、在线 STEP、标准件下载、轴承/螺丝/舵机型号 | ✅ P0 |
+| simulation | 动力学仿真、pybullet、跌落/站稳测试、步态仿真、headless sim、会不会翻、关节限位、接触力 | ✅ P1 |
 | bambu-labs | Bambu 打印机、上传打印、AMS | 🟡 P2 |
 | pcb | PCB、原理图、tscircuit、代码写PCB、TSX、Gerber、出件、嘉立创、JLCPCB、下单打板、PCB 3D、DFM、EDA | ✅ P1(tscircuit) |
 | electronics-bom (WIP) | 电子 BOM、元件选型、JLCPCB/Octopart | 🟡 P3 占位 |
@@ -34,6 +35,8 @@
 - "找个 608 轴承装进去" → parts-catalog(主) + mechanical(handoff)
 - "给这个机器人配 MoveIt 规划组 / 自碰撞矩阵" → urdf(前置) + srdf(主)
 - "放进 Gazebo 仿真世界跑一下" → urdf(前置) + sdf(主)
+- "这机器人站得稳吗 / 丢进物理引擎跑一下 / 跑个步态看会不会翻" → urdf(前置) + simulation(主, headless 跑 + 判稳)
+- 关键词"仿真"按意图分:解析 FK/IK → mechanical;丢进物理引擎跑判稳 → simulation;出 Gazebo 世界 → sdf
 - "这件能 3D 打印吗 / 估下打印时间" → mechanical(前置 STEP) + gcode(主)
 - "这块钣金激光切多少钱" → mechanical(前置 STEP) + sendcutsend(主)
 - "用代码写块板子并发嘉立创打样" → pcb(主,tscircuit 端到端) + viewer(预览 handoff)
