@@ -1,0 +1,68 @@
+{
+  "project": "quadruped_mvp",
+  "valid": false,
+  "battery": {
+    "voltage_nominal_v": 24.0,
+    "max_current_a": 30.0,
+    "fuse_current_a": 35.0,
+    "estimated_continuous_current_a": 21.21,
+    "estimated_peak_current_a": 52.41,
+    "peak_current_margin_pct": -74.7
+  },
+  "power_rails": [
+    {
+      "name": "logic_5v",
+      "voltage_v": 5.0,
+      "regulator_current_a": 2.0,
+      "load_current_a": 1.8,
+      "current_margin_pct": 10.0,
+      "efficiency_pct": 86.0,
+      "estimated_input_power_w": 10.465,
+      "valid": false,
+      "blockers": [
+        "logic_5v current margin below 20%"
+      ],
+      "warnings": []
+    },
+    {
+      "name": "servo_12v",
+      "voltage_v": 12.0,
+      "regulator_current_a": 6.0,
+      "load_current_a": 6.2,
+      "current_margin_pct": -3.33,
+      "efficiency_pct": 78.0,
+      "estimated_input_power_w": 95.385,
+      "valid": false,
+      "blockers": [
+        "servo_12v current margin below 20%"
+      ],
+      "warnings": []
+    }
+  ],
+  "motor_drivers": [
+    {
+      "name": "leg_driver_bank",
+      "count": 12,
+      "peak_current_a_each": 4.0,
+      "continuous_current_a_each": 1.4,
+      "driver_peak_limit_a_each": 3.5,
+      "driver_continuous_limit_a_each": 1.2,
+      "peak_margin_pct": -14.29,
+      "continuous_margin_pct": -16.67,
+      "valid": false,
+      "blockers": [
+        "leg_driver_bank peak current margin below 20%",
+        "leg_driver_bank continuous current margin below 20%"
+      ]
+    }
+  ],
+  "blockers": [
+    "battery fuse current exceeds battery max current",
+    "logic_5v current margin below 20%",
+    "servo_12v current margin below 20%",
+    "leg_driver_bank peak current margin below 20%",
+    "leg_driver_bank continuous current margin below 20%",
+    "battery peak current margin below 20%",
+    "undervoltage cutoff below 70% of nominal battery voltage"
+  ]
+}

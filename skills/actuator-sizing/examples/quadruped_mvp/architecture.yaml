@@ -1,0 +1,11 @@
+version: "1.0"
+system:
+  name: quadruped_mvp
+  morphology: quadruped
+  legs: 4
+  stance_legs: 3
+  joints_per_leg: 3
+geometry:
+  femur_length_m: 0.11
+  tibia_length_m: 0.11
+  body_half_width_m: 0.09

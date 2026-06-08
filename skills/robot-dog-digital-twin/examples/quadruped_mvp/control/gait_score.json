@@ -1,0 +1,7 @@
+{
+  "flat_walk_no_fall": false,
+  "body_attitude_ok": true,
+  "foot_slip_ratio": 0.1,
+  "average_speed_mps": 0.46,
+  "blockers": ["flat_walk_no_fall failed"]
+}

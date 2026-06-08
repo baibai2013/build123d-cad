@@ -1,0 +1,19 @@
+version: "1.0"
+system:
+  name: quadruped_mvp
+  morphology: quadruped
+  legs: 4
+  joints_per_leg: 3
+
+domains:
+  mechanical:
+    body: printed_shell
+    legs: modular_links
+  electrical:
+    battery: 6s_lipo
+    bus: can_fd
+  simulation:
+    smoke_engine: pybullet
+    high_fidelity_engine: mujoco_planned
+  manufacturing:
+    primary_process: fdm_3d_print

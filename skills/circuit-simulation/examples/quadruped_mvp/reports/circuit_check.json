@@ -1,0 +1,60 @@
+{
+  "project": "quadruped_mvp",
+  "valid": false,
+  "blockers": [
+    "ERC failed",
+    "battery fuse current exceeds battery max current",
+    "logic_5v current margin below 20%",
+    "servo_12v current margin below 20%",
+    "leg_driver_bank peak current margin below 20%",
+    "leg_driver_bank continuous current margin below 20%",
+    "battery peak current margin below 20%",
+    "emergency stop missing",
+    "undervoltage cutoff below 70% of nominal battery voltage",
+    "motor power TVS diode missing",
+    "buck_5v estimated temperature above limit",
+    "motor_driver_bank estimated temperature above limit"
+  ],
+  "warnings": [
+    "bulk capacitance below 1000 uF for motor-heavy design"
+  ],
+  "scores": {
+    "erc_drc": 0,
+    "power_budget": 8,
+    "rails": 4,
+    "protection": 5,
+    "thermal": 1
+  },
+  "checks": {
+    "erc_pass": false,
+    "drc_pass": true
+  },
+  "battery": {
+    "voltage_nominal_v": 24.0,
+    "max_current_a": 30.0,
+    "fuse_current_a": 35.0,
+    "estimated_continuous_current_a": 21.21,
+    "estimated_peak_current_a": 52.41,
+    "peak_current_margin_pct": -74.7
+  },
+  "protection": {
+    "emergency_stop": false,
+    "reverse_polarity_protection": true,
+    "undervoltage_cutoff_v": 14.0,
+    "tvs_diode": false,
+    "bulk_capacitance_uf": 470.0
+  },
+  "next_actions": [
+    "fix ERC errors before prototype gate",
+    "reduce fuse rating or increase validated battery current capability",
+    "increase logic_5v regulator rating or reduce load current",
+    "increase servo_12v regulator rating or reduce load current",
+    "increase leg_driver_bank driver current rating or reduce actuator current demand",
+    "increase battery current rating or reduce simultaneous motor peak current",
+    "add emergency stop input or power cutoff path",
+    "raise undervoltage cutoff to protect battery and controls",
+    "add TVS or transient suppression on motor power rail",
+    "reduce buck_5v dissipation or improve cooling",
+    "reduce motor_driver_bank dissipation or improve cooling"
+  ]
+}

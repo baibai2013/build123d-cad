@@ -1,0 +1,55 @@
+{
+  "project": "quadruped_mvp",
+  "requirements_exists": true,
+  "verification_matrix_exists": true,
+  "architecture_exists": true,
+  "domains": {
+    "mechanical": {
+      "mass_properties": {
+        "path": "mechanical/mass_properties.json",
+        "exists": true
+      },
+      "collision_report": {
+        "path": "mechanical/collision_report.json",
+        "exists": true
+      }
+    },
+    "electrical": {
+      "pcb_fit": {
+        "path": "electrical/pcb_fit.json",
+        "exists": true
+      },
+      "circuit_check": {
+        "path": "electrical/circuit_check.json",
+        "exists": true
+      },
+      "power_budget": {
+        "path": "electrical/power_budget.json",
+        "exists": true
+      }
+    },
+    "simulation": {
+      "stand_result": {
+        "path": "simulation/results/stand.sim_result.json",
+        "exists": true
+      },
+      "flat_walk_result": {
+        "path": "simulation/results/flat_walk.sim_result.json",
+        "exists": true
+      }
+    },
+    "control": {
+      "gait_score": {
+        "path": "control/gait_score.json",
+        "exists": true
+      }
+    },
+    "manufacturing": {
+      "print_report": {
+        "path": "manufacturing/print_report.json",
+        "exists": true
+      }
+    }
+  },
+  "missing": []
+}

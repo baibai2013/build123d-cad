@@ -1,13 +1,17 @@
 ---
 name: build123d-cad
 description: |
-  硬件设计 Super Skill。一个父技能内含 12 个子技能（mechanical / viewer / urdf /
-  srdf / sdf / simulation / gcode / sendcutsend / parts-catalog / bambu-labs / pcb / electronics-bom），
+  硬件设计 Super Skill。一个父技能内含 17 个子技能（mechanical / viewer / urdf /
+  srdf / sdf / simulation / gcode / sendcutsend / parts-catalog / bambu-labs / pcb / electronics-bom /
+  requirements-verification / actuator-sizing / pcb-mechanical-reliability / circuit-simulation /
+  robot-dog-digital-twin），
   覆盖机械建模 → 网页预览 → 机器人描述 → 动力学仿真 → 制造出工 → 电子域全链路。
   触发词：build123d、CAD建模、做一个零件、参数化设计、装配、URDF、机器人描述、
   MoveIt、Gazebo、SDF、动力学仿真、pybullet、跌落测试、步态仿真、headless sim、站得稳吗、
   切片、3D打印、激光切割、SendCutSend、Bambu、找现成零件、
-  STEP、网页预览、分享链接、PCB、tscircuit、代码写PCB、Gerber、嘉立创、JLCPCB、下单打板、电子BOM。
+  STEP、网页预览、分享链接、PCB、tscircuit、代码写PCB、Gerber、嘉立创、JLCPCB、下单打板、电子BOM、
+  需求合同、验证矩阵、执行器选型、扭矩裕量、热裕量、PCB刚度、PCB挠曲、连接器受力、
+  电源预算、电路保护、热风险、数字孪生、虚拟样机、机械狗验证、设计评分、实体样机 gate。
   父级只做路由，详细能力在 skills/<name>/SKILL.md。
 ---
 
@@ -31,7 +35,7 @@ description: |
 
 ---
 
-## 子技能集合（12 个）
+## 子技能集合（17 个）
 
 | 子 skill | 触发场景关键词（部分匹配即触发） | 路径 | 优先级 |
 |---|---|---|---|
@@ -47,6 +51,11 @@ description: |
 | bambu-labs      | Bambu / 打印机 / 上传打印 / AMS / send to printer                | skills/bambu-labs/SKILL.md      | P2 |
 | pcb             | PCB / 原理图 / tscircuit / 代码写PCB / TSX / Gerber / 出件 / 嘉立创 / JLCPCB / 下单打板 / PCB 3D / DFM / EDA | skills/pcb/SKILL.md | P1 ✅ tscircuit |
 | electronics-bom (WIP) | 电子 BOM / 元件库 / JLCPCB / Octopart / 元件型号           | skills/electronics-bom/SKILL.md | P3 占位 |
+| requirements-verification | 需求合同 / requirements.yaml / verification_matrix.yaml / 验证矩阵 / gate 阈值 / risk register | skills/requirements-verification/SKILL.md | P0 ✅ 合同 |
+| actuator-sizing | 执行器选型 / 电机扭矩 / 关节扭矩裕量 / 减速器 / 速度裕量 / 热裕量 / actuator_spec / torque_margin | skills/actuator-sizing/SKILL.md | P0 ✅ 执行器 |
+| pcb-mechanical-reliability | PCB 刚度 / 挠曲 / 支撑柱 / 固定孔 / 连接器受力 / 线束弯折 / PCB 装配间隙 / pcb_fit | skills/pcb-mechanical-reliability/SKILL.md | P0 ✅ PCB 结构 |
+| circuit-simulation | 电路合理性 / 电源预算 / 电流峰值 / 保护电路 / 急停 / 欠压 / TVS / 热风险 / circuit_check / power_budget | skills/circuit-simulation/SKILL.md | P0 ✅ 电路 |
+| robot-dog-digital-twin | 数字孪生 / 虚拟样机 / 机械狗验证 / 设计评分 / failure report / 实体样机 gate / 多域验证 | skills/robot-dog-digital-twin/SKILL.md | P0 ✅ 编排 |
 
 > 关键词权威映射在 `shared/multi-skill-router.md`；本表是其精简映像，改动需双向同步。
 
@@ -72,6 +81,11 @@ description: |
 - 「用代码写块板子并发嘉立创」 → pcb（主，tscircuit 端到端） + viewer（预览 handoff）
 - 「PCB 外壳一起做」 → pcb（电气） + mechanical（外壳） + viewer（双引擎并显）
 - 「这机器人站得稳吗 / 丢进物理引擎跑一下 / 跑个步态看会不会翻」 → urdf（前置 URDF） + simulation（主，headless 跑 + 判稳）
+- 「给这只机械狗定需求合同 / 验证矩阵」 → requirements-verification（主，产 requirements.yaml + verification_matrix.yaml）
+- 「这套机械狗电机/减速器扭矩够不够 / 热裕量够吗」 → actuator-sizing（主，产 actuator_spec.yaml + torque_margin.json）
+- 「这块 PCB 在机身里硬度/刚度够吗 / 支撑柱和连接器合理吗」 → pcb-mechanical-reliability（主，产 pcb_fit.json）
+- 「这套电路/电源预算/保护/热风险合理吗」 → circuit-simulation（主，产 circuit_check.json + power_budget.json）
+- 「这个机械狗虚拟样机能不能进实体」 → robot-dog-digital-twin（主，读各域 artifact → gate/score/failure_report）
 - 关键词「仿真」按意图分：解析 FK/IK → mechanical；丢进物理引擎跑判稳 → simulation；出 Gazebo 世界 → sdf
 
 ---

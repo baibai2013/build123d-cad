@@ -1,0 +1,36 @@
+{
+  "gate": "G3",
+  "passed": false,
+  "blocking_failures": [
+    "flat_walk_no_fall failed",
+    "front_knee torque margin below threshold",
+    "pcb connector clearance below 2mm"
+  ],
+  "design_score": {
+    "version": "quadruped_mvp",
+    "total_score": 73,
+    "threshold": 85,
+    "prototype_allowed": false,
+    "scores": {
+      "mechanical": 20,
+      "pcb_reliability": 5,
+      "electrical": 20,
+      "dynamics": 10,
+      "gait": 8,
+      "manufacturability": 10
+    },
+    "blockers": [
+      "flat_walk_no_fall failed",
+      "front_knee torque margin below threshold",
+      "pcb connector clearance below 2mm"
+    ],
+    "weights": {
+      "mechanical": 20,
+      "pcb_reliability": 15,
+      "electrical": 20,
+      "dynamics": 20,
+      "gait": 15,
+      "manufacturability": 10
+    }
+  }
+}

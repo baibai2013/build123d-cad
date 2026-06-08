@@ -1,0 +1,61 @@
+{
+  "project": "quadruped_mvp",
+  "valid": false,
+  "minimum_margin_pct": -11.33,
+  "blockers": [
+    "knee actuator margin below 20%"
+  ],
+  "inputs": {
+    "mass_kg": 5.0,
+    "payload_kg": 0.5,
+    "flat_walk_speed_mps": 0.5,
+    "max_slope_deg": 8.0,
+    "legs": 4,
+    "stance_legs": 3,
+    "femur_length_m": 0.11,
+    "tibia_length_m": 0.11,
+    "body_half_width_m": 0.09
+  },
+  "actuator": {
+    "name": "mvp_borderline_actuator",
+    "available_torque_nm": 4.2,
+    "continuous_torque_nm": 2.5,
+    "max_speed_rad_s": 10.0,
+    "gear_ratio": 9.0
+  },
+  "joints": {
+    "hip": {
+      "required_torque_nm": 1.844,
+      "available_torque_nm": 4.2,
+      "continuous_torque_nm": 2.5,
+      "required_speed_rad_s": 4.545,
+      "max_speed_rad_s": 10.0,
+      "torque_margin_pct": 56.1,
+      "thermal_margin_pct": 52.06,
+      "speed_margin_pct": 54.55,
+      "margin_pct": 52.06
+    },
+    "knee": {
+      "required_torque_nm": 4.282,
+      "available_torque_nm": 4.2,
+      "continuous_torque_nm": 2.5,
+      "required_speed_rad_s": 4.545,
+      "max_speed_rad_s": 10.0,
+      "torque_margin_pct": -1.95,
+      "thermal_margin_pct": -11.33,
+      "speed_margin_pct": 54.55,
+      "margin_pct": -11.33
+    },
+    "ankle": {
+      "required_torque_nm": 2.255,
+      "available_torque_nm": 4.2,
+      "continuous_torque_nm": 2.5,
+      "required_speed_rad_s": 4.545,
+      "max_speed_rad_s": 10.0,
+      "torque_margin_pct": 46.3,
+      "thermal_margin_pct": 41.36,
+      "speed_margin_pct": 54.55,
+      "margin_pct": 41.36
+    }
+  }
+}

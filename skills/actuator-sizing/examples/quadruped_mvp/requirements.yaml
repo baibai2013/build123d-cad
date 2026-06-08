@@ -1,0 +1,18 @@
+version: "1.0"
+project:
+  name: quadruped_mvp
+  type: quadruped
+  dof: 12
+
+targets:
+  mass_kg: 5.0
+  payload_kg: 0.5
+  runtime_min: 30
+  flat_walk_speed_mps: 0.5
+  max_slope_deg: 8
+
+constraints:
+  manufacturing:
+    primary: fdm_3d_print
+  safety:
+    require_emergency_stop: true

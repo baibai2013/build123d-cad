@@ -1,0 +1,51 @@
+mechanical:
+  no_assembly_interference:
+    target: no_assembly_interference
+    source: mechanical
+    artifact: mechanical/collision_report.json
+    required: true
+    blocker: true
+  mass_within_target:
+    target: mass_kg
+    source: mechanical
+    artifact: mechanical/mass_properties.json
+    limit_max: 5.0
+    blocker: true
+
+pcb_reliability:
+  connector_clearance_mm:
+    target: connector_clearance_mm
+    source: pcb_mechanical_reliability
+    artifact: electrical/pcb_fit.json
+    limit_min: 2.0
+    blocker: true
+
+electrical:
+  erc_pass:
+    target: erc_pass
+    source: circuit_simulation
+    artifact: electrical/circuit_check.json
+    required: true
+    blocker: true
+  power_budget_margin_pct:
+    target: power_budget_margin_pct
+    source: power_thermal
+    artifact: electrical/power_budget.json
+    limit_min: 20
+    blocker: true
+
+dynamics:
+  stand_stable_seconds:
+    target: stand_stable_seconds
+    source: simulation
+    artifact: simulation/stand_result.json
+    limit_min: 30
+    blocker: true
+
+gait:
+  flat_walk_no_fall:
+    target: flat_walk_no_fall
+    source: gait_optimization
+    artifact: control/gait_score.json
+    required: true
+    blocker: true

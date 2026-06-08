@@ -16,6 +16,11 @@
 | parts-catalog | 现成件 | L1 返回模块路径 + 实例化参数（不下 STEP）；L2+ 落盘 `output/<task>/parts/<id>.step` |
 | pcb | PCB 出件/3D/预览 | `output/<task>/electrical/`：`fab/<board>-gerbers.zip`(+`-bom.csv`/`-cpl.csv`)、`3d/<board>.{step,glb}`、`preview/<board>.{pcb,schematic}.svg`、`<board>.circuit.json` + `<board>.bom.json`(viewer engine=tscircuit 统一预览,bom 经 jlcpcb-mcp 免key定价)、`<board>.quote.json` |
 | simulation | 动力学仿真记录 | `output/<task>/simulation/`：`<robot>.results.json`(时序+汇总+checks) + `<robot>.trajectory.json`(cad 引擎 3D 回放格式) + `frames/*.png`(+ `manifest.json`) + `<robot>.sim.mp4`(有 imageio/cv2 才出) + `_verify/{static.png,settled.png,checklist.txt}` |
+| requirements-verification | 需求合同与验证矩阵 | `<project>/`：`requirements.yaml` + `verification_matrix.yaml` + `architecture.yaml` + `risk_register.md`;校验报告 `<project>/reports/requirements_validation.{json,md}` |
+| actuator-sizing | 执行器裕量报告 | `<project>/reports/`：`torque_margin.json` + `actuator_spec.yaml` + `actuator_sizing_report.md` |
+| pcb-mechanical-reliability | PCB 结构可靠性报告 | `<project>/reports/`：`pcb_fit.json` + `pcb_reliability_report.json` + `connector_clearance.json` + `pcb_mechanical_report.md` |
+| circuit-simulation | 电路/电源/热风险报告 | `<project>/reports/`：`circuit_check.json` + `power_budget.json` + `thermal_report.json` + `protection_checklist.md` + `circuit_simulation_report.md` |
+| robot-dog-digital-twin | 实体样机前编排报告 | `<project>/reports/`：`artifacts.collected.json` + `design_score.json` + `gate_report.json` + `gate_report.md` + `failure_report.md` + `next_iteration_plan.md` |
 
 ## 常见 handoff 链路
 
@@ -29,6 +34,14 @@
 8. **urdf → simulation**：`*.urdf` + `meshes/` → pybullet headless 跑(base 目录进 search path 解析相对 mesh) → `simulation/<robot>.results.json` + `<robot>.trajectory.json` + 关键帧/截图。
 9. **sdf → simulation**：`world.sdf`/`model.sdf` → `loadSDF`(取 `ids[0]`,世界自带地面不叠 plane) → 同上产物。
 10. **simulation → viewer(3D 回放)**：`<robot>.trajectory.json` + 原 `*.urdf` → cad 引擎 `?trajectory=` 时间轴回放(关节随时序动);辅 `results.json → engine=sim` 数据面板。
+11. **requirements-verification → robot-dog-digital-twin**：`requirements.yaml` + `verification_matrix.yaml` + `architecture.yaml` + `risk_register.md` → G0/G1 合同输入。
+12. **requirements-verification → actuator-sizing**：`requirements.yaml` + `architecture.yaml` + 可选 `actuator_candidate.yaml` → `reports/torque_margin.json` + `reports/actuator_spec.yaml`。
+13. **actuator-sizing → robot-dog-digital-twin**：`reports/torque_margin.json` + `reports/actuator_spec.yaml` → G2/G3 执行器 blocker 与设计评分输入。
+14. **pcb/mechanical → pcb-mechanical-reliability**：PCB 板尺寸/板厚/连接器/支撑柱/机身间隙 metadata → `reports/pcb_fit.json` + `reports/pcb_reliability_report.json`。
+15. **pcb-mechanical-reliability → robot-dog-digital-twin**：`reports/pcb_fit.json` + `reports/pcb_reliability_report.json` → G2/G3 PCB 结构 blocker 与设计评分输入。
+16. **pcb/electronics-bom → circuit-simulation**：电源轨/电机驱动/保护/热 metadata → `reports/circuit_check.json` + `reports/power_budget.json` + `reports/thermal_report.json`。
+17. **circuit-simulation → robot-dog-digital-twin**：`reports/circuit_check.json` + `reports/power_budget.json` + `reports/thermal_report.json` → G2/G3 电路 blocker 与设计评分输入。
+18. **多域报告 → robot-dog-digital-twin**：`requirements.yaml` + `verification_matrix.yaml` + `artifacts.json` + 各域报告 → `reports/design_score.json` + `reports/failure_report.md` + `reports/next_iteration_plan.md`。
 
 ## 规则
 

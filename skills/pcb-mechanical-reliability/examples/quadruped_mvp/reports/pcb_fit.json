@@ -1,0 +1,55 @@
+{
+  "project": "quadruped_mvp",
+  "valid": false,
+  "blockers": [
+    "board enclosure clearance below 2 mm",
+    "board edge clearance below 2 mm",
+    "pcb thickness below 1.6 mm for robot-dog vibration",
+    "mounting hole count 3 below required 4",
+    "standoff count 3 below required 4",
+    "mounting hole edge distance below 3 mm",
+    "max unsupported PCB span above 70 mm",
+    "battery_xt30 connector clearance below 2 mm",
+    "battery_xt30 power connector lacks nearby support",
+    "battery_xt30 cable bend radius below minimum",
+    "battery_xt30 power connector lacks strain relief"
+  ],
+  "scores": {
+    "fit": 0,
+    "mounting": 17,
+    "stiffness": 8,
+    "connectors": 5
+  },
+  "board": {
+    "name": "main_control_board",
+    "width_mm": 78.0,
+    "length_mm": 112.0,
+    "thickness_mm": 1.2,
+    "mass_g": 42.0,
+    "area_mm2": 8736.0,
+    "enclosure_clearance_mm": 1.2,
+    "edge_clearance_mm": 1.8
+  },
+  "mounting": {
+    "hole_count": 3,
+    "standoff_count": 3,
+    "required_support_count": 4,
+    "hole_edge_distance_mm": 2.4,
+    "max_unsupported_span_mm": 86.0
+  },
+  "flex": {
+    "estimated_board_flex_mm": 0.097,
+    "limit_mm": 1.5,
+    "model": "mvp_beam_approximation"
+  },
+  "next_actions": [
+    "increase enclosure clearance or reduce connector height",
+    "increase board-to-wall edge clearance",
+    "use 1.6 mm or thicker PCB laminate",
+    "add mounting holes near board corners and high-load connectors",
+    "add standoffs to reduce unsupported board span",
+    "move mounting holes farther from board edge",
+    "add center standoff or shorten unsupported span",
+    "revise battery_xt30 connector support, clearance, or cable routing"
+  ]
+}

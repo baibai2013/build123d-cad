@@ -1,0 +1,33 @@
+{
+  "project": "quadruped_mvp",
+  "valid": false,
+  "ambient_c": 35.0,
+  "components": [
+    {
+      "name": "buck_5v",
+      "dissipation_w": 1.4,
+      "thermal_resistance_c_w": 55.0,
+      "ambient_c": 35.0,
+      "estimated_temp_c": 112.0,
+      "max_temp_c": 85.0,
+      "valid": false,
+      "blockers": [
+        "buck_5v estimated temperature above limit"
+      ],
+      "warnings": []
+    },
+    {
+      "name": "motor_driver_bank",
+      "dissipation_w": 5.8,
+      "thermal_resistance_c_w": 18.0,
+      "ambient_c": 35.0,
+      "estimated_temp_c": 139.4,
+      "max_temp_c": 100.0,
+      "valid": false,
+      "blockers": [
+        "motor_driver_bank estimated temperature above limit"
+      ],
+      "warnings": []
+    }
+  ]
+}

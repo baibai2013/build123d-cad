@@ -1,0 +1,6 @@
+version: "0.1"
+layout:
+  body: simplified_box
+  legs: three_link_per_leg
+  pcb: central_control_board
+  battery: belly_mounted_mass_block

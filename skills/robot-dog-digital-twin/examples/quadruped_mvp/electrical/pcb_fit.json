@@ -1,0 +1,6 @@
+{
+  "connector_clearance_ok": false,
+  "standoffs_ok": true,
+  "board_flex_risk_ok": true,
+  "blockers": ["pcb connector clearance below 2mm"]
+}

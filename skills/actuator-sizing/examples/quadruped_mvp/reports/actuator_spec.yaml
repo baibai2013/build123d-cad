@@ -1,0 +1,10 @@
+version: "1.0"
+actuator:
+  name: mvp_borderline_actuator
+  available_torque_nm: 4.2
+  continuous_torque_nm: 2.5
+  max_speed_rad_s: 10.0
+  gear_ratio: 9.0
+summary:
+  valid: false
+  minimum_margin_pct: -11.33

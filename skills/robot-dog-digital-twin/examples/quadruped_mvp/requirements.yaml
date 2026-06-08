@@ -1,0 +1,25 @@
+version: "1.0"
+robot:
+  name: quadruped_mvp
+  type: quadruped
+  dof: 12
+
+targets:
+  mass_kg: 5.0
+  payload_kg: 0.5
+  runtime_min: 30
+  flat_walk_speed_mps: 0.5
+  max_slope_deg: 8
+  max_body_width_mm: 180
+  max_body_length_mm: 280
+
+constraints:
+  manufacturing:
+    primary: fdm_3d_print
+    material: petg
+  electronics:
+    battery_voltage_nominal: 24
+    max_current_a: 30
+  safety:
+    require_emergency_stop: true
+    max_surface_temp_c: 65

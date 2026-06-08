@@ -1,0 +1,5 @@
+{
+  "stable_seconds": 30,
+  "joint_torque_margin_pct": 22,
+  "blockers": []
+}

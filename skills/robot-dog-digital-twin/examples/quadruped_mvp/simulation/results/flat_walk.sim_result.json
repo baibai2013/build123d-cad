@@ -1,0 +1,8 @@
+{
+  "no_fall": false,
+  "joint_torque_margin_pct": 8,
+  "blockers": [
+    "flat_walk_no_fall failed",
+    "front_knee torque margin below threshold"
+  ]
+}

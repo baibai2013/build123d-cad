@@ -1,0 +1,20 @@
+mechanical:
+  no_assembly_interference:
+    required: true
+    source: mechanical
+pcb:
+  connector_clearance_mm:
+    limit_min: 2.0
+    source: pcb_mechanical_reliability
+electrical:
+  erc_pass:
+    required: true
+    source: circuit_simulation
+dynamics:
+  stand_stable_seconds:
+    limit_min: 30
+    source: simulation
+gait:
+  flat_walk_no_fall:
+    required: true
+    source: gait_optimization

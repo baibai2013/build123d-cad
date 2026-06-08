@@ -1,0 +1,23 @@
+{
+  "artifacts": {
+    "mechanical": {
+      "mass_properties": "mechanical/mass_properties.json",
+      "collision_report": "mechanical/collision_report.json"
+    },
+    "electrical": {
+      "pcb_fit": "electrical/pcb_fit.json",
+      "circuit_check": "electrical/circuit_check.json",
+      "power_budget": "electrical/power_budget.json"
+    },
+    "simulation": {
+      "stand_result": "simulation/results/stand.sim_result.json",
+      "flat_walk_result": "simulation/results/flat_walk.sim_result.json"
+    },
+    "control": {
+      "gait_score": "control/gait_score.json"
+    },
+    "manufacturing": {
+      "print_report": "manufacturing/print_report.json"
+    }
+  }
+}

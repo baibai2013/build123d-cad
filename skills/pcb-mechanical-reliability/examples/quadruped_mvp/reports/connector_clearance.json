@@ -1,0 +1,35 @@
+{
+  "project": "quadruped_mvp",
+  "valid": false,
+  "connectors": [
+    {
+      "name": "battery_xt30",
+      "kind": "power",
+      "clearance_mm": 1.0,
+      "nearest_standoff_mm": 42.0,
+      "support_limit_mm": 25.0,
+      "cable_bend_radius_mm": 18.0,
+      "cable_min_bend_radius_mm": 25.0,
+      "strain_relief": false,
+      "valid": false,
+      "blockers": [
+        "battery_xt30 connector clearance below 2 mm",
+        "battery_xt30 power connector lacks nearby support",
+        "battery_xt30 cable bend radius below minimum",
+        "battery_xt30 power connector lacks strain relief"
+      ]
+    },
+    {
+      "name": "imu_debug",
+      "kind": "signal",
+      "clearance_mm": 3.5,
+      "nearest_standoff_mm": 24.0,
+      "support_limit_mm": 40.0,
+      "cable_bend_radius_mm": 12.0,
+      "cable_min_bend_radius_mm": 8.0,
+      "strain_relief": true,
+      "valid": true,
+      "blockers": []
+    }
+  ]
+}

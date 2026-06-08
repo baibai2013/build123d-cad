@@ -1,0 +1,17 @@
+{
+  "project": "quadruped_mvp",
+  "valid": true,
+  "errors": [],
+  "warnings": [],
+  "sections": {
+    "requirements": [],
+    "verification_matrix": [],
+    "architecture": []
+  },
+  "inputs": {
+    "requirements": "/Users/liyijiang/.agents/skills/build123d-cad/skills/requirements-verification/examples/quadruped_mvp/requirements.yaml",
+    "verification_matrix": "/Users/liyijiang/.agents/skills/build123d-cad/skills/requirements-verification/examples/quadruped_mvp/verification_matrix.yaml",
+    "architecture": "/Users/liyijiang/.agents/skills/build123d-cad/skills/requirements-verification/examples/quadruped_mvp/architecture.yaml",
+    "risk_register": "/Users/liyijiang/.agents/skills/build123d-cad/skills/requirements-verification/examples/quadruped_mvp/risk_register.md"
+  }
+}

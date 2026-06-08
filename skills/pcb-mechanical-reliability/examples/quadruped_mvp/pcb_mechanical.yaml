@@ -1,0 +1,37 @@
+version: "1.0"
+board:
+  name: main_control_board
+  width_mm: 78
+  length_mm: 112
+  thickness_mm: 1.2
+  mass_g: 42
+  enclosure_clearance_mm: 1.2
+  edge_clearance_mm: 1.8
+
+mounting:
+  hole_count: 3
+  standoff_count: 3
+  hole_edge_distance_mm: 2.4
+  max_unsupported_span_mm: 86
+
+loads:
+  vibration_g: 4
+  drop_height_m: 0.4
+
+connectors:
+  - name: battery_xt30
+    kind: power
+    height_mm: 8.5
+    clearance_mm: 1.0
+    nearest_standoff_mm: 42
+    cable_bend_radius_mm: 18
+    cable_min_bend_radius_mm: 25
+    strain_relief: false
+  - name: imu_debug
+    kind: signal
+    height_mm: 5.0
+    clearance_mm: 3.5
+    nearest_standoff_mm: 24
+    cable_bend_radius_mm: 12
+    cable_min_bend_radius_mm: 8
+    strain_relief: true

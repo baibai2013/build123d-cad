@@ -20,6 +20,11 @@
 | bambu-labs | Bambu 打印机、上传打印、AMS | 🟡 P2 |
 | pcb | PCB、原理图、tscircuit、代码写PCB、TSX、Gerber、出件、嘉立创、JLCPCB、下单打板、PCB 3D、DFM、EDA | ✅ P1(tscircuit) |
 | electronics-bom (WIP) | 电子 BOM、元件选型、JLCPCB/Octopart | 🟡 P3 占位 |
+| requirements-verification | 需求合同、requirements.yaml、verification_matrix.yaml、验证矩阵、gate 阈值、risk register、需求冻结 | ✅ P0 合同 |
+| actuator-sizing | 执行器选型、电机扭矩、关节扭矩、减速器、速度裕量、热裕量、torque_margin、actuator_spec、机械狗电机够不够 | ✅ P0 执行器 |
+| pcb-mechanical-reliability | PCB刚度、PCB挠曲、PCB硬度、支撑柱、固定孔、连接器受力、线束弯折、PCB装配间隙、pcb_fit、pcb_reliability_report | ✅ P0 PCB 结构 |
+| circuit-simulation | 电路合理性、电源预算、电流峰值、保护电路、急停、欠压、TVS、保险丝、MOSFET热、驱动器热、thermal_report、power_budget、circuit_check | ✅ P0 电路 |
+| robot-dog-digital-twin | 数字孪生、虚拟样机、机械狗验证、实体样机 gate、design_score、failure_report、多域验证、设计迭代 | ✅ P0 编排 |
 
 ## 路由规则
 
@@ -36,6 +41,11 @@
 - "给这个机器人配 MoveIt 规划组 / 自碰撞矩阵" → urdf(前置) + srdf(主)
 - "放进 Gazebo 仿真世界跑一下" → urdf(前置) + sdf(主)
 - "这机器人站得稳吗 / 丢进物理引擎跑一下 / 跑个步态看会不会翻" → urdf(前置) + simulation(主, headless 跑 + 判稳)
+- "给这只机械狗定义需求合同 / 验证矩阵 / G0 输入" → requirements-verification(主,产 requirements.yaml + verification_matrix.yaml)
+- "这套机械狗电机/减速器扭矩够不够 / 热裕量够吗" → actuator-sizing(主,产 actuator_spec.yaml + torque_margin.json)
+- "这块 PCB 在机身里刚度/支撑/连接器空间合理吗" → pcb-mechanical-reliability(主,产 pcb_fit.json + pcb_reliability_report.json)
+- "这套电路/电源预算/保护/热风险合理吗" → circuit-simulation(主,产 circuit_check.json + power_budget.json + thermal_report.json)
+- "这个机械狗虚拟样机能不能进入实体样机 / 给我 design_score 和 failure_report" → robot-dog-digital-twin(主,读 artifact 跑 gate)
 - 关键词"仿真"按意图分:解析 FK/IK → mechanical;丢进物理引擎跑判稳 → simulation;出 Gazebo 世界 → sdf
 - "这件能 3D 打印吗 / 估下打印时间" → mechanical(前置 STEP) + gcode(主)
 - "这块钣金激光切多少钱" → mechanical(前置 STEP) + sendcutsend(主)
