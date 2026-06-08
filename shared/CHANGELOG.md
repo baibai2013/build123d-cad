@@ -40,6 +40,8 @@
 
 | 2026-06-08 | **新增 wear-fatigue 子技能(P1 磨损/疲劳/维护周期门禁层)** — ① 新增 `skills/wear-fatigue/`，提供 `estimate_wear.py`、`estimate_fatigue.py`、MVP gear/bearing/foot/harness/connector references、`examples/quadruped_mvp/` 和 pytest;② 父 `SKILL.md` / `multi-skill-router.md` 增加磨损、疲劳、轴承寿命、齿轮寿命、足垫磨耗、线束弯折、连接器松脱、维护周期路由;③ `handoff-protocols.md` 增加 `reports/wear_report.json + fatigue_report.json + maintenance_interval.md + wear_fatigue_report.md` 输出接口;④ `dependencies.md` 加 `mechanical/simulation/gait-optimization → wear-fatigue → robot-dog-digital-twin`;⑤ `pytest.ini` 纳入新测试路径。 | wear-fatigue · mechanical · simulation · gait-optimization · robot-dog-digital-twin | hardware | 非破坏(纯新增);MVP 为确定性寿命 gate,示例故意齿轮过应力/轴承寿命低/线束夹线/连接器缺 retention 产 blocker;自身 tests 6/6 |
 
+| 2026-06-08 | **新增 mujoco-simulation 子技能(P1 MuJoCo 场景门禁层)** — ① 新增 `skills/mujoco-simulation/`，提供 `run_scenarios.py`、`summarize_results.py`、MVP MJCF/scenario/output/backend references、`examples/quadruped_mvp/` 和 pytest;② 父 `SKILL.md` / `multi-skill-router.md` 增加 MuJoCo、MJCF、高保真动力学、接触摩擦、斜坡、台阶、推扰路由;③ `handoff-protocols.md` 增加 `reports/mujoco_result.json + mujoco_validation_report.md + simulation/mujoco/results/*.sim_result.json` 输出接口;④ `dependencies.md` 加 `mujoco-simulation → gait-optimization / robot-dog-digital-twin`;⑤ `pytest.ini` 纳入新测试路径。 | mujoco-simulation · gait-optimization · simulation · robot-dog-digital-twin | hardware | 非破坏(纯新增);MVP 为 metadata backend,示例故意 walk/slope blockers;自身 tests 4/4 |
+
 ## 登记规则
 
 - 任何修改 shared/ 的 PR 必须新增一行,内容含日期 / 变更 / 影响子技能 / Owner / 备注

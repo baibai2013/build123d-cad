@@ -1,0 +1,15 @@
+{
+  "project": "quadruped_mvp",
+  "scenario": "stand",
+  "format": "build123d-cad.trajectory.v1",
+  "points": [
+    {
+      "timeFromStartSec": 0.0,
+      "positionsByNameDeg": {}
+    },
+    {
+      "timeFromStartSec": 30.0,
+      "positionsByNameDeg": {}
+    }
+  ]
+}

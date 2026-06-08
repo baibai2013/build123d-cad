@@ -2,7 +2,8 @@
 
 > 状态:**P0 孵化中**。`robot-dog-digital-twin`、`requirements-verification`
 > 与 `actuator-sizing`、`pcb-mechanical-reliability`、`circuit-simulation`、
-> `gait-optimization`、`fea`、`wear-fatigue` MVP 已落地;其余条目仍是缺口分析与子技能规划,
+> `gait-optimization`、`fea`、`wear-fatigue`、`mujoco-simulation` MVP 已落地;
+> 其余条目仍是缺口分析与子技能规划,
 > 后续逐个按 `docs/adding-new-subskill.md` 流程立项。
 >
 > 关联:现有 12 子技能(见 `SKILL.md`)、架构红线(见本文 §2)、handoff 约定(`shared/handoff-protocols.md`)。
@@ -509,6 +510,12 @@ protection_checklist.md
 
 ### 3.4.1 `mujoco-simulation` — 高保真腿足动力学
 
+**落地状态(2026-06-08)**:已以 `skills/mujoco-simulation/` MVP 落地,包含
+`mujoco_scenarios.yaml` metadata 输入、stand/walk_flat/slope/drop 等场景门禁、姿态/打滑/
+扭矩裕量/接触穿透/能耗规则检查、MJCF 示例、`mujoco_result.json`、每场景 `*.sim_result.json`
+和 pytest。第一版是 MuJoCo 文件合同与 deterministic metadata backend,不声称已经运行真实
+MuJoCo 求解器;后续可在不改上层 artifact 的前提下替换成真实 `mujoco` Python backend。
+
 **定位**:PyBullet 继续做 CI smoke,MuJoCo 用于认真迭代步态、接触、摩擦、执行器和地形扰动。
 
 **为什么需要**:
@@ -531,7 +538,17 @@ simulation/mujoco/
   scenarios/*.yaml
   results/*.sim_result.json
   trajectories/*.trajectory.json
+reports/
+  mujoco_result.json
+  mujoco_validation_report.md
 ```
+
+**后续增强**:
+
+- 接入真实 `mujoco` Python backend,读取 `simulation/mujoco/robot.xml`。
+- 从 `urdf`/`sdf` 转换或同步生成 MJCF。
+- 输出真实接触力、穿透、关节力矩、能耗和轨迹。
+- 将 `mujoco_result.json` 接入 `gait-optimization` 的真实评分输入。
 
 ---
 
@@ -805,7 +822,7 @@ skills/<skill-name>/
 | `gait-optimization` | `score_gait.py`、`search_params.py` | `gait-levels.md`、`stability-metrics.md` | `gait_score.json`、`best_gait_params.yaml` |
 | `fea` | `run_static_case.py`、`summarize_fea.py` | `load-cases.md`、`materials.md` | `fea_report.json` |
 | `wear-fatigue` | `estimate_wear.py`、`estimate_fatigue.py` | `wear-models.md`、`bearing-life.md` | `wear_report.json`、`maintenance_interval.md` |
-| `mujoco-simulation` | `convert_to_mjcf.py`、`run_mujoco.py` | `mjcf-contract.md`、`scenario-types.md` | `sim_result.json`、`trajectory.json` |
+| `mujoco-simulation` | `run_scenarios.py`、`summarize_results.py` | `scenarios.md`、`backend-plan.md` | `mujoco_result.json`、`*.sim_result.json` |
 | `motion-control` | `solve_ik.py`、`generate_gait.py` | `ik-contract.md`、`trajectory-format.md` | `trajectory.json`、`controller_params.yaml` |
 | `firmware` | `generate_project.py`、`run_firmware_tests.py` | `mcu-targets.md`、`can-protocol.md` | `firmware_report.json`、`calibration.json` |
 
@@ -820,7 +837,8 @@ skills/<skill-name>/
 | P0-3 | `skills/pcb-mechanical-reliability/`、`skills/circuit-simulation/` | ✅ PCB fit 和电源预算已能产 blocker |
 | P0-4 | `skills/gait-optimization/` | ✅ 平地站立/慢走指标已能评分 |
 | P1-1 | `skills/fea/`、`skills/wear-fatigue/` | ✅ FEA 与磨损疲劳 MVP 均已能产 blocker |
-| P1-2 | `skills/mujoco-simulation/`、`skills/motion-control/` | MuJoCo 场景和真步态轨迹接入 |
+| P1-2 | `skills/mujoco-simulation/` | ✅ MuJoCo 场景合同与 metadata backend 已能产动力学 blocker |
+| P1-3 | `skills/motion-control/`、`skills/mujoco-simulation/` real backend | 真步态轨迹和真实 MuJoCo 求解器接入 |
 | P2 | `skills/firmware/`、`skills/sim2real-calibration/`、`skills/integration/` | 真实控制和实物闭环进入人工 gate |
 
 ### 4.5 模块间上下文清理纪律

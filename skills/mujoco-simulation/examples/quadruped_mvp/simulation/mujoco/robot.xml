@@ -1,0 +1,8 @@
+<mujoco model="quadruped_mvp">
+  <compiler angle="degree" coordinate="local"/>
+  <worldbody>
+    <body name="body" pos="0 0 0.25">
+      <geom name="body_box" type="box" size="0.14 0.09 0.04" mass="3.0"/>
+    </body>
+  </worldbody>
+</mujoco>

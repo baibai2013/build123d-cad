@@ -1,0 +1,15 @@
+{
+  "project": "quadruped_mvp",
+  "scenario": "drop_80mm",
+  "format": "build123d-cad.trajectory.v1",
+  "points": [
+    {
+      "timeFromStartSec": 0.0,
+      "positionsByNameDeg": {}
+    },
+    {
+      "timeFromStartSec": 3.0,
+      "positionsByNameDeg": {}
+    }
+  ]
+}

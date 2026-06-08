@@ -1,0 +1,28 @@
+{
+  "project": "quadruped_mvp",
+  "backend": "metadata",
+  "scenario": "slope_8deg",
+  "type": "slope",
+  "valid": false,
+  "blockers": [
+    "slope_8deg body pitch 9.5deg above 8deg",
+    "slope_8deg foot slip ratio 0.14 above 0.12",
+    "slope_8deg torque margin 16% below 20%"
+  ],
+  "warnings": [
+    "slope_8deg cost of transport 3 above 2.5"
+  ],
+  "metrics": {
+    "duration_s": 10.0,
+    "stable_seconds": 10.0,
+    "fell": false,
+    "fall_time_s": 0.0,
+    "max_body_roll_deg": 6.8,
+    "max_body_pitch_deg": 9.5,
+    "foot_slip_ratio": 0.14,
+    "joint_torque_margin_pct": 16.0,
+    "max_contact_penetration_mm": 2.0,
+    "cost_of_transport": 3.0,
+    "recovery_time_s": 0.0
+  }
+}

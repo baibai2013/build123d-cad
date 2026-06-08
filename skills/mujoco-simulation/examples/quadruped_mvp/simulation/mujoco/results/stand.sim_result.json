@@ -1,0 +1,22 @@
+{
+  "project": "quadruped_mvp",
+  "backend": "metadata",
+  "scenario": "stand",
+  "type": "stand",
+  "valid": true,
+  "blockers": [],
+  "warnings": [],
+  "metrics": {
+    "duration_s": 30.0,
+    "stable_seconds": 30.0,
+    "fell": false,
+    "fall_time_s": 0.0,
+    "max_body_roll_deg": 3.2,
+    "max_body_pitch_deg": 4.1,
+    "foot_slip_ratio": 0.01,
+    "joint_torque_margin_pct": 28.0,
+    "max_contact_penetration_mm": 1.1,
+    "cost_of_transport": 0.0,
+    "recovery_time_s": 0.0
+  }
+}

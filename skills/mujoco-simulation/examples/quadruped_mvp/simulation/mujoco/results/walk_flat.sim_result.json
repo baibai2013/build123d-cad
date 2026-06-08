@@ -1,0 +1,30 @@
+{
+  "project": "quadruped_mvp",
+  "backend": "metadata",
+  "scenario": "walk_flat",
+  "type": "walk_flat",
+  "valid": false,
+  "blockers": [
+    "walk_flat fell",
+    "walk_flat body roll 13.5deg above 8deg",
+    "walk_flat body pitch 10.2deg above 8deg",
+    "walk_flat foot slip ratio 0.22 above 0.12",
+    "walk_flat torque margin 8% below 20%"
+  ],
+  "warnings": [
+    "walk_flat cost of transport 3.4 above 2.5"
+  ],
+  "metrics": {
+    "duration_s": 12.0,
+    "stable_seconds": 4.2,
+    "fell": true,
+    "fall_time_s": 4.2,
+    "max_body_roll_deg": 13.5,
+    "max_body_pitch_deg": 10.2,
+    "foot_slip_ratio": 0.22,
+    "joint_torque_margin_pct": 8.0,
+    "max_contact_penetration_mm": 2.4,
+    "cost_of_transport": 3.4,
+    "recovery_time_s": 0.0
+  }
+}

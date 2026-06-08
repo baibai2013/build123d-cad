@@ -1,0 +1,24 @@
+{
+  "project": "quadruped_mvp",
+  "backend": "metadata",
+  "scenario": "drop_80mm",
+  "type": "drop",
+  "valid": true,
+  "blockers": [],
+  "warnings": [
+    "drop_80mm contact penetration 4.5mm above 3mm"
+  ],
+  "metrics": {
+    "duration_s": 3.0,
+    "stable_seconds": 3.0,
+    "fell": false,
+    "fall_time_s": 0.0,
+    "max_body_roll_deg": 7.0,
+    "max_body_pitch_deg": 7.5,
+    "foot_slip_ratio": 0.05,
+    "joint_torque_margin_pct": 22.0,
+    "max_contact_penetration_mm": 4.5,
+    "cost_of_transport": 0.0,
+    "recovery_time_s": 0.0
+  }
+}

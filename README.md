@@ -14,8 +14,8 @@
 
 <br>
 
-**一次安装，20 个子技能。两条主线 — 🛠️ CAD 机械建模 · ⚡ PCB 板级电气 — 端到端打通；
-外加网页预览 / 机器人描述 / 动力学仿真 / 制造出工 / 需求合同 / 执行器裕量 / PCB 结构可靠性 / 电路电源热检查 / 步态评分 / FEA 结构门禁 / 磨损疲劳门禁 / 机械狗数字孪生编排。**
+**一次安装，21 个子技能。两条主线 — 🛠️ CAD 机械建模 · ⚡ PCB 板级电气 — 端到端打通；
+外加网页预览 / 机器人描述 / 动力学仿真 / 制造出工 / 需求合同 / 执行器裕量 / PCB 结构可靠性 / 电路电源热检查 / 步态评分 / FEA 结构门禁 / 磨损疲劳门禁 / MuJoCo 场景门禁 / 机械狗数字孪生编排。**
 
 <br>
 
@@ -43,7 +43,7 @@
 
 ## 这是什么
 
-`build123d-cad` 是一个 **硬件设计 Super Skill**：一个父技能下面挂 20 个子技能（monorepo 模块化）。
+`build123d-cad` 是一个 **硬件设计 Super Skill**：一个父技能下面挂 21 个子技能（monorepo 模块化）。
 一次 `npx skills add` 安装即得全部能力；每个子技能独立 `SKILL.md / references / scripts / tests`，可单独 `pytest` 回归。
 
 父级 `SKILL.md` 只做关键词路由（≤ 220 行），进子技能再读细节——**两层路由**，避免一次性把整套实现塞进上下文。
@@ -125,7 +125,7 @@ export default () => (
 
 ---
 
-## 子技能集合（20 个）
+## 子技能集合（21 个）
 
 | 子技能 | 一句话定位 | 路径 | 优先级 |
 |---|---|---|---|
@@ -148,6 +148,7 @@ export default () => (
 | gait-optimization | 步态合理性早期校核：检查 IK/相位/站立/慢走/roll/pitch/打滑/扭矩/能耗 → 输出 `gait_score.json` / `best_gait_params.yaml` | [skills/gait-optimization](skills/gait-optimization/) | **P0 ✅ 步态** |
 | fea | 结构 FEA 早期门禁：检查应力、安全系数、变形、模态和跌落风险 → 输出 `fea_report.json` / `static_case_report.json` | [skills/fea](skills/fea/) | **P1 ✅ 结构** |
 | wear-fatigue | 磨损疲劳早期门禁：检查齿轮/轴承/足垫/关节限位/线束/连接器寿命风险 → 输出 `wear_report.json` / `fatigue_report.json` / `maintenance_interval.md` | [skills/wear-fatigue](skills/wear-fatigue/) | **P1 ✅ 寿命** |
+| mujoco-simulation | MuJoCo 场景门禁：检查 stand/walk/slope/drop/push 的稳定性、接触、打滑、扭矩和能耗 → 输出 `mujoco_result.json` / `*.sim_result.json` | [skills/mujoco-simulation](skills/mujoco-simulation/) | **P1 ✅ MuJoCo** |
 | robot-dog-digital-twin | 机械狗数字孪生编排：收集多域 artifact → gate → design_score → failure_report → 下一轮参数建议 | [skills/robot-dog-digital-twin](skills/robot-dog-digital-twin/) | **P0 ✅ 编排** |
 
 ---
@@ -196,6 +197,7 @@ pip install pybullet numpy
 > 这个机械狗步态会不会摔，下一版参数怎么改          # → gait-optimization
 > 这条腿强度够吗，变形会不会太大                  # → fea
 > 这些齿轮、轴承、足垫和线束多久会磨坏             # → wear-fatigue
+> 用 MuJoCo 跑斜坡、台阶、推扰和接触摩擦场景       # → mujoco-simulation
 > 这个机械狗虚拟样机能不能进入实体样机            # → robot-dog-digital-twin(gate + score)
 ```
 
@@ -217,7 +219,7 @@ pip install pybullet numpy
 build123d-cad/
 ├── SKILL.md                          # 父级路由（≤ 220 行）：关键词 → 子技能
 ├── README.md                         # 本文件（开发者视角）
-├── skills/                           # 子技能集合（20 个），每个可独立 pytest
+├── skills/                           # 子技能集合（21 个），每个可独立 pytest
 │   ├── mechanical/                   #   🛠️ build123d 建模 / 装配 / 仿真 / Playbook
 │   ├── pcb/                          #   ⚡ tscircuit 端到端造板（legacy-kicad/ 为归档旧路线）
 │   ├── viewer/                       #   网页多引擎预览
@@ -233,6 +235,7 @@ build123d-cad/
 │   ├── gait-optimization/            #   步态评分 / 参数建议 / gait gate
 │   ├── fea/                          #   结构强度 / 刚度 / 模态 / FEA gate
 │   ├── wear-fatigue/                 #   磨损 / 疲劳 / 维护周期 gate
+│   ├── mujoco-simulation/            #   MuJoCo / MJCF / 高保真场景 gate
 │   └── robot-dog-digital-twin/       #   机械狗数字孪生 gate / score / failure report
 ├── shared/                           # 跨子技能协议
 │   ├── handoff-protocols.md          #   文件接口 + 路径约定

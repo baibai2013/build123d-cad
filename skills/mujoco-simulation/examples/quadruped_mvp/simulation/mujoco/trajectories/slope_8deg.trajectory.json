@@ -1,0 +1,15 @@
+{
+  "project": "quadruped_mvp",
+  "scenario": "slope_8deg",
+  "format": "build123d-cad.trajectory.v1",
+  "points": [
+    {
+      "timeFromStartSec": 0.0,
+      "positionsByNameDeg": {}
+    },
+    {
+      "timeFromStartSec": 10.0,
+      "positionsByNameDeg": {}
+    }
+  ]
+}

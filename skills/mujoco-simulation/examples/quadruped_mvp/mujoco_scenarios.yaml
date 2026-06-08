@@ -1,0 +1,67 @@
+project: quadruped_mvp
+backend: metadata
+
+model:
+  mjcf: simulation/mujoco/robot.xml
+  source_urdf: simulation/robot.urdf
+
+limits:
+  stand_stable_seconds_min: 30
+  max_body_roll_deg: 8
+  max_body_pitch_deg: 8
+  foot_slip_ratio_max: 0.12
+  joint_torque_margin_pct_min: 20
+  cost_of_transport_max: 2.5
+  max_contact_penetration_mm: 3
+  recovery_time_s_max: 2.0
+
+scenarios:
+  - name: stand
+    type: stand
+    required: true
+    duration_s: 30
+    stable_seconds: 30
+    fell: false
+    max_body_roll_deg: 3.2
+    max_body_pitch_deg: 4.1
+    foot_slip_ratio: 0.01
+    joint_torque_margin_pct: 28
+    max_contact_penetration_mm: 1.1
+    cost_of_transport: 0.0
+  - name: walk_flat
+    type: walk_flat
+    required: true
+    duration_s: 12
+    stable_seconds: 4.2
+    fell: true
+    fall_time_s: 4.2
+    max_body_roll_deg: 13.5
+    max_body_pitch_deg: 10.2
+    foot_slip_ratio: 0.22
+    joint_torque_margin_pct: 8
+    max_contact_penetration_mm: 2.4
+    cost_of_transport: 3.4
+  - name: slope_8deg
+    type: slope
+    required: true
+    duration_s: 10
+    stable_seconds: 10
+    fell: false
+    max_body_roll_deg: 6.8
+    max_body_pitch_deg: 9.5
+    foot_slip_ratio: 0.14
+    joint_torque_margin_pct: 16
+    max_contact_penetration_mm: 2.0
+    cost_of_transport: 3.0
+  - name: drop_80mm
+    type: drop
+    required: false
+    duration_s: 3
+    stable_seconds: 3
+    fell: false
+    max_body_roll_deg: 7.0
+    max_body_pitch_deg: 7.5
+    foot_slip_ratio: 0.05
+    joint_torque_margin_pct: 22
+    max_contact_penetration_mm: 4.5
+    cost_of_transport: 0.0
