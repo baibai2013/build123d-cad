@@ -50,6 +50,35 @@
 
 ---
 
+## GitHub 首页速览
+
+如果把本 README 放在 GitHub 仓库首页，访客可以先看这张表快速定位全部内容；如果要做组织首页，也可以把本节复制到
+`.github/profile/README.md`。
+
+### 核心仓库入口
+
+| 仓库 | 定位 | 入口 |
+|---|---|---|
+| `build123d-cad` | 硬件设计 Super Skill 主仓库：25 个子技能、路由、协议、脚本与测试 | [baibai2013/build123d-cad](https://github.com/baibai2013/build123d-cad) |
+| `build123d-cad-skill-test` | CAD / 装配 / viewer / URDF / GLB 动画测试案例集合 | [baibai2013/build123d-cad-skill-test](https://github.com/baibai2013/build123d-cad-skill-test) |
+| `build123d-parts-lib` | build123d 参数化标准件库：紧固件、轴承、舵机、传动、销、密封等 | [baibai2013/build123d-parts-lib](https://github.com/baibai2013/build123d-parts-lib) |
+
+### 全部能力矩阵
+
+| 域 | 子技能 | 解决的问题 |
+|---|---|---|
+| CAD 建模与装配 | [`mechanical`](skills/mechanical/) · [`parts-catalog`](skills/parts-catalog/) · [`viewer`](skills/viewer/) | 参数化建模、标准件复用、装配、爆炸动画、网页预览、截图自验 |
+| 机器人描述 | [`urdf`](skills/urdf/) · [`srdf`](skills/srdf/) · [`sdf`](skills/sdf/) | URDF / SRDF / SDF 导出、关节、规划组、Gazebo 世界 |
+| 制造出工 | [`gcode`](skills/gcode/) · [`sendcutsend`](skills/sendcutsend/) · [`bambu-labs`](skills/bambu-labs/) | FDM 切片预检、激光切割报价、Bambu 上传打印 |
+| PCB 与电子 | [`pcb`](skills/pcb/) · [`electronics-bom`](skills/electronics-bom/) · [`circuit-simulation`](skills/circuit-simulation/) · [`pcb-mechanical-reliability`](skills/pcb-mechanical-reliability/) | tscircuit 造板、BOM、Gerber/BOM/CPL、嘉立创报价、电源预算、PCB 装配可靠性 |
+| 虚拟验证 | [`requirements-verification`](skills/requirements-verification/) · [`actuator-sizing`](skills/actuator-sizing/) · [`fea`](skills/fea/) · [`wear-fatigue`](skills/wear-fatigue/) | 需求合同、验证矩阵、执行器裕量、结构强度、磨损疲劳、维护周期 |
+| 运动与仿真 | [`simulation`](skills/simulation/) · [`mujoco-simulation`](skills/mujoco-simulation/) · [`gait-optimization`](skills/gait-optimization/) · [`motion-control`](skills/motion-control/) | PyBullet / MuJoCo 场景门禁、步态评分、IK/FK、轨迹与控制参数 |
+| 实体前闭环 | [`firmware`](skills/firmware/) · [`sim2real-calibration`](skills/sim2real-calibration/) · [`integration`](skills/integration/) · [`robot-dog-digital-twin`](skills/robot-dog-digital-twin/) | 固件 dry-run、仿真实机校准、bring-up/HIL gate、机械狗数字孪生总控 |
+
+> GitHub 原生 pinned repositories 最多只能展示 6 个；“全部能力”建议放在 README 表格里展示，仓库卡片只 pin 最关键的 3-6 个入口。
+
+---
+
 ## 🚩 两条主线：CAD 与 PCB
 
 这套技能围绕硬件研发的两个核心域构建，**机械（CAD）** 与 **电气（PCB）** 各成闭环、又能互相 handoff。
