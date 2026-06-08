@@ -1,0 +1,162 @@
+{
+  "project": "quadruped_mvp",
+  "valid": false,
+  "summary": {
+    "target_maintenance_hours": 50.0,
+    "component_count": 12,
+    "valid_component_count": 6,
+    "estimated_maintenance_interval_hours": 28.0,
+    "blocker_count": 14
+  },
+  "components": [
+    {
+      "type": "gear",
+      "name": "front_left_knee_reducer",
+      "valid": false,
+      "blockers": [
+        "front_left_knee_reducer contact stress 1320MPa above allowable 1100MPa",
+        "front_left_knee_reducer estimated gear life 35h below target 50h"
+      ],
+      "warnings": [],
+      "metrics": {
+        "contact_stress_mpa": 1320.0,
+        "allowable_contact_stress_mpa": 1100.0,
+        "stress_margin_pct": -20.0,
+        "estimated_life_hours": 35.0,
+        "pitch_line_velocity_mps": 2.6,
+        "lubrication": "light_grease"
+      }
+    },
+    {
+      "type": "gear",
+      "name": "rear_left_hip_reducer",
+      "valid": true,
+      "blockers": [],
+      "warnings": [],
+      "metrics": {
+        "contact_stress_mpa": 880.0,
+        "allowable_contact_stress_mpa": 1100.0,
+        "stress_margin_pct": 20.0,
+        "estimated_life_hours": 120.0,
+        "pitch_line_velocity_mps": 1.8,
+        "lubrication": "light_grease"
+      }
+    },
+    {
+      "type": "foot_pad",
+      "name": "front_foot_pad",
+      "valid": false,
+      "blockers": [
+        "front_foot_pad foot pad wear life 42h below target 50h"
+      ],
+      "warnings": [],
+      "metrics": {
+        "estimated_wear_life_hours": 42.0,
+        "impact_j": 4.8,
+        "friction_coefficient": 0.72,
+        "replaceable": true
+      }
+    },
+    {
+      "type": "foot_pad",
+      "name": "rear_foot_pad",
+      "valid": true,
+      "blockers": [],
+      "warnings": [],
+      "metrics": {
+        "estimated_wear_life_hours": 90.0,
+        "impact_j": 3.2,
+        "friction_coefficient": 0.74,
+        "replaceable": true
+      }
+    },
+    {
+      "type": "harness",
+      "name": "front_leg_motor_bundle",
+      "valid": false,
+      "blockers": [
+        "front_leg_motor_bundle bend radius 18mm below required 25mm",
+        "front_leg_motor_bundle motion envelope is not clear",
+        "front_leg_motor_bundle has pinch risk"
+      ],
+      "warnings": [],
+      "metrics": {
+        "min_bend_radius_mm": 18.0,
+        "required_bend_radius_mm": 25.0,
+        "motion_envelope_clear": false,
+        "pinch_risk": true
+      }
+    },
+    {
+      "type": "harness",
+      "name": "body_power_harness",
+      "valid": true,
+      "blockers": [],
+      "warnings": [],
+      "metrics": {
+        "min_bend_radius_mm": 42.0,
+        "required_bend_radius_mm": 30.0,
+        "motion_envelope_clear": true,
+        "pinch_risk": false
+      }
+    },
+    {
+      "type": "connector",
+      "name": "battery_xt30",
+      "valid": false,
+      "blockers": [
+        "battery_xt30 mating cycles 30 below target 50",
+        "battery_xt30 missing vibration lock",
+        "battery_xt30 missing strain relief"
+      ],
+      "warnings": [],
+      "metrics": {
+        "mating_cycles": 30.0,
+        "mating_cycles_min": 50.0,
+        "vibration_lock": false,
+        "strain_relief": false
+      }
+    },
+    {
+      "type": "connector",
+      "name": "imu_header",
+      "valid": true,
+      "blockers": [],
+      "warnings": [],
+      "metrics": {
+        "mating_cycles": 100.0,
+        "mating_cycles_min": 50.0,
+        "vibration_lock": true,
+        "strain_relief": true
+      }
+    }
+  ],
+  "blockers": [
+    "front_left_knee_reducer contact stress 1320MPa above allowable 1100MPa",
+    "front_left_knee_reducer estimated gear life 35h below target 50h",
+    "front_foot_pad foot pad wear life 42h below target 50h",
+    "front_leg_motor_bundle bend radius 18mm below required 25mm",
+    "front_leg_motor_bundle motion envelope is not clear",
+    "front_leg_motor_bundle has pinch risk",
+    "battery_xt30 mating cycles 30 below target 50",
+    "battery_xt30 missing vibration lock",
+    "battery_xt30 missing strain relief"
+  ],
+  "warnings": [],
+  "next_actions": [
+    "increase reducer size, improve material, or reduce knee torque for front_left_knee_reducer",
+    "reduce load or choose longer-life reducer for front_left_knee_reducer",
+    "select larger bearing or reduce radial load for front_left_knee_output_bearing",
+    "add support or move load path closer to front_left_knee_output_bearing",
+    "tighten bearing seat alignment for front_left_knee_output_bearing",
+    "change foot pad material or make front_foot_pad easy to replace",
+    "add damping or soften joint limit stop for front_knee_limit_stop",
+    "add threadlocker, locking nut, or preload control for front_knee_limit_stop",
+    "reroute front_leg_motor_bundle or increase service loop radius",
+    "move front_leg_motor_bundle outside leg sweep envelope",
+    "add clip, sleeve, or hard routing feature for front_leg_motor_bundle",
+    "choose connector with higher mating cycle rating for battery_xt30",
+    "add latch, retention clip, or locking connector for battery_xt30",
+    "add strain relief near battery_xt30"
+  ]
+}

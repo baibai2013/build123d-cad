@@ -38,6 +38,8 @@
 
 | 2026-06-08 | **新增 fea 子技能(P1 结构强度/刚度门禁层)** — ① 新增 `skills/fea/`，提供 `run_static_case.py`、`summarize_fea.py`、MVP load/material/output references、`examples/quadruped_mvp/` 和 pytest;② 父 `SKILL.md` / `multi-skill-router.md` 增加 FEA、有限元、结构强度、刚度、变形、安全系数、应力、模态、跌落冲击路由;③ `handoff-protocols.md` 增加 `reports/fea_report.json + static_case_report.json + fea_checklist.md` 输出接口;④ `dependencies.md` 加 `mechanical → fea → robot-dog-digital-twin`;⑤ `pytest.ini` 纳入新测试路径。 | fea · mechanical · robot-dog-digital-twin | hardware | 非破坏(纯新增);MVP 为 solver-metadata gate,示例故意低安全系数/超位移/低模态比产 blocker;自身 tests 6/6 |
 
+| 2026-06-08 | **新增 wear-fatigue 子技能(P1 磨损/疲劳/维护周期门禁层)** — ① 新增 `skills/wear-fatigue/`，提供 `estimate_wear.py`、`estimate_fatigue.py`、MVP gear/bearing/foot/harness/connector references、`examples/quadruped_mvp/` 和 pytest;② 父 `SKILL.md` / `multi-skill-router.md` 增加磨损、疲劳、轴承寿命、齿轮寿命、足垫磨耗、线束弯折、连接器松脱、维护周期路由;③ `handoff-protocols.md` 增加 `reports/wear_report.json + fatigue_report.json + maintenance_interval.md + wear_fatigue_report.md` 输出接口;④ `dependencies.md` 加 `mechanical/simulation/gait-optimization → wear-fatigue → robot-dog-digital-twin`;⑤ `pytest.ini` 纳入新测试路径。 | wear-fatigue · mechanical · simulation · gait-optimization · robot-dog-digital-twin | hardware | 非破坏(纯新增);MVP 为确定性寿命 gate,示例故意齿轮过应力/轴承寿命低/线束夹线/连接器缺 retention 产 blocker;自身 tests 6/6 |
+
 ## 登记规则
 
 - 任何修改 shared/ 的 PR 必须新增一行,内容含日期 / 变更 / 影响子技能 / Owner / 备注

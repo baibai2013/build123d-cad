@@ -1,0 +1,82 @@
+project: quadruped_mvp
+target_maintenance_hours: 50
+
+gears:
+  - name: front_left_knee_reducer
+    contact_stress_mpa: 1320
+    allowable_contact_stress_mpa: 1100
+    pitch_line_velocity_mps: 2.6
+    lubrication: light_grease
+    estimated_life_hours: 35
+  - name: rear_left_hip_reducer
+    contact_stress_mpa: 880
+    allowable_contact_stress_mpa: 1100
+    pitch_line_velocity_mps: 1.8
+    lubrication: light_grease
+    estimated_life_hours: 120
+
+bearings:
+  - name: front_left_knee_output_bearing
+    l10_life_hours: 28
+    radial_load_n: 210
+    radial_load_limit_n: 180
+    axial_load_n: 35
+    axial_load_limit_n: 60
+    rpm: 260
+    mounting_error_deg: 1.6
+    mounting_error_deg_max: 1.0
+  - name: rear_left_hip_bearing
+    l10_life_hours: 180
+    radial_load_n: 120
+    radial_load_limit_n: 180
+    axial_load_n: 20
+    axial_load_limit_n: 60
+    rpm: 180
+    mounting_error_deg: 0.4
+    mounting_error_deg_max: 1.0
+
+foot_pads:
+  - name: front_foot_pad
+    estimated_wear_life_hours: 42
+    impact_j: 4.8
+    friction_coefficient: 0.72
+    replaceable: true
+  - name: rear_foot_pad
+    estimated_wear_life_hours: 90
+    impact_j: 3.2
+    friction_coefficient: 0.74
+    replaceable: true
+
+joint_interfaces:
+  - name: front_knee_limit_stop
+    limit_impact_j: 7.5
+    limit_impact_j_max: 5.0
+    screw_loosening_risk: high
+  - name: rear_hip_limit_stop
+    limit_impact_j: 3.0
+    limit_impact_j_max: 5.0
+    screw_loosening_risk: low
+
+harnesses:
+  - name: front_leg_motor_bundle
+    min_bend_radius_mm: 18
+    required_bend_radius_mm: 25
+    motion_envelope_clear: false
+    pinch_risk: true
+  - name: body_power_harness
+    min_bend_radius_mm: 42
+    required_bend_radius_mm: 30
+    motion_envelope_clear: true
+    pinch_risk: false
+
+connectors:
+  - name: battery_xt30
+    mating_cycles: 30
+    mating_cycles_min: 50
+    vibration_lock: false
+    strain_relief: false
+  - name: imu_header
+    mating_cycles: 100
+    mating_cycles_min: 50
+    vibration_lock: true
+    strain_relief: true

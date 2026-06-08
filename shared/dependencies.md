@@ -32,7 +32,9 @@ simulation/actuator-sizing ─gait_validation.yaml/metrics─▶ gait-optimizati
 gait-optimization ─gait_score.json+best_gait_params.yaml─▶ robot-dog-digital-twin (G3 步态 blocker 输入)
 mechanical ─fea_cases.yaml/STEP metadata─▶ fea (结构强度/刚度/模态检查)
 fea ─fea_report.json+static_case_report.json─▶ robot-dog-digital-twin (G3/P1 结构 blocker 输入)
-mechanical/pcb/simulation/actuator-sizing/pcb-mechanical-reliability/circuit-simulation/gait-optimization/fea ─reports─▶ robot-dog-digital-twin (实体前 gate + design_score + failure_report)
+mechanical/simulation/gait-optimization ─wear_inputs.yaml/loads─▶ wear-fatigue (齿轮/轴承/足垫/线束/连接器寿命检查)
+wear-fatigue ─wear_report.json+fatigue_report.json+maintenance_interval.md─▶ robot-dog-digital-twin (G3/P1 寿命 blocker 输入)
+mechanical/pcb/simulation/actuator-sizing/pcb-mechanical-reliability/circuit-simulation/gait-optimization/fea/wear-fatigue ─reports─▶ robot-dog-digital-twin (实体前 gate + design_score + failure_report)
 robot-dog-digital-twin ─next_iteration_plan.md─▶ mechanical/pcb/simulation (参数迭代建议,不直接 import)
 ```
 
@@ -48,6 +50,7 @@ robot-dog-digital-twin ─next_iteration_plan.md─▶ mechanical/pcb/simulation
 | circuit-simulation | robot-dog-digital-twin / pcb / electronics-bom | 中——改 `circuit_check.json`/`power_budget.json`/`thermal_report.json` 字段需跑自身和 digital-twin gate 测试 |
 | gait-optimization | robot-dog-digital-twin / simulation / actuator-sizing | 中——改 `gait_score.json`/`best_gait_params.yaml` 字段需跑自身和 digital-twin gate 测试 |
 | fea | robot-dog-digital-twin / mechanical | 中——改 `fea_report.json`/`static_case_report.json` 字段需跑自身和 digital-twin gate 测试 |
+| wear-fatigue | robot-dog-digital-twin / mechanical / simulation / gait-optimization | 中——改 `wear_report.json`/`fatigue_report.json`/`maintenance_interval.md` 字段需跑自身和 digital-twin gate 测试 |
 | robot-dog-digital-twin | 作为编排层读取 mechanical / pcb / simulation / control / manufacturing 报告 | 中——改 gate/score 需跑自身测试 |
 | urdf | srdf / sdf / viewer | 中 |
 | parts-catalog | mechanical | 低 |
@@ -63,6 +66,7 @@ robot-dog-digital-twin ─next_iteration_plan.md─▶ mechanical/pcb/simulation
 `circuit-simulation` 是电路/电源/热风险校核层,产物被 digital-twin 编排层读取。
 `gait-optimization` 是步态评分与参数建议层,产物被 digital-twin 编排层读取。
 `fea` 是结构强度/刚度/模态校核层,产物被 digital-twin 编排层读取。
+`wear-fatigue` 是磨损/疲劳/维护周期校核层,产物被 digital-twin 编排层读取。
 
 ## 高扇入接口登记
 

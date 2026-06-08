@@ -22,6 +22,7 @@
 | circuit-simulation | 电路/电源/热风险报告 | `<project>/reports/`：`circuit_check.json` + `power_budget.json` + `thermal_report.json` + `protection_checklist.md` + `circuit_simulation_report.md` |
 | gait-optimization | 步态评分与参数建议 | `<project>/reports/`：`gait_score.json` + `best_gait_params.yaml` + `failed_candidates.json` + `trajectory.json` + `gait_optimization_report.md` |
 | fea | 结构 FEA 门禁报告 | `<project>/reports/`：`fea_report.json` + `static_case_report.json` + `fea_checklist.md` |
+| wear-fatigue | 磨损/疲劳/维护周期报告 | `<project>/reports/`：`wear_report.json` + `fatigue_report.json` + `maintenance_interval.md` + `wear_fatigue_report.md` |
 | robot-dog-digital-twin | 实体样机前编排报告 | `<project>/reports/`：`artifacts.collected.json` + `design_score.json` + `gate_report.json` + `gate_report.md` + `failure_report.md` + `next_iteration_plan.md` |
 
 ## 常见 handoff 链路
@@ -47,7 +48,9 @@
 19. **gait-optimization → robot-dog-digital-twin**：`reports/gait_score.json` + `reports/best_gait_params.yaml` → G3 步态 blocker 与设计评分输入。
 20. **mechanical → fea**：结构载荷/材料/初步求解 metadata → `reports/fea_report.json` + `reports/static_case_report.json`。
 21. **fea → robot-dog-digital-twin**：`reports/fea_report.json` → G3/P1 结构 blocker 与设计评分输入。
-22. **多域报告 → robot-dog-digital-twin**：`requirements.yaml` + `verification_matrix.yaml` + `artifacts.json` + 各域报告 → `reports/design_score.json` + `reports/failure_report.md` + `reports/next_iteration_plan.md`。
+22. **mechanical/simulation/gait → wear-fatigue**：齿轮、轴承、足垫、关节、线束、连接器 metadata + 载荷谱 → `reports/wear_report.json` + `reports/fatigue_report.json`。
+23. **wear-fatigue → robot-dog-digital-twin**：`reports/wear_report.json` + `reports/fatigue_report.json` + `reports/maintenance_interval.md` → G3/P1 寿命 blocker 与维护建议输入。
+24. **多域报告 → robot-dog-digital-twin**：`requirements.yaml` + `verification_matrix.yaml` + `artifacts.json` + 各域报告 → `reports/design_score.json` + `reports/failure_report.md` + `reports/next_iteration_plan.md`。
 
 ## 规则
 

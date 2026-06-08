@@ -1,0 +1,102 @@
+{
+  "project": "quadruped_mvp",
+  "valid": false,
+  "summary": {
+    "target_maintenance_hours": 50.0,
+    "component_count": 12,
+    "valid_component_count": 6,
+    "estimated_maintenance_interval_hours": 28.0,
+    "blocker_count": 14
+  },
+  "components": [
+    {
+      "type": "bearing",
+      "name": "front_left_knee_output_bearing",
+      "valid": false,
+      "blockers": [
+        "front_left_knee_output_bearing bearing L10 life 28h below target 50h",
+        "front_left_knee_output_bearing radial load 210N above limit 180N",
+        "front_left_knee_output_bearing mounting error 1.6deg above 1deg"
+      ],
+      "warnings": [],
+      "metrics": {
+        "l10_life_hours": 28.0,
+        "radial_load_n": 210.0,
+        "radial_load_limit_n": 180.0,
+        "axial_load_n": 35.0,
+        "axial_load_limit_n": 60.0,
+        "rpm": 260.0,
+        "mounting_error_deg": 1.6,
+        "mounting_error_deg_max": 1.0
+      }
+    },
+    {
+      "type": "bearing",
+      "name": "rear_left_hip_bearing",
+      "valid": true,
+      "blockers": [],
+      "warnings": [],
+      "metrics": {
+        "l10_life_hours": 180.0,
+        "radial_load_n": 120.0,
+        "radial_load_limit_n": 180.0,
+        "axial_load_n": 20.0,
+        "axial_load_limit_n": 60.0,
+        "rpm": 180.0,
+        "mounting_error_deg": 0.4,
+        "mounting_error_deg_max": 1.0
+      }
+    },
+    {
+      "type": "joint_interface",
+      "name": "front_knee_limit_stop",
+      "valid": false,
+      "blockers": [
+        "front_knee_limit_stop limit impact 7.5J above 5J",
+        "front_knee_limit_stop screw loosening risk is high"
+      ],
+      "warnings": [],
+      "metrics": {
+        "limit_impact_j": 7.5,
+        "limit_impact_j_max": 5.0,
+        "screw_loosening_risk": "high"
+      }
+    },
+    {
+      "type": "joint_interface",
+      "name": "rear_hip_limit_stop",
+      "valid": true,
+      "blockers": [],
+      "warnings": [],
+      "metrics": {
+        "limit_impact_j": 3.0,
+        "limit_impact_j_max": 5.0,
+        "screw_loosening_risk": "low"
+      }
+    }
+  ],
+  "blockers": [
+    "front_left_knee_output_bearing bearing L10 life 28h below target 50h",
+    "front_left_knee_output_bearing radial load 210N above limit 180N",
+    "front_left_knee_output_bearing mounting error 1.6deg above 1deg",
+    "front_knee_limit_stop limit impact 7.5J above 5J",
+    "front_knee_limit_stop screw loosening risk is high"
+  ],
+  "warnings": [],
+  "next_actions": [
+    "increase reducer size, improve material, or reduce knee torque for front_left_knee_reducer",
+    "reduce load or choose longer-life reducer for front_left_knee_reducer",
+    "select larger bearing or reduce radial load for front_left_knee_output_bearing",
+    "add support or move load path closer to front_left_knee_output_bearing",
+    "tighten bearing seat alignment for front_left_knee_output_bearing",
+    "change foot pad material or make front_foot_pad easy to replace",
+    "add damping or soften joint limit stop for front_knee_limit_stop",
+    "add threadlocker, locking nut, or preload control for front_knee_limit_stop",
+    "reroute front_leg_motor_bundle or increase service loop radius",
+    "move front_leg_motor_bundle outside leg sweep envelope",
+    "add clip, sleeve, or hard routing feature for front_leg_motor_bundle",
+    "choose connector with higher mating cycle rating for battery_xt30",
+    "add latch, retention clip, or locking connector for battery_xt30",
+    "add strain relief near battery_xt30"
+  ]
+}
