@@ -27,6 +27,7 @@
 | gait-optimization | 步态优化、行走算法、trot、walk、gait_score、best_gait_params、foot slip、body roll、body pitch、cost of transport、会不会摔 | ✅ P0 步态 |
 | motion-control | IK、FK、逆运动学、运动控制、gait generator、trot trajectory、walk trajectory、controller_params、trajectory.json、足端目标、相位轨迹 | ✅ P1 控制 |
 | firmware | 固件、嵌入式、MCU、FOC、电机固件、CAN、CAN-FD、校准、急停、欠压、过流、firmware_report、can_frames、calibration | ✅ P2 dry-run |
+| sim2real-calibration | sim2real、仿真实机对齐、真实日志、物理样机日志、参数校准、摩擦校准、扭矩比例、延迟校准、parameter_update、calibration_dataset | ✅ P2 校准 |
 | fea | FEA、有限元、结构强度、刚度、变形、位移、安全系数、应力、模态、跌落冲击、fea_report、会不会断 | ✅ P1 结构 |
 | wear-fatigue | 磨损、疲劳、轴承寿命、齿轮寿命、足垫磨耗、关节限位撞击、螺丝松动、线束弯折、夹线风险、连接器松脱、维护周期、wear_report、fatigue_report | ✅ P1 寿命 |
 | mujoco-simulation | MuJoCo、MJCF、高保真动力学、接触摩擦、斜坡、台阶、推扰、drop、slope、step obstacle、push disturbance、mujoco_result、sim_result | ✅ P1 MuJoCo |
@@ -54,6 +55,7 @@
 - "这个步态/行走算法会不会摔 / 下一版步态参数怎么改" → gait-optimization(主,产 gait_score.json + best_gait_params.yaml)
 - "生成 IK 解 / trot 轨迹 / controller_params 给 simulation 或 firmware" → motion-control(主,产 ik_report.json + trajectory.json + controller_params.yaml)
 - "规划 MCU 固件 / CAN 帧 / 急停 / 校准 dry-run" → firmware(主,产 firmware_report.json + firmware/project_manifest.json)
+- "对比仿真和实机日志 / 校准摩擦、延迟、扭矩比例" → sim2real-calibration(主,产 sim2real_calibration.json + parameter_update.yaml)
 - "这个腿/机身强度够吗 / 变形大不大 / 要不要 FEA" → fea(主,产 fea_report.json + static_case_report.json)
 - "这些齿轮/轴承/足垫/线束/连接器多久会磨坏 / 维护周期多长" → wear-fatigue(主,产 wear_report.json + fatigue_report.json + maintenance_interval.md)
 - "用 MuJoCo/MJCF 跑斜坡、台阶、drop、推扰和接触摩擦" → mujoco-simulation(主,产 mujoco_result.json + *.sim_result.json)

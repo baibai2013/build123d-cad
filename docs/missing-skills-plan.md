@@ -3,7 +3,8 @@
 > 状态:**P0 孵化中**。`robot-dog-digital-twin`、`requirements-verification`
 > 与 `actuator-sizing`、`pcb-mechanical-reliability`、`circuit-simulation`、
 > `gait-optimization`、`motion-control`、`fea`、`wear-fatigue`、`mujoco-simulation`、
-> `electronics-bom`、`firmware` dry-run MVP 已落地;其余条目仍是缺口分析与子技能规划,
+> `electronics-bom`、`firmware` dry-run、`sim2real-calibration` MVP 已落地;
+> 其余条目仍是缺口分析与子技能规划,
 > 后续逐个按 `docs/adding-new-subskill.md` 流程立项。
 >
 > 关联:现有 12 子技能(见 `SKILL.md`)、架构红线(见本文 §2)、handoff 约定(`shared/handoff-protocols.md`)。
@@ -666,7 +667,41 @@ trajectory.json
 
 ---
 
-### 3.6 `integration` — 整机集成与上电调试(够不到,先不做)
+### 3.6 `sim2real-calibration` — 仿真-实机参数对齐
+
+**落地状态(2026-06-08)**:已以 `skills/sim2real-calibration/` MVP 落地,包含
+`calibration_dataset.yaml` 聚合指标输入、仿真/实机速度、打滑、扭矩、roll/pitch、控制延迟误差对比、
+`sim2real_calibration.json`、`sim2real_report.md`、`parameter_update.yaml`、示例 `quadruped_mvp/`
+和 pytest。第一版只做文件化指标对齐,不连接实机、不采集日志、不自动写回仿真参数。
+
+**定位**:实体样机出现后,把真实测试日志回灌数字孪生,减少仿真和实机差距。它不是实体测试替代品,
+而是让下一轮仿真更贴近真实机器。
+
+**边界(做什么)**:
+
+- 对比仿真和实机的速度、足端打滑、峰值关节扭矩、body roll/pitch、控制延迟。
+- 按 tolerance 产 blocker,判断当前数字孪生是否可信。
+- 给出保守参数更新建议,如摩擦系数比例、驱动损耗、actuator load scale、控制延迟。
+- 输出下一轮仿真/实机复测建议。
+
+**产物**:
+
+```text
+sim2real_calibration.json
+sim2real_report.md
+parameter_update.yaml
+```
+
+**后续增强**:
+
+- 从真实 log/rosbag/CSV 自动提取聚合指标。
+- 支持时序对齐、延迟估计、系统辨识和参数优化。
+- 将 `parameter_update.yaml` 自动喂给 `simulation` / `mujoco-simulation` 的下一轮场景。
+- 真实数据采集仍由 `integration` 或人工测试 gate 触发。
+
+---
+
+### 3.7 `integration` — 整机集成与上电调试(够不到,先不做)
 
 **定位**:bring-up checklist、HIL(硬件在环)、实物数据回采对比仿真。
 
@@ -880,7 +915,8 @@ skills/<skill-name>/
 | P1-4 | `skills/electronics-bom/` | ✅ 原占位已填实为离线 curated BOM 选型 MVP |
 | P1-5 | `skills/mujoco-simulation/` real backend | 真实 MuJoCo 求解器接入 |
 | P2-1 | `skills/firmware/` | ✅ 固件 dry-run 合同、安全和校准 gate 已能产 blocker |
-| P2-2 | `skills/sim2real-calibration/`、`skills/integration/` | 真实控制和实物闭环进入人工 gate |
+| P2-2 | `skills/sim2real-calibration/` | ✅ 仿真-实机指标对齐和参数更新建议 MVP 已能产 blocker |
+| P2-3 | `skills/integration/` | 真实控制和实物闭环进入人工 gate |
 
 ### 4.5 模块间上下文清理纪律
 

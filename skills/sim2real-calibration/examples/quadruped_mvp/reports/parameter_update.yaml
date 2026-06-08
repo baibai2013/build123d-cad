@@ -1,0 +1,8 @@
+project: quadruped_mvp
+parameter_update:
+  drivetrain_loss_add: 0.135
+  foot_friction_scale: 0.900
+  actuator_load_scale: 1.183
+  control_latency_ms_add: 20.000
+notes:
+  - conservative MVP suggestions; rerun simulation and physical test after applying

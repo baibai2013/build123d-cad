@@ -1,0 +1,50 @@
+{
+  "project": "quadruped_mvp",
+  "valid": false,
+  "blockers": [
+    "speed error -26.9% exceeds 15%",
+    "slip error 0.100 exceeds 0.05",
+    "torque error 36.5% exceeds 20%",
+    "posture error roll=3.5deg pitch=3.2deg exceeds 3deg",
+    "latency error 20.0ms exceeds 10ms"
+  ],
+  "warnings": [],
+  "summary": {
+    "speed_error_pct": -26.923,
+    "slip_error_abs": 0.1,
+    "torque_error_pct": 36.538,
+    "roll_error_deg": 3.5,
+    "pitch_error_deg": 3.2,
+    "latency_error_ms": 20.0
+  },
+  "simulation": {
+    "average_speed_mps": 0.52,
+    "foot_slip_ratio": 0.08,
+    "peak_joint_torque_nm": 5.2,
+    "max_body_roll_deg": 5.0,
+    "max_body_pitch_deg": 6.0,
+    "controller_latency_ms": 8
+  },
+  "real": {
+    "average_speed_mps": 0.38,
+    "foot_slip_ratio": 0.18,
+    "peak_joint_torque_nm": 7.1,
+    "max_body_roll_deg": 8.5,
+    "max_body_pitch_deg": 9.2,
+    "controller_latency_ms": 28
+  },
+  "tolerances": {
+    "speed_error_pct_max": 15,
+    "slip_error_abs_max": 0.05,
+    "torque_error_pct_max": 20,
+    "posture_error_deg_max": 3,
+    "latency_error_ms_max": 10
+  },
+  "next_actions": [
+    "increase drivetrain loss or retune gait speed model",
+    "adjust friction/contact parameters and foot material model",
+    "increase actuator load scale or inertia estimate",
+    "review COM, inertia, and contact damping",
+    "add control latency parameter and rerun gait simulation"
+  ]
+}

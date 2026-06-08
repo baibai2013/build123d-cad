@@ -1,0 +1,24 @@
+project: quadruped_mvp
+
+tolerances:
+  speed_error_pct_max: 15
+  slip_error_abs_max: 0.05
+  torque_error_pct_max: 20
+  posture_error_deg_max: 3
+  latency_error_ms_max: 10
+
+simulation:
+  average_speed_mps: 0.52
+  foot_slip_ratio: 0.08
+  peak_joint_torque_nm: 5.2
+  max_body_roll_deg: 5.0
+  max_body_pitch_deg: 6.0
+  controller_latency_ms: 8
+
+real:
+  average_speed_mps: 0.38
+  foot_slip_ratio: 0.18
+  peak_joint_torque_nm: 7.1
+  max_body_roll_deg: 8.5
+  max_body_pitch_deg: 9.2
+  controller_latency_ms: 28

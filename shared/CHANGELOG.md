@@ -48,6 +48,8 @@
 
 | 2026-06-08 | **新增 firmware 子技能(P2 dry-run 固件合同层)** — ① 新增 `skills/firmware/`，提供 `generate_project.py`、`run_firmware_tests.py`、MVP target/safety/CAN/calibration references、`examples/quadruped_mvp/` 和 pytest;② 父 `SKILL.md` / `multi-skill-router.md` 增加固件、嵌入式、MCU、FOC、CAN、校准、急停、欠压、过流路由;③ `handoff-protocols.md` 增加 `reports/firmware_report.json + firmware_test_report.json` 和 `firmware/project_manifest.json + can_frames.md + calibration.json` 输出接口;④ `dependencies.md` 加 `firmware → robot-dog-digital-twin`;⑤ `pytest.ini` 纳入新测试路径。 | firmware · electronics-bom · motion-control · pcb · robot-dog-digital-twin | hardware | 非破坏(纯新增);MVP 不编译、不烧录、不上电,示例故意欠压/热阈值/编码器校准 blocker;自身 tests 4/4 |
 
+| 2026-06-08 | **新增 sim2real-calibration 子技能(P2 仿真-实机校准层)** — ① 新增 `skills/sim2real-calibration/`，提供 `compare_logs.py`、`propose_parameter_update.py`、MVP metrics/update/output references、`examples/quadruped_mvp/` 和 pytest;② 父 `SKILL.md` / `multi-skill-router.md` 增加 sim2real、仿真实机对齐、真实日志、摩擦校准、扭矩比例、延迟校准路由;③ `handoff-protocols.md` 增加 `reports/sim2real_calibration.json + sim2real_report.md + parameter_update.yaml` 输出接口;④ `dependencies.md` 加 `sim2real-calibration → simulation/mujoco-simulation/robot-dog-digital-twin`;⑤ `pytest.ini` 纳入新测试路径。 | sim2real-calibration · simulation · mujoco-simulation · firmware · robot-dog-digital-twin | hardware | 非破坏(纯新增);MVP 为聚合指标对比,示例故意速度/打滑/扭矩/延迟 mismatch 产 blocker;自身 tests 4/4 |
+
 ## 登记规则
 
 - 任何修改 shared/ 的 PR 必须新增一行,内容含日期 / 变更 / 影响子技能 / Owner / 备注
