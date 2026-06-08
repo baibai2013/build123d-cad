@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="180" height="54" viewBox="0 0 180 54" role="img" aria-label="build123d-parts-lib commit activity sparkline">
+  <rect width="180" height="54" fill="none"/>
+  <path d="M3 41 C14 41 23 40 31 38 S45 15 52 19 S64 28 70 17 S82 33 90 25 S101 40 108 36 S120 31 127 34 S139 41 146 27 S158 35 165 31 S173 39 177 34" fill="none" stroke="#2ea043" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M3 41 C14 41 23 40 31 38 S45 15 52 19 S64 28 70 17 S82 33 90 25 S101 40 108 36 S120 31 127 34 S139 41 146 27 S158 35 165 31 S173 39 177 34 L177 50 L3 50 Z" fill="#2ea043" opacity="0.16"/>
+</svg>

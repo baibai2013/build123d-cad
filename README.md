@@ -57,11 +57,11 @@
 
 ### 核心仓库入口
 
-| 仓库 | 定位 | 入口 |
-|---|---|---|
-| `build123d-cad` | 硬件设计 Super Skill 主仓库：25 个子技能、路由、协议、脚本与测试 | [baibai2013/build123d-cad](https://github.com/baibai2013/build123d-cad) |
-| `build123d-cad-skill-test` | CAD / 装配 / viewer / URDF / GLB 动画测试案例集合 | [baibai2013/build123d-cad-skill-test](https://github.com/baibai2013/build123d-cad-skill-test) |
-| `build123d-parts-lib` | build123d 参数化标准件库：紧固件、轴承、舵机、传动、销、密封等 | [baibai2013/build123d-parts-lib](https://github.com/baibai2013/build123d-parts-lib) |
+| 仓库 | 定位 | Commit 波浪 | 入口 |
+|---|---|---|---|
+| `build123d-cad` | 硬件设计 Super Skill 主仓库：25 个子技能、路由、协议、脚本与测试 | <img src="assets/github-home/build123d-cad-sparkline.svg" alt="build123d-cad commit activity" width="150"> | [baibai2013/build123d-cad](https://github.com/baibai2013/build123d-cad) |
+| `build123d-cad-skill-test` | CAD / 装配 / viewer / URDF / GLB 动画测试案例集合 | <img src="assets/github-home/build123d-cad-skill-test-sparkline.svg" alt="build123d-cad-skill-test commit activity" width="150"> | [baibai2013/build123d-cad-skill-test](https://github.com/baibai2013/build123d-cad-skill-test) |
+| `build123d-parts-lib` | build123d 参数化标准件库：紧固件、轴承、舵机、传动、销、密封等 | <img src="assets/github-home/build123d-parts-lib-sparkline.svg" alt="build123d-parts-lib commit activity" width="150"> | [baibai2013/build123d-parts-lib](https://github.com/baibai2013/build123d-parts-lib) |
 
 ### 全部能力矩阵
 
@@ -75,7 +75,7 @@
 | 运动与仿真 | [`simulation`](skills/simulation/) · [`mujoco-simulation`](skills/mujoco-simulation/) · [`gait-optimization`](skills/gait-optimization/) · [`motion-control`](skills/motion-control/) | PyBullet / MuJoCo 场景门禁、步态评分、IK/FK、轨迹与控制参数 |
 | 实体前闭环 | [`firmware`](skills/firmware/) · [`sim2real-calibration`](skills/sim2real-calibration/) · [`integration`](skills/integration/) · [`robot-dog-digital-twin`](skills/robot-dog-digital-twin/) | 固件 dry-run、仿真实机校准、bring-up/HIL gate、机械狗数字孪生总控 |
 
-> GitHub 原生 pinned repositories 最多只能展示 6 个；“全部能力”建议放在 README 表格里展示，仓库卡片只 pin 最关键的 3-6 个入口。
+> GitHub 原生 pinned repositories 最多只能展示 6 个，且不能手动控制右侧 activity sparkline；这里用 README 内嵌 SVG 模拟 pin 卡片里的 commit 波浪。
 
 ---
 
