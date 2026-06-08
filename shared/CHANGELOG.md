@@ -44,6 +44,8 @@
 
 | 2026-06-08 | **新增 motion-control 子技能(P1 IK/步态轨迹层)** — ① 新增 `skills/motion-control/`，提供 `solve_ik.py`、`generate_gait.py`、MVP IK/gait/output references、`examples/quadruped_mvp/` 和 pytest;② 父 `SKILL.md` / `multi-skill-router.md` 增加 IK、FK、逆运动学、运动控制、gait generator、trajectory、controller_params 路由;③ `handoff-protocols.md` 增加 `reports/ik_report.json + motion_control_report.json` 与 `control/trajectory.json + controller_params.yaml` 输出接口;④ `dependencies.md` 加 `motion-control → simulation/mujoco-simulation/firmware/robot-dog-digital-twin`;⑤ `pytest.ini` 纳入新测试路径。 | motion-control · simulation · mujoco-simulation · firmware · robot-dog-digital-twin | hardware | 非破坏(纯新增);MVP 为 2-link IK + 相位轨迹,示例故意 IK overreach 产 blocker;自身 tests 5/5 |
 
+| 2026-06-08 | **electronics-bom 从 P3 占位升级为 P1 离线选型 MVP** — ① 更新 `skills/electronics-bom/`，提供 `select_parts.py`、`check_availability.py`、离线 curated robot electronics catalog、`examples/quadruped_mvp/` 和 pytest;② 父 `SKILL.md` / `multi-skill-router.md` 将 electronics-bom 状态改为 active/P1,增加 MCU、电机驱动、编码器、IMU、电源器件、连接器路由;③ `handoff-protocols.md` 增加 `reports/electronics_bom.json + availability_report.json + electrical/library/selected_parts.json` 输出接口;④ `dependencies.md` 加 `electronics-bom → pcb/circuit-simulation/firmware/robot-dog-digital-twin`;⑤ tests 从 placeholder 扩展到离线选型与可用性报告。 | electronics-bom · pcb · circuit-simulation · firmware · robot-dog-digital-twin | hardware | 非破坏(占位填实);MVP 不做实时库存/价格或采购;示例故意高电流驱动需求产 blocker;自身 tests 7/7 |
+
 ## 登记规则
 
 - 任何修改 shared/ 的 PR 必须新增一行,内容含日期 / 变更 / 影响子技能 / Owner / 备注

@@ -1,0 +1,49 @@
+project: quadruped_mvp
+
+constraints:
+  assembly_preference: jlcpcb_basic
+  package_preference: smd
+  live_lookup: false
+
+requirements:
+  - category: mcu
+    quantity: 1
+    required: true
+    interface: can
+    min_gpio: 24
+    package: lqfp
+  - category: motor_driver
+    quantity: 12
+    required: true
+    min_voltage_v: 24
+    min_current_a: 8
+    interface: pwm
+    package: qfn
+  - category: motor_driver
+    quantity: 12
+    required: true
+    min_voltage_v: 24
+    min_current_a: 45
+    interface: pwm
+    package: qfn
+  - category: encoder
+    quantity: 12
+    required: true
+    interface: spi
+    package: tssop
+  - category: imu
+    quantity: 1
+    required: true
+    interface: i2c
+    package: lga
+  - category: buck_regulator
+    quantity: 2
+    required: true
+    min_voltage_v: 24
+    min_current_a: 3
+    package: qfn
+  - category: battery_connector
+    quantity: 1
+    required: true
+    min_current_a: 30
+    package: through_hole

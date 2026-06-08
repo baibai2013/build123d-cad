@@ -1,0 +1,158 @@
+{
+  "project": "quadruped_mvp",
+  "valid": false,
+  "mode": "offline_curated_catalog",
+  "blockers": [
+    "best motor_driver candidate TMC6300-LA does not meet required constraints"
+  ],
+  "warnings": [
+    "offline catalog mode: stock and price are not live",
+    "TMC6300-LA is not JLCPCB basic tier",
+    "AS5047P is not JLCPCB basic tier",
+    "ICM-42688-P is not JLCPCB basic tier",
+    "XT30PW-M is not JLCPCB basic tier"
+  ],
+  "summary": {
+    "requirement_count": 7,
+    "selected_count": 7,
+    "assembly_preference": "jlcpcb_basic"
+  },
+  "selected_parts": [
+    {
+      "category": "mcu",
+      "quantity": 1,
+      "required": true,
+      "mpn": "STM32G431CBT6",
+      "manufacturer": "STMicroelectronics",
+      "package": "lqfp",
+      "assembly_tier": "jlcpcb_basic",
+      "stock_status": "catalog_ok",
+      "lifecycle": "active",
+      "score": 56,
+      "reasons": [
+        "matches interface can",
+        "gpio 30 >= 24",
+        "matches package lqfp",
+        "matches assembly preference jlcpcb_basic"
+      ],
+      "notes": "motor-control friendly MCU with CAN and timers",
+      "valid": true
+    },
+    {
+      "category": "motor_driver",
+      "quantity": 12,
+      "required": true,
+      "mpn": "TMC6300-LA",
+      "manufacturer": "Analog Devices/Trinamic",
+      "package": "qfn",
+      "assembly_tier": "jlcpcb_extended",
+      "stock_status": "catalog_ok",
+      "lifecycle": "active",
+      "score": 78,
+      "reasons": [
+        "matches interface pwm",
+        "voltage 24V >= 24V",
+        "current 8A >= 8A",
+        "matches package qfn"
+      ],
+      "notes": "compact low-voltage 3-phase driver candidate",
+      "valid": true
+    },
+    {
+      "category": "motor_driver",
+      "quantity": 12,
+      "required": true,
+      "mpn": "TMC6300-LA",
+      "manufacturer": "Analog Devices/Trinamic",
+      "package": "qfn",
+      "assembly_tier": "jlcpcb_extended",
+      "stock_status": "catalog_ok",
+      "lifecycle": "active",
+      "score": -42,
+      "reasons": [
+        "matches interface pwm",
+        "voltage 24V >= 24V",
+        "current 8A below 45A",
+        "matches package qfn"
+      ],
+      "notes": "compact low-voltage 3-phase driver candidate",
+      "valid": false
+    },
+    {
+      "category": "encoder",
+      "quantity": 12,
+      "required": true,
+      "mpn": "AS5047P",
+      "manufacturer": "ams OSRAM",
+      "package": "tssop",
+      "assembly_tier": "jlcpcb_extended",
+      "stock_status": "catalog_ok",
+      "lifecycle": "active",
+      "score": 38,
+      "reasons": [
+        "matches interface spi",
+        "matches package tssop"
+      ],
+      "notes": "magnetic rotary encoder candidate for joints",
+      "valid": true
+    },
+    {
+      "category": "imu",
+      "quantity": 1,
+      "required": true,
+      "mpn": "ICM-42688-P",
+      "manufacturer": "TDK InvenSense",
+      "package": "lga",
+      "assembly_tier": "jlcpcb_extended",
+      "stock_status": "catalog_ok",
+      "lifecycle": "active",
+      "score": 38,
+      "reasons": [
+        "matches interface i2c",
+        "matches package lga"
+      ],
+      "notes": "common 6-axis IMU candidate",
+      "valid": true
+    },
+    {
+      "category": "buck_regulator",
+      "quantity": 2,
+      "required": true,
+      "mpn": "MP1584EN",
+      "manufacturer": "Monolithic Power Systems",
+      "package": "soic",
+      "assembly_tier": "jlcpcb_basic",
+      "stock_status": "catalog_ok",
+      "lifecycle": "active",
+      "score": 58,
+      "reasons": [
+        "voltage 28V >= 24V",
+        "current 3A >= 3A",
+        "matches assembly preference jlcpcb_basic"
+      ],
+      "notes": "common low-cost buck regulator candidate",
+      "valid": true
+    },
+    {
+      "category": "battery_connector",
+      "quantity": 1,
+      "required": true,
+      "mpn": "XT30PW-M",
+      "manufacturer": "AMASS",
+      "package": "through_hole",
+      "assembly_tier": "manual",
+      "stock_status": "catalog_ok",
+      "lifecycle": "active",
+      "score": 38,
+      "reasons": [
+        "current 30A >= 30A",
+        "matches package through_hole"
+      ],
+      "notes": "right-angle battery connector candidate",
+      "valid": true
+    }
+  ],
+  "next_actions": [
+    "select higher rated motor_driver part or relax constraints"
+  ]
+}

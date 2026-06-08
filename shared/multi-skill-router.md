@@ -19,7 +19,7 @@
 | simulation | 动力学仿真、pybullet、跌落/站稳测试、步态仿真、headless sim、会不会翻、关节限位、接触力 | ✅ P1 |
 | bambu-labs | Bambu 打印机、上传打印、AMS | 🟡 P2 |
 | pcb | PCB、原理图、tscircuit、代码写PCB、TSX、Gerber、出件、嘉立创、JLCPCB、下单打板、PCB 3D、DFM、EDA | ✅ P1(tscircuit) |
-| electronics-bom (WIP) | 电子 BOM、元件选型、JLCPCB/Octopart | 🟡 P3 占位 |
+| electronics-bom | 电子 BOM、元件选型、MCU、驱动芯片、电机驱动、编码器、IMU、电源器件、连接器、JLCPCB、LCSC、Octopart、selected_parts、electronics_bom | ✅ P1 BOM |
 | requirements-verification | 需求合同、requirements.yaml、verification_matrix.yaml、验证矩阵、gate 阈值、risk register、需求冻结 | ✅ P0 合同 |
 | actuator-sizing | 执行器选型、电机扭矩、关节扭矩、减速器、速度裕量、热裕量、torque_margin、actuator_spec、机械狗电机够不够 | ✅ P0 执行器 |
 | pcb-mechanical-reliability | PCB刚度、PCB挠曲、PCB硬度、支撑柱、固定孔、连接器受力、线束弯折、PCB装配间隙、pcb_fit、pcb_reliability_report | ✅ P0 PCB 结构 |

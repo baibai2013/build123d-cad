@@ -2,8 +2,8 @@
 
 > 状态:**P0 孵化中**。`robot-dog-digital-twin`、`requirements-verification`
 > 与 `actuator-sizing`、`pcb-mechanical-reliability`、`circuit-simulation`、
-> `gait-optimization`、`motion-control`、`fea`、`wear-fatigue`、`mujoco-simulation` MVP 已落地;
-> 其余条目仍是缺口分析与子技能规划,
+> `gait-optimization`、`motion-control`、`fea`、`wear-fatigue`、`mujoco-simulation`、
+> `electronics-bom` MVP 已落地;其余条目仍是缺口分析与子技能规划,
 > 后续逐个按 `docs/adding-new-subskill.md` 流程立项。
 >
 > 关联:现有 12 子技能(见 `SKILL.md`)、架构红线(见本文 §2)、handoff 约定(`shared/handoff-protocols.md`)。
@@ -60,7 +60,7 @@
 | ② 机械 | 参数化建模 / 装配 / 标准件 / 减重 | `mechanical` `parts-catalog` | ✅ 强 |
 | ② 机械验证 | 受力 / 疲劳 / 模态(FEA) | `fea` | ✅ MVP |
 | ② 机械可靠性 | 磨损 / 轴承寿命 / 齿轮寿命 / 足垫磨耗 / 线束弯折 | `wear-fatigue` | ✅ MVP |
-| ③ 电子 | 原理图 / PCB / BOM / 出件下单 | `pcb` `electronics-bom`(占位) | 🟡 板能造,选型弱 |
+| ③ 电子 | 原理图 / PCB / BOM / 出件下单 | `pcb` `electronics-bom` | ✅ PCB 强,BOM MVP |
 | ③ PCB 机械可靠性 | PCB 刚度 / 挠曲 / 固定孔应力 / 连接器受力 / 机身干涉 | `pcb-mechanical-reliability` | ✅ MVP |
 | ③ 电路验证 | 电源预算 / 电流峰值 / 保护电路 / 热风险 / SPICE 粗验 | `circuit-simulation` | ✅ MVP |
 | ④ **固件** | MCU 驱动 / FOC 电机环 / 总线协议 / 标定 | —— | ❌ **完全空白** |
@@ -503,7 +503,12 @@ protection_checklist.md
 
 ### 3.4 `electronics-bom` — 电子选型上游(填满现有占位)
 
-**定位**:现在是 P3 占位。填满后给 `pcb` 的 `tsci import` 喂 curated 料库,
+**落地状态(2026-06-08)**:已将原 P3 占位升级为 `skills/electronics-bom/` P1 MVP,包含
+`bom_request.yaml` 输入、离线 curated robot electronics catalog、MCU/电机驱动/编码器/IMU/
+电源/连接器候选选择、`electronics_bom.json`、`selected_parts.json`、可用性报告、示例
+`quadruped_mvp/` 和 pytest。第一版不做实时库存/价格查询、不做采购下单。
+
+**定位**:给 `pcb` 的 `tsci import` 喂 curated 料库,
 解决"选哪颗 MCU/驱动/编码器"靠临场判断的问题。
 
 **边界(做什么)**:
@@ -513,10 +518,17 @@ protection_checklist.md
 - 功耗/成本预算:喂给系统层(§3.5)
 
 **handoff**:
-- 下游 `pcb`(选型结果 → `tsci import` 封装)、`firmware`(MCU/外设确定)
-- 产物:`output/<task>/bom/` —— `bom.json` + `selection-rationale.md`
+- 下游 `pcb`(选型结果 → `tsci import` 封装)、`circuit-simulation`(器件能力/电源预算)、
+  `firmware`(MCU/外设确定)。
+- 产物:`electronics_bom.json`、`availability_report.json`、`selection_rationale.md`、
+  `electrical/library/selected_parts.json`。
 
-**注**:这是**已有占位的填充**,不是新建,成本最低。
+**后续增强**:
+
+- 接入 JLCPCB/LCSC/Octopart live lookup,但必须标记为实时查询结果。
+- 输出 tscircuit import 友好的封装/footprint metadata。
+- 增加替代料、库存风险、生命周期、成本预算和供应风险评分。
+- 与 `circuit-simulation` 共享器件电流、热阻、封装和保护参数。
 
 ---
 
@@ -851,7 +863,8 @@ skills/<skill-name>/
 | P1-1 | `skills/fea/`、`skills/wear-fatigue/` | ✅ FEA 与磨损疲劳 MVP 均已能产 blocker |
 | P1-2 | `skills/mujoco-simulation/` | ✅ MuJoCo 场景合同与 metadata backend 已能产动力学 blocker |
 | P1-3 | `skills/motion-control/` | ✅ IK 与相位步态轨迹 MVP 已能产 blocker 和 trajectory |
-| P1-4 | `skills/mujoco-simulation/` real backend | 真实 MuJoCo 求解器接入 |
+| P1-4 | `skills/electronics-bom/` | ✅ 原占位已填实为离线 curated BOM 选型 MVP |
+| P1-5 | `skills/mujoco-simulation/` real backend | 真实 MuJoCo 求解器接入 |
 | P2 | `skills/firmware/`、`skills/sim2real-calibration/`、`skills/integration/` | 真实控制和实物闭环进入人工 gate |
 
 ### 4.5 模块间上下文清理纪律

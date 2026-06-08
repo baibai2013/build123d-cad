@@ -51,7 +51,7 @@ description: |
 | sendcutsend     | 激光切割 / 钣金 / DXF 报价 / kerf / SendCutSend                  | skills/sendcutsend/SKILL.md     | P1 |
 | bambu-labs      | Bambu / 打印机 / 上传打印 / AMS / send to printer                | skills/bambu-labs/SKILL.md      | P2 |
 | pcb             | PCB / 原理图 / tscircuit / 代码写PCB / TSX / Gerber / 出件 / 嘉立创 / JLCPCB / 下单打板 / PCB 3D / DFM / EDA | skills/pcb/SKILL.md | P1 ✅ tscircuit |
-| electronics-bom (WIP) | 电子 BOM / 元件库 / JLCPCB / Octopart / 元件型号           | skills/electronics-bom/SKILL.md | P3 占位 |
+| electronics-bom | 电子 BOM / 元件库 / MCU / 电机驱动 / 编码器 / 电源器件 / JLCPCB / Octopart / 元件型号 | skills/electronics-bom/SKILL.md | P1 ✅ BOM |
 | requirements-verification | 需求合同 / requirements.yaml / verification_matrix.yaml / 验证矩阵 / gate 阈值 / risk register | skills/requirements-verification/SKILL.md | P0 ✅ 合同 |
 | actuator-sizing | 执行器选型 / 电机扭矩 / 关节扭矩裕量 / 减速器 / 速度裕量 / 热裕量 / actuator_spec / torque_margin | skills/actuator-sizing/SKILL.md | P0 ✅ 执行器 |
 | pcb-mechanical-reliability | PCB 刚度 / 挠曲 / 支撑柱 / 固定孔 / 连接器受力 / 线束弯折 / PCB 装配间隙 / pcb_fit | skills/pcb-mechanical-reliability/SKILL.md | P0 ✅ PCB 结构 |

@@ -1,0 +1,66 @@
+{
+  "project": "quadruped_mvp",
+  "valid": true,
+  "mode": "offline_curated_catalog",
+  "blockers": [],
+  "warnings": [
+    "STM32G431CBT6 requires live stock verification",
+    "TMC6300-LA requires live stock verification",
+    "TMC6300-LA requires live stock verification",
+    "AS5047P requires live stock verification",
+    "ICM-42688-P requires live stock verification",
+    "MP1584EN requires live stock verification",
+    "XT30PW-M requires live stock verification"
+  ],
+  "parts": [
+    {
+      "mpn": "STM32G431CBT6",
+      "category": "mcu",
+      "stock_status": "catalog_ok",
+      "lifecycle": "active",
+      "assembly_tier": "jlcpcb_basic"
+    },
+    {
+      "mpn": "TMC6300-LA",
+      "category": "motor_driver",
+      "stock_status": "catalog_ok",
+      "lifecycle": "active",
+      "assembly_tier": "jlcpcb_extended"
+    },
+    {
+      "mpn": "TMC6300-LA",
+      "category": "motor_driver",
+      "stock_status": "catalog_ok",
+      "lifecycle": "active",
+      "assembly_tier": "jlcpcb_extended"
+    },
+    {
+      "mpn": "AS5047P",
+      "category": "encoder",
+      "stock_status": "catalog_ok",
+      "lifecycle": "active",
+      "assembly_tier": "jlcpcb_extended"
+    },
+    {
+      "mpn": "ICM-42688-P",
+      "category": "imu",
+      "stock_status": "catalog_ok",
+      "lifecycle": "active",
+      "assembly_tier": "jlcpcb_extended"
+    },
+    {
+      "mpn": "MP1584EN",
+      "category": "buck_regulator",
+      "stock_status": "catalog_ok",
+      "lifecycle": "active",
+      "assembly_tier": "jlcpcb_basic"
+    },
+    {
+      "mpn": "XT30PW-M",
+      "category": "battery_connector",
+      "stock_status": "catalog_ok",
+      "lifecycle": "active",
+      "assembly_tier": "manual"
+    }
+  ]
+}

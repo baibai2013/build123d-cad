@@ -26,6 +26,9 @@ requirements-verification ─requirements.yaml+architecture.yaml─▶ actuator-
 actuator-sizing ─torque_margin.json+actuator_spec.yaml─▶ robot-dog-digital-twin (G2/G3 执行器 blocker 输入)
 pcb+mechanical ─pcb_mechanical.yaml/metadata─▶ pcb-mechanical-reliability (PCB 支撑/挠曲/连接器检查)
 pcb-mechanical-reliability ─pcb_fit.json+pcb_reliability_report.json─▶ robot-dog-digital-twin (G2/G3 PCB 结构 blocker 输入)
+electronics-bom ─selected_parts.json+electronics_bom.json─▶ pcb (元件候选喂 PCB authoring)
+electronics-bom ─selected_parts.json+electronics_bom.json─▶ circuit-simulation (器件能力/电源预算输入)
+electronics-bom ─selected_parts.json+electronics_bom.json─▶ firmware (MCU/驱动/编码器候选输入)
 pcb/electronics-bom ─circuit_requirements.yaml/metadata─▶ circuit-simulation (电源预算/保护/热风险检查)
 circuit-simulation ─circuit_check.json+power_budget.json+thermal_report.json─▶ robot-dog-digital-twin (G2/G3 电路 blocker 输入)
 simulation/actuator-sizing ─gait_validation.yaml/metrics─▶ gait-optimization (步态评分/参数建议)
@@ -52,6 +55,7 @@ robot-dog-digital-twin ─next_iteration_plan.md─▶ mechanical/pcb/simulation
 | requirements-verification | robot-dog-digital-twin | 中——改合同 schema 需跑自身和 digital-twin G0 测试 |
 | actuator-sizing | robot-dog-digital-twin | 中——改 `torque_margin.json`/`actuator_spec.yaml` 字段需跑自身和 digital-twin gate 测试 |
 | pcb-mechanical-reliability | robot-dog-digital-twin / mechanical / pcb | 中——改 `pcb_fit.json`/`pcb_reliability_report.json` 字段需跑自身和 digital-twin gate 测试 |
+| electronics-bom | pcb / circuit-simulation / firmware / robot-dog-digital-twin | 中——改 `electronics_bom.json`/`selected_parts.json` 字段需跑自身和电子域相关测试 |
 | circuit-simulation | robot-dog-digital-twin / pcb / electronics-bom | 中——改 `circuit_check.json`/`power_budget.json`/`thermal_report.json` 字段需跑自身和 digital-twin gate 测试 |
 | gait-optimization | robot-dog-digital-twin / simulation / actuator-sizing | 中——改 `gait_score.json`/`best_gait_params.yaml` 字段需跑自身和 digital-twin gate 测试 |
 | motion-control | simulation / mujoco-simulation / firmware / robot-dog-digital-twin | 中——改 `trajectory.json`/`controller_params.yaml`/`ik_report.json` 字段需跑自身和仿真相关测试 |
@@ -70,6 +74,7 @@ robot-dog-digital-twin ─next_iteration_plan.md─▶ mechanical/pcb/simulation
 `requirements-verification` 是合同输入层,产物被 digital-twin 编排层读取。
 `actuator-sizing` 是执行器校核层,产物被 digital-twin 编排层读取。
 `pcb-mechanical-reliability` 是 PCB 结构可靠性校核层,产物被 digital-twin 编排层读取。
+`electronics-bom` 是电子选型/BOM 层,产物被 pcb/circuit/firmware/digital-twin 编排层读取。
 `circuit-simulation` 是电路/电源/热风险校核层,产物被 digital-twin 编排层读取。
 `gait-optimization` 是步态评分与参数建议层,产物被 digital-twin 编排层读取。
 `motion-control` 是 IK/步态轨迹与控制参数生成层,产物被 simulation/MuJoCo/firmware/digital-twin 读取。

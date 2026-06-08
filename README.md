@@ -140,7 +140,7 @@ export default () => (
 | **gcode**          | FDM 切片预检（壁厚 / 悬臂 / 打印估时） | [skills/gcode](skills/gcode/) | P1 |
 | **sendcutsend**    | 激光切割预检 + DXF 报价 + kerf 补偿 | [skills/sendcutsend](skills/sendcutsend/) | P1 |
 | **bambu-labs**     | Bambu 打印机上传作业 / AMS 多色 | [skills/bambu-labs](skills/bambu-labs/) | P2 |
-| electronics-bom (WIP) | 电子 BOM / curated 元件库 / JLCPCB · Octopart 接入（喂 pcb 的 `tsci import`） | [skills/electronics-bom](skills/electronics-bom/) | P3 占位 |
+| electronics-bom | 电子 BOM 与机器人常用料选型：离线 curated catalog 选择 MCU/电机驱动/编码器/电源/连接器 → 输出 `electronics_bom.json` / `selected_parts.json` | [skills/electronics-bom](skills/electronics-bom/) | **P1 ✅ BOM** |
 | requirements-verification | 需求合同与验证矩阵：产 `requirements.yaml` / `verification_matrix.yaml` / gate 阈值 / risk register | [skills/requirements-verification](skills/requirements-verification/) | **P0 ✅ 合同** |
 | actuator-sizing | 机械狗执行器早期校核：读取需求/架构 → 估算 hip/knee/ankle 扭矩、速度、热裕量 → 输出 `actuator_spec.yaml` / `torque_margin.json` | [skills/actuator-sizing](skills/actuator-sizing/) | **P0 ✅ 执行器** |
 | pcb-mechanical-reliability | PCB 结构可靠性早期校核：检查板厚/挠曲/支撑柱/连接器/线束/装配间隙 → 输出 `pcb_fit.json` / `pcb_reliability_report.json` | [skills/pcb-mechanical-reliability](skills/pcb-mechanical-reliability/) | **P0 ✅ PCB 结构** |
@@ -194,6 +194,7 @@ pip install pybullet numpy
 > 给机械狗生成需求合同和验证矩阵                    # → requirements-verification
 > 这套机械狗电机和减速器扭矩够不够                  # → actuator-sizing
 > 这块 PCB 在机身里支撑和连接器空间合理吗           # → pcb-mechanical-reliability
+> 给机械狗选 MCU、电机驱动、编码器和电源 BOM         # → electronics-bom
 > 这套电路的电源预算、保护和热风险合理吗            # → circuit-simulation
 > 这个机械狗步态会不会摔，下一版参数怎么改          # → gait-optimization
 > 生成机械狗 IK 解和 trot 轨迹给仿真                # → motion-control
@@ -229,7 +230,7 @@ build123d-cad/
 │   ├── urdf/  srdf/  sdf/            #   机器人描述
 │   ├── simulation/                   #   🤖 无头 pybullet 动力学仿真 + 稳定性自验
 │   ├── gcode/  sendcutsend/  bambu-labs/  parts-catalog/   # 制造出工
-│   ├── electronics-bom/              #   电子料库（P3 占位）
+│   ├── electronics-bom/              #   电子 BOM / curated catalog / 选型报告
 │   ├── requirements-verification/    #   需求合同 / 验证矩阵 / risk register
 │   ├── actuator-sizing/              #   执行器扭矩 / 速度 / 热裕量早期 gate
 │   ├── pcb-mechanical-reliability/   #   PCB 刚度 / 支撑柱 / 连接器 / 装配间隙 gate

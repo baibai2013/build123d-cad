@@ -15,6 +15,7 @@
 | sendcutsend | 报价/DXF | `output/<task>/<part>.dxf` + `quote.json` |
 | parts-catalog | 现成件 | L1 返回模块路径 + 实例化参数（不下 STEP）；L2+ 落盘 `output/<task>/parts/<id>.step` |
 | pcb | PCB 出件/3D/预览 | `output/<task>/electrical/`：`fab/<board>-gerbers.zip`(+`-bom.csv`/`-cpl.csv`)、`3d/<board>.{step,glb}`、`preview/<board>.{pcb,schematic}.svg`、`<board>.circuit.json` + `<board>.bom.json`(viewer engine=tscircuit 统一预览,bom 经 jlcpcb-mcp 免key定价)、`<board>.quote.json` |
+| electronics-bom | 电子 BOM 选型报告 | `<project>/reports/`：`electronics_bom.json` + `availability_report.json` + `selection_rationale.md`;`<project>/electrical/library/selected_parts.json` |
 | simulation | 动力学仿真记录 | `output/<task>/simulation/`：`<robot>.results.json`(时序+汇总+checks) + `<robot>.trajectory.json`(cad 引擎 3D 回放格式) + `frames/*.png`(+ `manifest.json`) + `<robot>.sim.mp4`(有 imageio/cv2 才出) + `_verify/{static.png,settled.png,checklist.txt}` |
 | requirements-verification | 需求合同与验证矩阵 | `<project>/`：`requirements.yaml` + `verification_matrix.yaml` + `architecture.yaml` + `risk_register.md`;校验报告 `<project>/reports/requirements_validation.{json,md}` |
 | actuator-sizing | 执行器裕量报告 | `<project>/reports/`：`torque_margin.json` + `actuator_spec.yaml` + `actuator_sizing_report.md` |
@@ -39,26 +40,27 @@
 8. **urdf → simulation**：`*.urdf` + `meshes/` → pybullet headless 跑(base 目录进 search path 解析相对 mesh) → `simulation/<robot>.results.json` + `<robot>.trajectory.json` + 关键帧/截图。
 9. **sdf → simulation**：`world.sdf`/`model.sdf` → `loadSDF`(取 `ids[0]`,世界自带地面不叠 plane) → 同上产物。
 10. **simulation → viewer(3D 回放)**：`<robot>.trajectory.json` + 原 `*.urdf` → cad 引擎 `?trajectory=` 时间轴回放(关节随时序动);辅 `results.json → engine=sim` 数据面板。
-11. **requirements-verification → robot-dog-digital-twin**：`requirements.yaml` + `verification_matrix.yaml` + `architecture.yaml` + `risk_register.md` → G0/G1 合同输入。
-12. **requirements-verification → actuator-sizing**：`requirements.yaml` + `architecture.yaml` + 可选 `actuator_candidate.yaml` → `reports/torque_margin.json` + `reports/actuator_spec.yaml`。
-13. **actuator-sizing → robot-dog-digital-twin**：`reports/torque_margin.json` + `reports/actuator_spec.yaml` → G2/G3 执行器 blocker 与设计评分输入。
-14. **pcb/mechanical → pcb-mechanical-reliability**：PCB 板尺寸/板厚/连接器/支撑柱/机身间隙 metadata → `reports/pcb_fit.json` + `reports/pcb_reliability_report.json`。
-15. **pcb-mechanical-reliability → robot-dog-digital-twin**：`reports/pcb_fit.json` + `reports/pcb_reliability_report.json` → G2/G3 PCB 结构 blocker 与设计评分输入。
-16. **pcb/electronics-bom → circuit-simulation**：电源轨/电机驱动/保护/热 metadata → `reports/circuit_check.json` + `reports/power_budget.json` + `reports/thermal_report.json`。
-17. **circuit-simulation → robot-dog-digital-twin**：`reports/circuit_check.json` + `reports/power_budget.json` + `reports/thermal_report.json` → G2/G3 电路 blocker 与设计评分输入。
-18. **simulation/actuator-sizing → gait-optimization**：步态参数/仿真结果/扭矩裕量 metadata → `reports/gait_score.json` + `reports/best_gait_params.yaml`。
-19. **gait-optimization → robot-dog-digital-twin**：`reports/gait_score.json` + `reports/best_gait_params.yaml` → G3 步态 blocker 与设计评分输入。
-20. **urdf/mechanical → motion-control**：腿长、关节限位、足端目标和 gait 参数 → `control/trajectory.json` + `control/controller_params.yaml`。
-21. **motion-control → simulation/mujoco-simulation/firmware**：`control/trajectory.json` + `controller_params.yaml` → 动力学验证或固件控制参数输入。
-22. **motion-control → robot-dog-digital-twin**：`reports/ik_report.json` + `reports/motion_control_report.json` → G3/P1 控制 blocker 与设计评分输入。
-23. **urdf/mjcf/scenarios → mujoco-simulation**：MJCF/URDF + stand/walk/slope/drop/push 场景 → `reports/mujoco_result.json` + `simulation/mujoco/results/*.sim_result.json`。
-24. **mujoco-simulation → gait-optimization**：高保真场景指标/轨迹 → `reports/gait_score.json` 的后续真实输入。
-25. **mujoco-simulation → robot-dog-digital-twin**：`reports/mujoco_result.json` → G3/P1 动力学 blocker 与设计评分输入。
-26. **mechanical → fea**：结构载荷/材料/初步求解 metadata → `reports/fea_report.json` + `reports/static_case_report.json`。
-27. **fea → robot-dog-digital-twin**：`reports/fea_report.json` → G3/P1 结构 blocker 与设计评分输入。
-28. **mechanical/simulation/gait → wear-fatigue**：齿轮、轴承、足垫、关节、线束、连接器 metadata + 载荷谱 → `reports/wear_report.json` + `reports/fatigue_report.json`。
-29. **wear-fatigue → robot-dog-digital-twin**：`reports/wear_report.json` + `reports/fatigue_report.json` + `reports/maintenance_interval.md` → G3/P1 寿命 blocker 与维护建议输入。
-30. **多域报告 → robot-dog-digital-twin**：`requirements.yaml` + `verification_matrix.yaml` + `artifacts.json` + 各域报告 → `reports/design_score.json` + `reports/failure_report.md` + `reports/next_iteration_plan.md`。
+11. **electronics-bom → pcb/circuit-simulation/firmware**：`reports/electronics_bom.json` + `electrical/library/selected_parts.json` → PCB authoring、电源预算和固件 MCU/外设输入。
+12. **requirements-verification → robot-dog-digital-twin**：`requirements.yaml` + `verification_matrix.yaml` + `architecture.yaml` + `risk_register.md` → G0/G1 合同输入。
+13. **requirements-verification → actuator-sizing**：`requirements.yaml` + `architecture.yaml` + 可选 `actuator_candidate.yaml` → `reports/torque_margin.json` + `reports/actuator_spec.yaml`。
+14. **actuator-sizing → robot-dog-digital-twin**：`reports/torque_margin.json` + `reports/actuator_spec.yaml` → G2/G3 执行器 blocker 与设计评分输入。
+15. **pcb/mechanical → pcb-mechanical-reliability**：PCB 板尺寸/板厚/连接器/支撑柱/机身间隙 metadata → `reports/pcb_fit.json` + `reports/pcb_reliability_report.json`。
+16. **pcb-mechanical-reliability → robot-dog-digital-twin**：`reports/pcb_fit.json` + `reports/pcb_reliability_report.json` → G2/G3 PCB 结构 blocker 与设计评分输入。
+17. **pcb/electronics-bom → circuit-simulation**：电源轨/电机驱动/保护/热 metadata → `reports/circuit_check.json` + `reports/power_budget.json` + `reports/thermal_report.json`。
+18. **circuit-simulation → robot-dog-digital-twin**：`reports/circuit_check.json` + `reports/power_budget.json` + `reports/thermal_report.json` → G2/G3 电路 blocker 与设计评分输入。
+19. **simulation/actuator-sizing → gait-optimization**：步态参数/仿真结果/扭矩裕量 metadata → `reports/gait_score.json` + `reports/best_gait_params.yaml`。
+20. **gait-optimization → robot-dog-digital-twin**：`reports/gait_score.json` + `reports/best_gait_params.yaml` → G3 步态 blocker 与设计评分输入。
+21. **urdf/mechanical → motion-control**：腿长、关节限位、足端目标和 gait 参数 → `control/trajectory.json` + `control/controller_params.yaml`。
+22. **motion-control → simulation/mujoco-simulation/firmware**：`control/trajectory.json` + `controller_params.yaml` → 动力学验证或固件控制参数输入。
+23. **motion-control → robot-dog-digital-twin**：`reports/ik_report.json` + `reports/motion_control_report.json` → G3/P1 控制 blocker 与设计评分输入。
+24. **urdf/mjcf/scenarios → mujoco-simulation**：MJCF/URDF + stand/walk/slope/drop/push 场景 → `reports/mujoco_result.json` + `simulation/mujoco/results/*.sim_result.json`。
+25. **mujoco-simulation → gait-optimization**：高保真场景指标/轨迹 → `reports/gait_score.json` 的后续真实输入。
+26. **mujoco-simulation → robot-dog-digital-twin**：`reports/mujoco_result.json` → G3/P1 动力学 blocker 与设计评分输入。
+27. **mechanical → fea**：结构载荷/材料/初步求解 metadata → `reports/fea_report.json` + `reports/static_case_report.json`。
+28. **fea → robot-dog-digital-twin**：`reports/fea_report.json` → G3/P1 结构 blocker 与设计评分输入。
+29. **mechanical/simulation/gait → wear-fatigue**：齿轮、轴承、足垫、关节、线束、连接器 metadata + 载荷谱 → `reports/wear_report.json` + `reports/fatigue_report.json`。
+30. **wear-fatigue → robot-dog-digital-twin**：`reports/wear_report.json` + `reports/fatigue_report.json` + `reports/maintenance_interval.md` → G3/P1 寿命 blocker 与维护建议输入。
+31. **多域报告 → robot-dog-digital-twin**：`requirements.yaml` + `verification_matrix.yaml` + `artifacts.json` + 各域报告 → `reports/design_score.json` + `reports/failure_report.md` + `reports/next_iteration_plan.md`。
 
 ## 规则
 
