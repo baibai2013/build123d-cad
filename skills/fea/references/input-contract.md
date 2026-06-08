@@ -1,0 +1,27 @@
+# Input Contract
+
+The MVP reads a project directory containing `fea_cases.yaml`.
+
+```yaml
+version: "1.0"
+material:
+  name: petg
+  yield_strength_mpa: 45
+
+global_limits:
+  safety_factor_min: 2.0
+  deflection_mm_max: 2.0
+  modal_ratio_min: 2.0
+  gait_excitation_hz: 3.0
+
+cases:
+  - name: front_leg_landing
+    part: front_left_lower_leg
+    load_case: drop_landing
+    max_stress_mpa: 38
+    max_deflection_mm: 2.8
+    first_mode_hz: 5.1
+    impact_factor: 3.5
+```
+
+All stresses use MPa, deflection uses millimeters, and modal frequency uses Hz.

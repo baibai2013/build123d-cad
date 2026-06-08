@@ -36,6 +36,8 @@
 
 | 2026-06-08 | **新增 gait-optimization 子技能(P0 步态评分层)** — ① 新增 `skills/gait-optimization/`，提供 `score_gait.py`、`search_params.py`、`write_report.py`、MVP gait-level/stability references、`examples/quadruped_mvp/` 和 pytest;② 父 `SKILL.md` / `multi-skill-router.md` 增加步态优化、行走算法、foot slip、body roll/pitch、cost of transport、下一版步态参数路由;③ `handoff-protocols.md` 增加 `reports/gait_score.json + best_gait_params.yaml + failed_candidates.json + trajectory.json + gait_optimization_report.md` 输出接口;④ `dependencies.md` 加 `simulation/actuator-sizing → gait-optimization → robot-dog-digital-twin`;⑤ `pytest.ini` 纳入新测试路径。 | gait-optimization · simulation · actuator-sizing · robot-dog-digital-twin | hardware | 非破坏(纯新增);示例故意 flat-walk fail/slip/torque blockers;自身 tests 7/7 |
 
+| 2026-06-08 | **新增 fea 子技能(P1 结构强度/刚度门禁层)** — ① 新增 `skills/fea/`，提供 `run_static_case.py`、`summarize_fea.py`、MVP load/material/output references、`examples/quadruped_mvp/` 和 pytest;② 父 `SKILL.md` / `multi-skill-router.md` 增加 FEA、有限元、结构强度、刚度、变形、安全系数、应力、模态、跌落冲击路由;③ `handoff-protocols.md` 增加 `reports/fea_report.json + static_case_report.json + fea_checklist.md` 输出接口;④ `dependencies.md` 加 `mechanical → fea → robot-dog-digital-twin`;⑤ `pytest.ini` 纳入新测试路径。 | fea · mechanical · robot-dog-digital-twin | hardware | 非破坏(纯新增);MVP 为 solver-metadata gate,示例故意低安全系数/超位移/低模态比产 blocker;自身 tests 6/6 |
+
 ## 登记规则
 
 - 任何修改 shared/ 的 PR 必须新增一行,内容含日期 / 变更 / 影响子技能 / Owner / 备注

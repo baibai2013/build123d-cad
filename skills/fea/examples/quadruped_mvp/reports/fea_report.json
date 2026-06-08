@@ -1,0 +1,66 @@
+{
+  "project": "quadruped_mvp",
+  "valid": false,
+  "blockers": [
+    "front_leg_landing safety factor 1.18 below 2",
+    "front_leg_landing deflection 2.8mm above 2mm",
+    "front_leg_landing first modal ratio 1.70 below 2"
+  ],
+  "warnings": [],
+  "summary": {
+    "material": "petg",
+    "yield_strength_mpa": 45.0,
+    "case_count": 2,
+    "valid_case_count": 1,
+    "worst_safety_factor": 1.184,
+    "max_deflection_mm": 2.8,
+    "min_modal_ratio": 1.7
+  },
+  "cases": [
+    {
+      "name": "front_leg_landing",
+      "part": "front_left_lower_leg",
+      "load_case": "drop_landing",
+      "max_stress_mpa": 38.0,
+      "yield_strength_mpa": 45.0,
+      "safety_factor": 1.184,
+      "safety_factor_min": 2.0,
+      "max_deflection_mm": 2.8,
+      "deflection_limit_mm": 2.0,
+      "first_mode_hz": 5.1,
+      "gait_excitation_hz": 3.0,
+      "modal_ratio": 1.7,
+      "impact_factor": 3.5,
+      "valid": false,
+      "blockers": [
+        "front_leg_landing safety factor 1.18 below 2",
+        "front_leg_landing deflection 2.8mm above 2mm",
+        "front_leg_landing first modal ratio 1.70 below 2"
+      ],
+      "warnings": []
+    },
+    {
+      "name": "body_battery_bay_static",
+      "part": "body_shell",
+      "load_case": "static_stance",
+      "max_stress_mpa": 18.0,
+      "yield_strength_mpa": 45.0,
+      "safety_factor": 2.5,
+      "safety_factor_min": 2.0,
+      "max_deflection_mm": 1.4,
+      "deflection_limit_mm": 2.0,
+      "first_mode_hz": 9.0,
+      "gait_excitation_hz": 3.0,
+      "modal_ratio": 3.0,
+      "impact_factor": 1.5,
+      "valid": true,
+      "blockers": [],
+      "warnings": []
+    }
+  ],
+  "next_actions": [
+    "increase section thickness or change material for front_left_lower_leg",
+    "add rib/support or shorten span for front_left_lower_leg",
+    "stiffen front_left_lower_leg or move gait excitation away from first mode"
+  ]
+}

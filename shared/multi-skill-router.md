@@ -25,6 +25,7 @@
 | pcb-mechanical-reliability | PCB刚度、PCB挠曲、PCB硬度、支撑柱、固定孔、连接器受力、线束弯折、PCB装配间隙、pcb_fit、pcb_reliability_report | ✅ P0 PCB 结构 |
 | circuit-simulation | 电路合理性、电源预算、电流峰值、保护电路、急停、欠压、TVS、保险丝、MOSFET热、驱动器热、thermal_report、power_budget、circuit_check | ✅ P0 电路 |
 | gait-optimization | 步态优化、行走算法、trot、walk、gait_score、best_gait_params、foot slip、body roll、body pitch、cost of transport、会不会摔 | ✅ P0 步态 |
+| fea | FEA、有限元、结构强度、刚度、变形、位移、安全系数、应力、模态、跌落冲击、fea_report、会不会断 | ✅ P1 结构 |
 | robot-dog-digital-twin | 数字孪生、虚拟样机、机械狗验证、实体样机 gate、design_score、failure_report、多域验证、设计迭代 | ✅ P0 编排 |
 
 ## 路由规则
@@ -47,6 +48,7 @@
 - "这块 PCB 在机身里刚度/支撑/连接器空间合理吗" → pcb-mechanical-reliability(主,产 pcb_fit.json + pcb_reliability_report.json)
 - "这套电路/电源预算/保护/热风险合理吗" → circuit-simulation(主,产 circuit_check.json + power_budget.json + thermal_report.json)
 - "这个步态/行走算法会不会摔 / 下一版步态参数怎么改" → gait-optimization(主,产 gait_score.json + best_gait_params.yaml)
+- "这个腿/机身强度够吗 / 变形大不大 / 要不要 FEA" → fea(主,产 fea_report.json + static_case_report.json)
 - "这个机械狗虚拟样机能不能进入实体样机 / 给我 design_score 和 failure_report" → robot-dog-digital-twin(主,读 artifact 跑 gate)
 - 关键词"仿真"按意图分:解析 FK/IK → mechanical;丢进物理引擎跑判稳 → simulation;出 Gazebo 世界 → sdf
 - "这件能 3D 打印吗 / 估下打印时间" → mechanical(前置 STEP) + gcode(主)
