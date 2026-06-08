@@ -1,0 +1,82 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://build123d-cad.local/schemas/sim_result.schema.json",
+  "title": "Robot Dog Simulation Result",
+  "type": "object",
+  "additionalProperties": true,
+  "required": ["project", "scenario", "valid", "metrics"],
+  "properties": {
+    "project": {
+      "type": "string",
+      "minLength": 1
+    },
+    "backend": {
+      "type": "string",
+      "examples": ["pybullet", "mujoco", "metadata"]
+    },
+    "scenario": {
+      "type": "string",
+      "minLength": 1
+    },
+    "type": {
+      "type": "string"
+    },
+    "valid": {
+      "type": "boolean"
+    },
+    "blockers": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": []
+    },
+    "warnings": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": []
+    },
+    "metrics": {
+      "type": "object",
+      "additionalProperties": {
+        "type": ["number", "integer", "string", "boolean", "null"]
+      },
+      "properties": {
+        "duration_s": {
+          "type": "number",
+          "minimum": 0
+        },
+        "stable_seconds": {
+          "type": "number",
+          "minimum": 0
+        },
+        "fell": {
+          "type": "boolean"
+        },
+        "fall_time_s": {
+          "type": "number",
+          "minimum": 0
+        },
+        "max_body_roll_deg": {
+          "type": "number"
+        },
+        "max_body_pitch_deg": {
+          "type": "number"
+        },
+        "foot_slip_ratio": {
+          "type": "number",
+          "minimum": 0
+        },
+        "joint_torque_margin_pct": {
+          "type": "number"
+        },
+        "cost_of_transport": {
+          "type": "number",
+          "minimum": 0
+        }
+      }
+    }
+  }
+}

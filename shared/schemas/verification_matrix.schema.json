@@ -1,0 +1,63 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://build123d-cad.local/schemas/verification_matrix.schema.json",
+  "title": "Digital Twin Verification Matrix",
+  "type": "object",
+  "additionalProperties": {
+    "$ref": "#/$defs/domain"
+  },
+  "minProperties": 1,
+  "$defs": {
+    "domain": {
+      "type": "object",
+      "additionalProperties": {
+        "$ref": "#/$defs/check"
+      },
+      "minProperties": 1
+    },
+    "check": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["source"],
+      "anyOf": [
+        {
+          "required": ["required"]
+        },
+        {
+          "required": ["limit_min"]
+        },
+        {
+          "required": ["limit_max"]
+        },
+        {
+          "required": ["limit"]
+        }
+      ],
+      "properties": {
+        "required": {
+          "type": "boolean"
+        },
+        "limit": {
+          "type": ["number", "integer", "boolean", "string"]
+        },
+        "limit_min": {
+          "type": "number"
+        },
+        "limit_max": {
+          "type": "number"
+        },
+        "source": {
+          "type": "string",
+          "minLength": 1
+        },
+        "blocker": {
+          "type": "boolean",
+          "default": true
+        },
+        "description": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

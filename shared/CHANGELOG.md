@@ -52,6 +52,8 @@
 
 | 2026-06-08 | **新增 integration 子技能(P2 bring-up/HIL dry-run gate)** — ① 新增 `skills/integration/`，提供 `check_bringup_readiness.py`、`write_hil_plan.py`、MVP bringup/data-capture/output references、`examples/quadruped_mvp/` 和 pytest;② 父 `SKILL.md` / `multi-skill-router.md` 增加整机集成、bring-up、HIL、首次上电、人工 gate、实体样机路由;③ `handoff-protocols.md` 增加 `reports/integration_checklist.json + bringup_report.md + hil_plan.md + data_capture_checklist.md` 输出接口;④ `dependencies.md` 加 `integration → robot-dog-digital-twin`;⑤ `pytest.ini` 纳入新测试路径。 | integration · firmware · sim2real-calibration · robot-dog-digital-twin | hardware | 非破坏(纯新增);MVP 不上电、不烧录、不动电机,示例故意缺 first-power 人工批准产 blocker;自身 tests 4/4 |
 
+| 2026-06-08 | **新增数字孪生最小 shared schemas** — 新增 `shared/schemas/requirements.schema.json`、`verification_matrix.schema.json`、`sim_result.schema.json`、`design_score.schema.json`;根测试 `tests/test_digital_twin_schemas.py` 校验 schema 可解析且保留 physical prototype gate 必需字段。 | requirements-verification · simulation · mujoco-simulation · robot-dog-digital-twin | hardware | 非破坏(纯新增);满足 quadruped MVP 最小 schema 合同 |
+
 ## 登记规则
 
 - 任何修改 shared/ 的 PR 必须新增一行,内容含日期 / 变更 / 影响子技能 / Owner / 备注

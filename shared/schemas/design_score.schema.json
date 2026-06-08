@@ -1,0 +1,75 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://build123d-cad.local/schemas/design_score.schema.json",
+  "title": "Robot Dog Design Score",
+  "type": "object",
+  "additionalProperties": true,
+  "required": ["version", "total_score", "passed_for_physical_prototype", "scores", "blockers"],
+  "properties": {
+    "version": {
+      "type": "string",
+      "minLength": 1
+    },
+    "total_score": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 100
+    },
+    "passed_for_physical_prototype": {
+      "type": "boolean"
+    },
+    "release_decision": {
+      "type": "string",
+      "enum": ["blocked", "prototype_allowed", "needs_review", "not_evaluated"]
+    },
+    "scores": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "number",
+        "minimum": 0
+      },
+      "properties": {
+        "mechanical": {
+          "type": "number",
+          "minimum": 0
+        },
+        "electrical": {
+          "type": "number",
+          "minimum": 0
+        },
+        "dynamics": {
+          "type": "number",
+          "minimum": 0
+        },
+        "gait": {
+          "type": "number",
+          "minimum": 0
+        },
+        "manufacturability": {
+          "type": "number",
+          "minimum": 0
+        }
+      }
+    },
+    "blockers": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "warnings": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": []
+    },
+    "next_actions": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": []
+    }
+  }
+}

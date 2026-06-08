@@ -5,9 +5,9 @@
 > `gait-optimization`、`motion-control`、`fea`、`wear-fatigue`、`mujoco-simulation`、
 > `electronics-bom`、`firmware` dry-run、`sim2real-calibration` MVP 已落地;
 > `integration` dry-run MVP 已落地;其余条目仍是缺口分析与子技能规划,
-> 后续逐个按 `docs/adding-new-subskill.md` 流程立项。
+> 后续增强继续按 `docs/adding-new-subskill.md` 流程立项。
 >
-> 关联:现有 12 子技能(见 `SKILL.md`)、架构红线(见本文 §2)、handoff 约定(`shared/handoff-protocols.md`)。
+> 关联:现有 25 子技能(见 `SKILL.md`)、架构红线(见本文 §2)、handoff 约定(`shared/handoff-protocols.md`)。
 
 ---
 
@@ -57,7 +57,7 @@
 
 | 阶段 | 环节 | 现有子技能 | 覆盖 |
 |---|---|---|---|
-| ① 需求/总体 | 形态/自由度/负载/续航/成本目标 | —— | ❌ 无 |
+| ① 需求/总体 | 形态/自由度/负载/续航/成本目标 | `requirements-verification` `robot-dog-digital-twin` | ✅ MVP |
 | ② 机械 | 参数化建模 / 装配 / 标准件 / 减重 | `mechanical` `parts-catalog` | ✅ 强 |
 | ② 机械验证 | 受力 / 疲劳 / 模态(FEA) | `fea` | ✅ MVP |
 | ② 机械可靠性 | 磨损 / 轴承寿命 / 齿轮寿命 / 足垫磨耗 / 线束弯折 | `wear-fatigue` | ✅ MVP |
@@ -66,10 +66,10 @@
 | ③ 电路验证 | 电源预算 / 电流峰值 / 保护电路 / 热风险 / SPICE 粗验 | `circuit-simulation` | ✅ MVP |
 | ④ **固件** | MCU 驱动 / FOC 电机环 / 总线协议 / 标定 | `firmware` | ✅ dry-run MVP |
 | ⑤ 描述 | URDF / SRDF / SDF | `urdf` `srdf` `sdf` | ✅ 强 |
-| ⑤ 仿真 | 动力学 / 步态 / 稳定性 | `simulation`(pybullet MVP) | 🟡 未到真步态 |
-| ⑤ 运控算法 | FK/IK / 步态生成 / 平衡 / MPC | `mechanical`(仅"指引") | ❌ 无可执行实现 |
+| ⑤ 仿真 | 动力学 / 步态 / 稳定性 | `simulation` `mujoco-simulation` `gait-optimization` | ✅ MVP,真实 MuJoCo 后续 |
+| ⑤ 运控算法 | FK/IK / 步态生成 / 平衡 / MPC | `motion-control` `gait-optimization` | ✅ IK/轨迹 MVP |
 | ⑥ 制造 | 3D 打印 / 钣金激光 / 切片 | `gcode` `sendcutsend` `bambu-labs` | ✅ 强 |
-| ⑥ 整机调试 | 标定 / 上电测试 / 数据回采 | —— | ❌ 无 |
+| ⑥ 整机调试 | 标定 / 上电测试 / 数据回采 | `integration` `sim2real-calibration` | ✅ dry-run MVP |
 
 **结论:当前 skill 把「画得对 + 造得出 + 仿真里动得对」三段闭环做到相当成熟,
 但在「仿真模型 ↔ 真实会动的硬件」之间有一道断崖 —— 固件/嵌入式/实时控制层。**
@@ -790,7 +790,7 @@ build123d-cad/
 │   ├── sendcutsend/
 │   ├── bambu-labs/
 │   ├── parts-catalog/
-│   ├── electronics-bom/                  # 现有占位,后续填实
+│   ├── electronics-bom/                  # P1:离线 curated BOM 选型
 │   ├── robot-dog-digital-twin/           # P0:总控编排
 │   ├── requirements-verification/        # P0:需求合同与验证矩阵
 │   ├── actuator-sizing/                  # P0:执行器扭矩/速度/热裕量
@@ -922,7 +922,7 @@ skills/<skill-name>/
 
 | 阶段 | 新增/填实目录 | 验收 |
 |---|---|---|
-| P0-1 | `skills/robot-dog-digital-twin/`、`shared/schemas/{requirements,verification_matrix,design_score}.schema.json` | quadruped MVP 能生成 `gate_report` 和 `design_score` |
+| P0-1 | `skills/robot-dog-digital-twin/`、`shared/schemas/{requirements,verification_matrix,sim_result,design_score}.schema.json` | ✅ quadruped MVP 能生成 `gate_report`/`design_score`,最小 schemas 已落地 |
 | P0-2 | `skills/requirements-verification/`、`skills/actuator-sizing/` | ✅ requirements 和 torque margin 已能独立跑 smoke |
 | P0-3 | `skills/pcb-mechanical-reliability/`、`skills/circuit-simulation/` | ✅ PCB fit 和电源预算已能产 blocker |
 | P0-4 | `skills/gait-optimization/` | ✅ 平地站立/慢走指标已能评分 |
@@ -930,7 +930,7 @@ skills/<skill-name>/
 | P1-2 | `skills/mujoco-simulation/` | ✅ MuJoCo 场景合同与 metadata backend 已能产动力学 blocker |
 | P1-3 | `skills/motion-control/` | ✅ IK 与相位步态轨迹 MVP 已能产 blocker 和 trajectory |
 | P1-4 | `skills/electronics-bom/` | ✅ 原占位已填实为离线 curated BOM 选型 MVP |
-| P1-5 | `skills/mujoco-simulation/` real backend | 真实 MuJoCo 求解器接入 |
+| P1-5 | `skills/mujoco-simulation/` real backend | 后续增强:真实 MuJoCo 求解器接入 |
 | P2-1 | `skills/firmware/` | ✅ 固件 dry-run 合同、安全和校准 gate 已能产 blocker |
 | P2-2 | `skills/sim2real-calibration/` | ✅ 仿真-实机指标对齐和参数更新建议 MVP 已能产 blocker |
 | P2-3 | `skills/integration/` | ✅ bring-up/HIL dry-run 与人工 gate MVP 已能产 blocker |
@@ -1160,8 +1160,8 @@ urdf / sdf / viewer
   目标是能判断"是否允许实体样机",并给下一轮参数建议。
 - **Gate C(提高真实性)**:加入 FEA、wear-fatigue、MuJoCo、gait-optimization。
   目标是把粗规则逐步替换成更可信的仿真/求解结果。
-- **Gate D(战略决策)**:`firmware` / sim2real / integration。**必须先决定是否打破红线**。
-  若做,先用 Renode/QEMU/单测把"能编译+逻辑对"闭环,实体烧录/上电/电机转动设为人工 gate。
+- **Gate D(实体前 dry-run)**:`firmware` / sim2real / integration 的文件合同与安全 gate 已落地。
+  后续若接真实编译、烧录、上电或电机动作,必须单独评审并设置显式人工 gate。
 
 每个子技能立项时走 `docs/adding-new-subskill.md`:建目录骨架 → 改父 `SKILL.md` 路由 →
 改 `shared/multi-skill-router.md` + `shared/dependencies.md` + `shared/handoff-protocols.md`。

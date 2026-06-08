@@ -1,0 +1,72 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://build123d-cad.local/schemas/requirements.schema.json",
+  "title": "Robot Dog Requirements",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["version", "robot", "targets", "constraints"],
+  "properties": {
+    "version": {
+      "type": "string",
+      "minLength": 1
+    },
+    "robot": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": ["name", "type", "dof"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "type": {
+          "type": "string",
+          "enum": ["quadruped", "robot_dog", "legged_robot"]
+        },
+        "dof": {
+          "type": "integer",
+          "minimum": 1
+        }
+      }
+    },
+    "targets": {
+      "type": "object",
+      "additionalProperties": {
+        "type": ["number", "integer", "string", "boolean"]
+      },
+      "properties": {
+        "mass_kg": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "payload_kg": {
+          "type": "number",
+          "minimum": 0
+        },
+        "runtime_min": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "flat_walk_speed_mps": {
+          "type": "number",
+          "minimum": 0
+        }
+      }
+    },
+    "constraints": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "manufacturing": {
+          "type": "object"
+        },
+        "electronics": {
+          "type": "object"
+        },
+        "safety": {
+          "type": "object"
+        }
+      }
+    }
+  }
+}
