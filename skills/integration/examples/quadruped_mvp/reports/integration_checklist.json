@@ -1,0 +1,41 @@
+{
+  "project": "quadruped_mvp",
+  "valid": false,
+  "requested_stage": "first_power",
+  "blockers": [
+    "human first-power approval is missing"
+  ],
+  "warnings": [],
+  "gates": {
+    "digital_twin_passed": true,
+    "manufacturing_pack_complete": true,
+    "firmware_dry_run_passed": true,
+    "assembly_inspection_passed": true,
+    "human_first_power_approval": false,
+    "human_motor_motion_approval": false
+  },
+  "safety": {
+    "emergency_stop_verified": true,
+    "current_limited_supply_available": true,
+    "fire_safe_test_area": true,
+    "battery_disconnected_for_initial_checks": true,
+    "exposed_power_contacts_guarded": true
+  },
+  "testbench": {
+    "requested_stage": "first_power",
+    "motor_motion_requested": false,
+    "hil_controller_available": true,
+    "telemetry_logger_available": true,
+    "spare_fuses_available": true
+  },
+  "data_capture": {
+    "joint_states": true,
+    "imu": true,
+    "bus_voltage_current": true,
+    "controller_latency": true,
+    "fault_states": true
+  },
+  "next_actions": [
+    "obtain explicit human approval for first power-on"
+  ]
+}

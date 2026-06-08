@@ -14,8 +14,8 @@
 
 <br>
 
-**一次安装，24 个子技能。两条主线 — 🛠️ CAD 机械建模 · ⚡ PCB 板级电气 — 端到端打通；
-外加网页预览 / 机器人描述 / 动力学仿真 / 制造出工 / 需求合同 / 执行器裕量 / PCB 结构可靠性 / 电路电源热检查 / 步态评分 / 运动控制轨迹 / 固件 dry-run / sim2real 校准 / FEA 结构门禁 / 磨损疲劳门禁 / MuJoCo 场景门禁 / 机械狗数字孪生编排。**
+**一次安装，25 个子技能。两条主线 — 🛠️ CAD 机械建模 · ⚡ PCB 板级电气 — 端到端打通；
+外加网页预览 / 机器人描述 / 动力学仿真 / 制造出工 / 需求合同 / 执行器裕量 / PCB 结构可靠性 / 电路电源热检查 / 步态评分 / 运动控制轨迹 / 固件 dry-run / sim2real 校准 / 集成 bring-up gate / FEA 结构门禁 / 磨损疲劳门禁 / MuJoCo 场景门禁 / 机械狗数字孪生编排。**
 
 <br>
 
@@ -43,7 +43,7 @@
 
 ## 这是什么
 
-`build123d-cad` 是一个 **硬件设计 Super Skill**：一个父技能下面挂 24 个子技能（monorepo 模块化）。
+`build123d-cad` 是一个 **硬件设计 Super Skill**：一个父技能下面挂 25 个子技能（monorepo 模块化）。
 一次 `npx skills add` 安装即得全部能力；每个子技能独立 `SKILL.md / references / scripts / tests`，可单独 `pytest` 回归。
 
 父级 `SKILL.md` 只做关键词路由（≤ 220 行），进子技能再读细节——**两层路由**，避免一次性把整套实现塞进上下文。
@@ -125,7 +125,7 @@ export default () => (
 
 ---
 
-## 子技能集合（24 个）
+## 子技能集合（25 个）
 
 | 子技能 | 一句话定位 | 路径 | 优先级 |
 |---|---|---|---|
@@ -149,6 +149,7 @@ export default () => (
 | motion-control | 运动控制轨迹 MVP：检查二维腿 IK、生成 trot/walk/bound 相位轨迹和控制参数 → 输出 `trajectory.json` / `controller_params.yaml` / `ik_report.json` | [skills/motion-control](skills/motion-control/) | **P1 ✅ 控制** |
 | firmware | 固件 dry-run MVP：检查 MCU/控制环/CAN/安全/校准合同，生成 manifest/CAN 帧/校准报告，不烧录不上电 | [skills/firmware](skills/firmware/) | **P2 ✅ dry-run** |
 | sim2real-calibration | 仿真到实机校准 MVP：比较仿真/实机速度、打滑、扭矩、姿态、延迟误差 → 输出 `sim2real_calibration.json` / `parameter_update.yaml` | [skills/sim2real-calibration](skills/sim2real-calibration/) | **P2 ✅ 校准** |
+| integration | 整机集成 dry-run MVP：检查数字孪生/制造/固件/安全/人工批准/HIL/数据采集 gate → 输出 `integration_checklist.json` / `hil_plan.md` | [skills/integration](skills/integration/) | **P2 ✅ dry-run** |
 | fea | 结构 FEA 早期门禁：检查应力、安全系数、变形、模态和跌落风险 → 输出 `fea_report.json` / `static_case_report.json` | [skills/fea](skills/fea/) | **P1 ✅ 结构** |
 | wear-fatigue | 磨损疲劳早期门禁：检查齿轮/轴承/足垫/关节限位/线束/连接器寿命风险 → 输出 `wear_report.json` / `fatigue_report.json` / `maintenance_interval.md` | [skills/wear-fatigue](skills/wear-fatigue/) | **P1 ✅ 寿命** |
 | mujoco-simulation | MuJoCo 场景门禁：检查 stand/walk/slope/drop/push 的稳定性、接触、打滑、扭矩和能耗 → 输出 `mujoco_result.json` / `*.sim_result.json` | [skills/mujoco-simulation](skills/mujoco-simulation/) | **P1 ✅ MuJoCo** |
@@ -202,6 +203,7 @@ pip install pybullet numpy
 > 生成机械狗 IK 解和 trot 轨迹给仿真                # → motion-control
 > 给机械狗固件规划 CAN 帧、急停和校准 dry-run       # → firmware
 > 对比仿真和实机日志并给参数校准建议                # → sim2real-calibration
+> 检查实体样机首次上电和 HIL bring-up 是否允许      # → integration
 > 这条腿强度够吗，变形会不会太大                  # → fea
 > 这些齿轮、轴承、足垫和线束多久会磨坏             # → wear-fatigue
 > 用 MuJoCo 跑斜坡、台阶、推扰和接触摩擦场景       # → mujoco-simulation
@@ -226,7 +228,7 @@ pip install pybullet numpy
 build123d-cad/
 ├── SKILL.md                          # 父级路由（≤ 220 行）：关键词 → 子技能
 ├── README.md                         # 本文件（开发者视角）
-├── skills/                           # 子技能集合（24 个），每个可独立 pytest
+├── skills/                           # 子技能集合（25 个），每个可独立 pytest
 │   ├── mechanical/                   #   🛠️ build123d 建模 / 装配 / 仿真 / Playbook
 │   ├── pcb/                          #   ⚡ tscircuit 端到端造板（legacy-kicad/ 为归档旧路线）
 │   ├── viewer/                       #   网页多引擎预览
@@ -243,6 +245,7 @@ build123d-cad/
 │   ├── motion-control/               #   IK / gait trajectory / controller params
 │   ├── firmware/                     #   固件 dry-run / CAN / calibration / safety gate
 │   ├── sim2real-calibration/         #   仿真-实机误差 / 参数校准
+│   ├── integration/                  #   bring-up / HIL / first-power gate
 │   ├── fea/                          #   结构强度 / 刚度 / 模态 / FEA gate
 │   ├── wear-fatigue/                 #   磨损 / 疲劳 / 维护周期 gate
 │   ├── mujoco-simulation/            #   MuJoCo / MJCF / 高保真场景 gate

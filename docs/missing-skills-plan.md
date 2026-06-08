@@ -4,7 +4,7 @@
 > 与 `actuator-sizing`、`pcb-mechanical-reliability`、`circuit-simulation`、
 > `gait-optimization`、`motion-control`、`fea`、`wear-fatigue`、`mujoco-simulation`、
 > `electronics-bom`、`firmware` dry-run、`sim2real-calibration` MVP 已落地;
-> 其余条目仍是缺口分析与子技能规划,
+> `integration` dry-run MVP 已落地;其余条目仍是缺口分析与子技能规划,
 > 后续逐个按 `docs/adding-new-subskill.md` 流程立项。
 >
 > 关联:现有 12 子技能(见 `SKILL.md`)、架构红线(见本文 §2)、handoff 约定(`shared/handoff-protocols.md`)。
@@ -701,13 +701,30 @@ parameter_update.yaml
 
 ---
 
-### 3.7 `integration` — 整机集成与上电调试(够不到,先不做)
+### 3.7 `integration` — 整机集成与上电调试
 
-**定位**:bring-up checklist、HIL(硬件在环)、实物数据回采对比仿真。
+**落地状态(2026-06-08)**:已以 `skills/integration/` dry-run MVP 落地,包含
+`integration_plan.yaml` 输入、数字孪生/制造/固件/装配/安全/人工批准/HIL/数据采集 gate 检查、
+`integration_checklist.json`、`bringup_report.md`、`hil_plan.md`、`data_capture_checklist.md`、
+示例 `quadruped_mvp/` 和 pytest。第一版只做实体前 dry-run gate,不烧录、不上电、不让电机动作。
 
-**现实**:属于"有了实体硬件之后"的环节,headless/CI 几乎无法覆盖,强依赖实物。
-**建议**:**暂不立项**,等 P2 的 `firmware` 落地、有真实板子后再议。可先在 `firmware`/`simulation`
-里以"sim↔real 对比"的 handoff 占位。
+**定位**:bring-up checklist、HIL(硬件在环)、实物数据回采对比仿真。它是实体动作前的最后一层
+人工 gate,不是自动上电工具。
+
+**边界(做什么)**:
+
+- 检查 digital-twin、制造包、firmware dry-run、装配检查是否完成。
+- 检查急停、限流电源、防火测试区、裸露电源触点防护等安全条件。
+- 检查首次上电和电机动作是否已有明确人工批准。
+- 生成 HIL 计划和 sim2real 数据采集清单。
+
+**仍然不做**:
+
+- 不自动上电。
+- 不烧录固件。
+- 不移动电机。
+- 不采集真实日志。
+- 任何实体动作都必须由人确认并在独立硬件流程中执行。
 
 ---
 
@@ -916,7 +933,7 @@ skills/<skill-name>/
 | P1-5 | `skills/mujoco-simulation/` real backend | 真实 MuJoCo 求解器接入 |
 | P2-1 | `skills/firmware/` | ✅ 固件 dry-run 合同、安全和校准 gate 已能产 blocker |
 | P2-2 | `skills/sim2real-calibration/` | ✅ 仿真-实机指标对齐和参数更新建议 MVP 已能产 blocker |
-| P2-3 | `skills/integration/` | 真实控制和实物闭环进入人工 gate |
+| P2-3 | `skills/integration/` | ✅ bring-up/HIL dry-run 与人工 gate MVP 已能产 blocker |
 
 ### 4.5 模块间上下文清理纪律
 
@@ -1126,9 +1143,9 @@ urdf / sdf / viewer
 
 | 序 | 子技能 | 理由 | 成本 |
 |---|---|---|---|
-| 1 | `firmware` | 最大断崖,跨过它才谈真实可动;但必须先有虚拟验证和 dry-run 保护 | 高 |
-| 2 | `sim2real-calibration`(后续) | 将实机数据回灌仿真参数,减少仿真和真实差距 | 高 |
-| 3 | `integration` | Bring-up / HIL / 实物数据回采,必须等真实硬件出现后再做 | 高 |
+| 1 | `firmware` | ✅ dry-run 合同已落地;真实编译/烧录/电机动作仍需独立人工 gate | 高 |
+| 2 | `sim2real-calibration` | ✅ 聚合指标对齐已落地;真实日志采集仍需 integration/人工测试 gate | 高 |
+| 3 | `integration` | ✅ bring-up/HIL dry-run 已落地;真实上电和电机动作仍需人工执行 | 高 |
 
 > `system` / orchestrator 层先放在 `build123d-cad` 的 `robot-dog-digital-twin` 子域中孵化,
 > 但不要让父 `SKILL.md` 从"路由器"变成"项目经理"。
@@ -1340,8 +1357,8 @@ weights:
   默认 dry-run + 显式 `--confirm`,对齐 `bambu-labs` 的安全哲学。绝不假装成功。
 - **可验证性**:固件/控制强依赖硬件 → 优先选**可 headless 仿真**的工具(Renode/QEMU/pybullet),
   把"无实体也能验逻辑"作为选型硬指标,否则违背 skill 的离线/CI 可复现纪律。
-- **不过度扩张**:`system`/`integration` 与"父级只路由"哲学有张力,**不轻易拉进 skill**,
-  优先留给调用方编排框架。
+- **不过度扩张**:`system` 与"父级只路由"哲学有张力,优先留给 `robot-dog-digital-twin`
+  子域或调用方编排;`integration` 已作为 dry-run gate 落地,但不执行真实硬件动作。
 - **解耦**:`motion-control` 落地后,`simulation` 的内嵌 gait 要退化为"消费轨迹",
   避免两处各写一套步态。
 - **sim2real 差距**:数字孪生不能替代实体测试,只能把第一次实体样机从盲做变成有依据的工程验证件。

@@ -50,6 +50,8 @@
 
 | 2026-06-08 | **新增 sim2real-calibration 子技能(P2 仿真-实机校准层)** — ① 新增 `skills/sim2real-calibration/`，提供 `compare_logs.py`、`propose_parameter_update.py`、MVP metrics/update/output references、`examples/quadruped_mvp/` 和 pytest;② 父 `SKILL.md` / `multi-skill-router.md` 增加 sim2real、仿真实机对齐、真实日志、摩擦校准、扭矩比例、延迟校准路由;③ `handoff-protocols.md` 增加 `reports/sim2real_calibration.json + sim2real_report.md + parameter_update.yaml` 输出接口;④ `dependencies.md` 加 `sim2real-calibration → simulation/mujoco-simulation/robot-dog-digital-twin`;⑤ `pytest.ini` 纳入新测试路径。 | sim2real-calibration · simulation · mujoco-simulation · firmware · robot-dog-digital-twin | hardware | 非破坏(纯新增);MVP 为聚合指标对比,示例故意速度/打滑/扭矩/延迟 mismatch 产 blocker;自身 tests 4/4 |
 
+| 2026-06-08 | **新增 integration 子技能(P2 bring-up/HIL dry-run gate)** — ① 新增 `skills/integration/`，提供 `check_bringup_readiness.py`、`write_hil_plan.py`、MVP bringup/data-capture/output references、`examples/quadruped_mvp/` 和 pytest;② 父 `SKILL.md` / `multi-skill-router.md` 增加整机集成、bring-up、HIL、首次上电、人工 gate、实体样机路由;③ `handoff-protocols.md` 增加 `reports/integration_checklist.json + bringup_report.md + hil_plan.md + data_capture_checklist.md` 输出接口;④ `dependencies.md` 加 `integration → robot-dog-digital-twin`;⑤ `pytest.ini` 纳入新测试路径。 | integration · firmware · sim2real-calibration · robot-dog-digital-twin | hardware | 非破坏(纯新增);MVP 不上电、不烧录、不动电机,示例故意缺 first-power 人工批准产 blocker;自身 tests 4/4 |
+
 ## 登记规则
 
 - 任何修改 shared/ 的 PR 必须新增一行,内容含日期 / 变更 / 影响子技能 / Owner / 备注

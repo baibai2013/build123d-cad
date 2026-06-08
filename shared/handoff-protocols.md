@@ -25,6 +25,7 @@
 | motion-control | IK 与轨迹控制产物 | `<project>/reports/`：`ik_report.json` + `motion_control_report.json` + `motion_control_report.md`;`<project>/control/`：`ik_solution.json` + `trajectory.json` + `controller_params.yaml` |
 | firmware | 固件 dry-run 合同与安全报告 | `<project>/reports/`：`firmware_report.json` + `firmware_test_report.json`;`<project>/firmware/`：`project_manifest.json` + `can_frames.md` + `calibration.json` |
 | sim2real-calibration | 仿真-实机校准报告 | `<project>/reports/`：`sim2real_calibration.json` + `sim2real_report.md` + `parameter_update.yaml` |
+| integration | 整机集成 bring-up dry-run 报告 | `<project>/reports/`：`integration_checklist.json` + `bringup_report.md` + `hil_plan.md` + `data_capture_checklist.md` |
 | mujoco-simulation | MuJoCo 场景验证报告 | `<project>/reports/`：`mujoco_result.json` + `mujoco_validation_report.md`;`<project>/simulation/mujoco/results/*.sim_result.json` + `trajectories/*.trajectory.json` |
 | fea | 结构 FEA 门禁报告 | `<project>/reports/`：`fea_report.json` + `static_case_report.json` + `fea_checklist.md` |
 | wear-fatigue | 磨损/疲劳/维护周期报告 | `<project>/reports/`：`wear_report.json` + `fatigue_report.json` + `maintenance_interval.md` + `wear_fatigue_report.md` |
@@ -59,14 +60,16 @@
 25. **firmware → robot-dog-digital-twin**：`reports/firmware_report.json` + `firmware/calibration.json` → G4/G5 bring-up blocker 与实体前安全检查输入。
 26. **simulation/mujoco-simulation/firmware → sim2real-calibration**：仿真指标 + 实机日志指标 → `reports/sim2real_calibration.json` + `reports/parameter_update.yaml`。
 27. **sim2real-calibration → simulation/mujoco-simulation/robot-dog-digital-twin**：参数更新建议和可信度 blocker → 下一轮仿真/设计 gate。
-28. **urdf/mjcf/scenarios → mujoco-simulation**：MJCF/URDF + stand/walk/slope/drop/push 场景 → `reports/mujoco_result.json` + `simulation/mujoco/results/*.sim_result.json`。
-29. **mujoco-simulation → gait-optimization**：高保真场景指标/轨迹 → `reports/gait_score.json` 的后续真实输入。
-30. **mujoco-simulation → robot-dog-digital-twin**：`reports/mujoco_result.json` → G3/P1 动力学 blocker 与设计评分输入。
-31. **mechanical → fea**：结构载荷/材料/初步求解 metadata → `reports/fea_report.json` + `reports/static_case_report.json`。
-32. **fea → robot-dog-digital-twin**：`reports/fea_report.json` → G3/P1 结构 blocker 与设计评分输入。
-33. **mechanical/simulation/gait → wear-fatigue**：齿轮、轴承、足垫、关节、线束、连接器 metadata + 载荷谱 → `reports/wear_report.json` + `reports/fatigue_report.json`。
-34. **wear-fatigue → robot-dog-digital-twin**：`reports/wear_report.json` + `reports/fatigue_report.json` + `reports/maintenance_interval.md` → G3/P1 寿命 blocker 与维护建议输入。
-35. **多域报告 → robot-dog-digital-twin**：`requirements.yaml` + `verification_matrix.yaml` + `artifacts.json` + 各域报告 → `reports/design_score.json` + `reports/failure_report.md` + `reports/next_iteration_plan.md`。
+28. **digital-twin/firmware/sim2real → integration**：实体前各 gate 与人工批准状态 → `reports/integration_checklist.json`。
+29. **integration → robot-dog-digital-twin**：`reports/integration_checklist.json` + `reports/hil_plan.md` → G5 实体集成 blocker 输入。
+30. **urdf/mjcf/scenarios → mujoco-simulation**：MJCF/URDF + stand/walk/slope/drop/push 场景 → `reports/mujoco_result.json` + `simulation/mujoco/results/*.sim_result.json`。
+31. **mujoco-simulation → gait-optimization**：高保真场景指标/轨迹 → `reports/gait_score.json` 的后续真实输入。
+32. **mujoco-simulation → robot-dog-digital-twin**：`reports/mujoco_result.json` → G3/P1 动力学 blocker 与设计评分输入。
+33. **mechanical → fea**：结构载荷/材料/初步求解 metadata → `reports/fea_report.json` + `reports/static_case_report.json`。
+34. **fea → robot-dog-digital-twin**：`reports/fea_report.json` → G3/P1 结构 blocker 与设计评分输入。
+35. **mechanical/simulation/gait → wear-fatigue**：齿轮、轴承、足垫、关节、线束、连接器 metadata + 载荷谱 → `reports/wear_report.json` + `reports/fatigue_report.json`。
+36. **wear-fatigue → robot-dog-digital-twin**：`reports/wear_report.json` + `reports/fatigue_report.json` + `reports/maintenance_interval.md` → G3/P1 寿命 blocker 与维护建议输入。
+37. **多域报告 → robot-dog-digital-twin**：`requirements.yaml` + `verification_matrix.yaml` + `artifacts.json` + 各域报告 → `reports/design_score.json` + `reports/failure_report.md` + `reports/next_iteration_plan.md`。
 
 ## 规则
 

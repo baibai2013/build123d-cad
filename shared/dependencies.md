@@ -40,6 +40,8 @@ electronics-bom/pcb/motion-control ─firmware_plan.yaml metadata─▶ firmware
 firmware ─firmware_report.json+project_manifest.json+can_frames.md+calibration.json─▶ robot-dog-digital-twin (G4/G5 固件 bring-up blocker 输入)
 simulation/mujoco-simulation/firmware ─calibration_dataset.yaml/log metrics─▶ sim2real-calibration (仿真-实机误差校准)
 sim2real-calibration ─sim2real_calibration.json+parameter_update.yaml─▶ simulation/mujoco-simulation/robot-dog-digital-twin (仿真参数回灌和可信度 blocker)
+robot-dog-digital-twin/firmware/sim2real-calibration ─integration_plan.yaml/prereqs─▶ integration (实体样机 bring-up gate)
+integration ─integration_checklist.json+hil_plan.md+data_capture_checklist.md─▶ robot-dog-digital-twin (G5 实体集成 blocker 输入)
 mujoco-simulation ─mujoco_result.json+*.sim_result.json─▶ gait-optimization (高保真场景指标,后续替换 metadata gait 输入)
 mujoco-simulation ─mujoco_result.json+*.sim_result.json─▶ robot-dog-digital-twin (G3/P1 动力学 blocker 输入)
 mechanical ─fea_cases.yaml/STEP metadata─▶ fea (结构强度/刚度/模态检查)
@@ -65,6 +67,7 @@ robot-dog-digital-twin ─next_iteration_plan.md─▶ mechanical/pcb/simulation
 | motion-control | simulation / mujoco-simulation / firmware / robot-dog-digital-twin | 中——改 `trajectory.json`/`controller_params.yaml`/`ik_report.json` 字段需跑自身和仿真相关测试 |
 | firmware | robot-dog-digital-twin / electronics-bom / motion-control / pcb | 中高——改 `firmware_report.json`/`project_manifest.json`/`can_frames.md` 字段需跑自身和 digital-twin gate 测试 |
 | sim2real-calibration | robot-dog-digital-twin / simulation / mujoco-simulation / firmware | 中——改 `sim2real_calibration.json`/`parameter_update.yaml` 字段需跑自身和仿真相关测试 |
+| integration | robot-dog-digital-twin / firmware / sim2real-calibration | 中高——改 `integration_checklist.json`/`hil_plan.md` 字段需跑自身和 digital-twin gate 测试 |
 | mujoco-simulation | robot-dog-digital-twin / gait-optimization / simulation | 中——改 `mujoco_result.json`/`*.sim_result.json` 字段需跑自身和 digital-twin/gait 相关测试 |
 | fea | robot-dog-digital-twin / mechanical | 中——改 `fea_report.json`/`static_case_report.json` 字段需跑自身和 digital-twin gate 测试 |
 | wear-fatigue | robot-dog-digital-twin / mechanical / simulation / gait-optimization | 中——改 `wear_report.json`/`fatigue_report.json`/`maintenance_interval.md` 字段需跑自身和 digital-twin gate 测试 |
@@ -86,6 +89,7 @@ robot-dog-digital-twin ─next_iteration_plan.md─▶ mechanical/pcb/simulation
 `motion-control` 是 IK/步态轨迹与控制参数生成层,产物被 simulation/MuJoCo/firmware/digital-twin 读取。
 `firmware` 是固件 dry-run 与安全/校准合同层,产物被 digital-twin 编排层读取。
 `sim2real-calibration` 是仿真-实机参数对齐层,产物被 simulation/MuJoCo/digital-twin 读取。
+`integration` 是实体样机 bring-up/HIL/人工 gate 层,产物被 digital-twin 编排层读取。
 `mujoco-simulation` 是高保真动力学场景校核层,产物被 gait/digital-twin 编排层读取。
 `fea` 是结构强度/刚度/模态校核层,产物被 digital-twin 编排层读取。
 `wear-fatigue` 是磨损/疲劳/维护周期校核层,产物被 digital-twin 编排层读取。
