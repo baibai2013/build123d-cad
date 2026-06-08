@@ -20,6 +20,7 @@
 | actuator-sizing | 执行器裕量报告 | `<project>/reports/`：`torque_margin.json` + `actuator_spec.yaml` + `actuator_sizing_report.md` |
 | pcb-mechanical-reliability | PCB 结构可靠性报告 | `<project>/reports/`：`pcb_fit.json` + `pcb_reliability_report.json` + `connector_clearance.json` + `pcb_mechanical_report.md` |
 | circuit-simulation | 电路/电源/热风险报告 | `<project>/reports/`：`circuit_check.json` + `power_budget.json` + `thermal_report.json` + `protection_checklist.md` + `circuit_simulation_report.md` |
+| gait-optimization | 步态评分与参数建议 | `<project>/reports/`：`gait_score.json` + `best_gait_params.yaml` + `failed_candidates.json` + `trajectory.json` + `gait_optimization_report.md` |
 | robot-dog-digital-twin | 实体样机前编排报告 | `<project>/reports/`：`artifacts.collected.json` + `design_score.json` + `gate_report.json` + `gate_report.md` + `failure_report.md` + `next_iteration_plan.md` |
 
 ## 常见 handoff 链路
@@ -41,7 +42,9 @@
 15. **pcb-mechanical-reliability → robot-dog-digital-twin**：`reports/pcb_fit.json` + `reports/pcb_reliability_report.json` → G2/G3 PCB 结构 blocker 与设计评分输入。
 16. **pcb/electronics-bom → circuit-simulation**：电源轨/电机驱动/保护/热 metadata → `reports/circuit_check.json` + `reports/power_budget.json` + `reports/thermal_report.json`。
 17. **circuit-simulation → robot-dog-digital-twin**：`reports/circuit_check.json` + `reports/power_budget.json` + `reports/thermal_report.json` → G2/G3 电路 blocker 与设计评分输入。
-18. **多域报告 → robot-dog-digital-twin**：`requirements.yaml` + `verification_matrix.yaml` + `artifacts.json` + 各域报告 → `reports/design_score.json` + `reports/failure_report.md` + `reports/next_iteration_plan.md`。
+18. **simulation/actuator-sizing → gait-optimization**：步态参数/仿真结果/扭矩裕量 metadata → `reports/gait_score.json` + `reports/best_gait_params.yaml`。
+19. **gait-optimization → robot-dog-digital-twin**：`reports/gait_score.json` + `reports/best_gait_params.yaml` → G3 步态 blocker 与设计评分输入。
+20. **多域报告 → robot-dog-digital-twin**：`requirements.yaml` + `verification_matrix.yaml` + `artifacts.json` + 各域报告 → `reports/design_score.json` + `reports/failure_report.md` + `reports/next_iteration_plan.md`。
 
 ## 规则
 

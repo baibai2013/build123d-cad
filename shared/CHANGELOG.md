@@ -34,6 +34,8 @@
 
 | 2026-06-08 | **新增 circuit-simulation 子技能(P0 电路/电源/热风险层)** — ① 新增 `skills/circuit-simulation/`，提供 `check_power_budget.py`、`check_protection.py`、`write_report.py`、MVP power/protection/thermal references、`examples/quadruped_mvp/` 和 pytest;② 父 `SKILL.md` / `multi-skill-router.md` 增加电路合理性、电源预算、电流峰值、急停、欠压、TVS、保险丝、热风险路由;③ `handoff-protocols.md` 增加 `reports/circuit_check.json + power_budget.json + thermal_report.json + protection_checklist.md + circuit_simulation_report.md` 输出接口;④ `dependencies.md` 加 `pcb/electronics-bom → circuit-simulation → robot-dog-digital-twin`;⑤ `pytest.ini` 纳入新测试路径。 | circuit-simulation · pcb · electronics-bom · robot-dog-digital-twin | hardware | 非破坏(纯新增);示例故意 failed ERC/underpowered/hot 产 blocker;自身 tests 7/7 |
 
+| 2026-06-08 | **新增 gait-optimization 子技能(P0 步态评分层)** — ① 新增 `skills/gait-optimization/`，提供 `score_gait.py`、`search_params.py`、`write_report.py`、MVP gait-level/stability references、`examples/quadruped_mvp/` 和 pytest;② 父 `SKILL.md` / `multi-skill-router.md` 增加步态优化、行走算法、foot slip、body roll/pitch、cost of transport、下一版步态参数路由;③ `handoff-protocols.md` 增加 `reports/gait_score.json + best_gait_params.yaml + failed_candidates.json + trajectory.json + gait_optimization_report.md` 输出接口;④ `dependencies.md` 加 `simulation/actuator-sizing → gait-optimization → robot-dog-digital-twin`;⑤ `pytest.ini` 纳入新测试路径。 | gait-optimization · simulation · actuator-sizing · robot-dog-digital-twin | hardware | 非破坏(纯新增);示例故意 flat-walk fail/slip/torque blockers;自身 tests 7/7 |
+
 ## 登记规则
 
 - 任何修改 shared/ 的 PR 必须新增一行,内容含日期 / 变更 / 影响子技能 / Owner / 备注

@@ -1,0 +1,72 @@
+[
+  {
+    "name": "trot_v0",
+    "valid": false,
+    "score": 36,
+    "params": {
+      "name": "trot_v0",
+      "stride_mm": 62,
+      "clearance_mm": 42,
+      "duty_factor": 0.48,
+      "body_height_mm": 135,
+      "phase_pattern": "trot"
+    },
+    "blockers": [
+      "stand stable time 21s below target 30s",
+      "flat walk fell",
+      "body roll 11deg above limit 8deg",
+      "body pitch 9deg above limit 8deg",
+      "foot slip ratio 0.18 above limit 0.12",
+      "joint torque margin 12% below target 20%"
+    ],
+    "warnings": [
+      "average speed 0.43m/s below target 0.5m/s",
+      "cost of transport 3.1 above limit 2.5"
+    ],
+    "metrics": {
+      "stand_stable_seconds": 21.0,
+      "flat_walk_no_fall": false,
+      "fall_time_s": 4.2,
+      "max_body_roll_deg": 11.0,
+      "max_body_pitch_deg": 9.0,
+      "foot_slip_ratio": 0.18,
+      "joint_torque_margin_pct": 12.0,
+      "average_speed_mps": 0.43,
+      "cost_of_transport": 3.1
+    }
+  },
+  {
+    "name": "long_stride_fast",
+    "valid": false,
+    "score": 33,
+    "params": {
+      "stride_mm": 70,
+      "clearance_mm": 44,
+      "duty_factor": 0.45,
+      "body_height_mm": 140,
+      "phase_pattern": "trot"
+    },
+    "blockers": [
+      "stand stable time 18s below target 30s",
+      "flat walk fell",
+      "body roll 13deg above limit 8deg",
+      "body pitch 11deg above limit 8deg",
+      "foot slip ratio 0.22 above limit 0.12",
+      "joint torque margin 8% below target 20%"
+    ],
+    "warnings": [
+      "cost of transport 3.4 above limit 2.5"
+    ],
+    "metrics": {
+      "stand_stable_seconds": 18.0,
+      "flat_walk_no_fall": false,
+      "fall_time_s": 3.8,
+      "max_body_roll_deg": 13.0,
+      "max_body_pitch_deg": 11.0,
+      "foot_slip_ratio": 0.22,
+      "joint_torque_margin_pct": 8.0,
+      "average_speed_mps": 0.58,
+      "cost_of_transport": 3.4
+    }
+  }
+]

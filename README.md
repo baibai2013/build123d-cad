@@ -14,8 +14,8 @@
 
 <br>
 
-**一次安装，17 个子技能。两条主线 — 🛠️ CAD 机械建模 · ⚡ PCB 板级电气 — 端到端打通；
-外加网页预览 / 机器人描述 / 动力学仿真 / 制造出工 / 需求合同 / 执行器裕量 / PCB 结构可靠性 / 电路电源热检查 / 机械狗数字孪生编排。**
+**一次安装，18 个子技能。两条主线 — 🛠️ CAD 机械建模 · ⚡ PCB 板级电气 — 端到端打通；
+外加网页预览 / 机器人描述 / 动力学仿真 / 制造出工 / 需求合同 / 执行器裕量 / PCB 结构可靠性 / 电路电源热检查 / 步态评分 / 机械狗数字孪生编排。**
 
 <br>
 
@@ -43,7 +43,7 @@
 
 ## 这是什么
 
-`build123d-cad` 是一个 **硬件设计 Super Skill**：一个父技能下面挂 17 个子技能（monorepo 模块化）。
+`build123d-cad` 是一个 **硬件设计 Super Skill**：一个父技能下面挂 18 个子技能（monorepo 模块化）。
 一次 `npx skills add` 安装即得全部能力；每个子技能独立 `SKILL.md / references / scripts / tests`，可单独 `pytest` 回归。
 
 父级 `SKILL.md` 只做关键词路由（≤ 220 行），进子技能再读细节——**两层路由**，避免一次性把整套实现塞进上下文。
@@ -125,7 +125,7 @@ export default () => (
 
 ---
 
-## 子技能集合（17 个）
+## 子技能集合（18 个）
 
 | 子技能 | 一句话定位 | 路径 | 优先级 |
 |---|---|---|---|
@@ -145,6 +145,7 @@ export default () => (
 | actuator-sizing | 机械狗执行器早期校核：读取需求/架构 → 估算 hip/knee/ankle 扭矩、速度、热裕量 → 输出 `actuator_spec.yaml` / `torque_margin.json` | [skills/actuator-sizing](skills/actuator-sizing/) | **P0 ✅ 执行器** |
 | pcb-mechanical-reliability | PCB 结构可靠性早期校核：检查板厚/挠曲/支撑柱/连接器/线束/装配间隙 → 输出 `pcb_fit.json` / `pcb_reliability_report.json` | [skills/pcb-mechanical-reliability](skills/pcb-mechanical-reliability/) | **P0 ✅ PCB 结构** |
 | circuit-simulation | 电路与电源热早期校核：检查 ERC/DRC、电源预算、电机驱动电流、保护、热风险 → 输出 `circuit_check.json` / `power_budget.json` / `thermal_report.json` | [skills/circuit-simulation](skills/circuit-simulation/) | **P0 ✅ 电路** |
+| gait-optimization | 步态合理性早期校核：检查 IK/相位/站立/慢走/roll/pitch/打滑/扭矩/能耗 → 输出 `gait_score.json` / `best_gait_params.yaml` | [skills/gait-optimization](skills/gait-optimization/) | **P0 ✅ 步态** |
 | robot-dog-digital-twin | 机械狗数字孪生编排：收集多域 artifact → gate → design_score → failure_report → 下一轮参数建议 | [skills/robot-dog-digital-twin](skills/robot-dog-digital-twin/) | **P0 ✅ 编排** |
 
 ---
@@ -190,6 +191,7 @@ pip install pybullet numpy
 > 这套机械狗电机和减速器扭矩够不够                  # → actuator-sizing
 > 这块 PCB 在机身里支撑和连接器空间合理吗           # → pcb-mechanical-reliability
 > 这套电路的电源预算、保护和热风险合理吗            # → circuit-simulation
+> 这个机械狗步态会不会摔，下一版参数怎么改          # → gait-optimization
 > 这个机械狗虚拟样机能不能进入实体样机            # → robot-dog-digital-twin(gate + score)
 ```
 
@@ -211,7 +213,7 @@ pip install pybullet numpy
 build123d-cad/
 ├── SKILL.md                          # 父级路由（≤ 220 行）：关键词 → 子技能
 ├── README.md                         # 本文件（开发者视角）
-├── skills/                           # 子技能集合（17 个），每个可独立 pytest
+├── skills/                           # 子技能集合（18 个），每个可独立 pytest
 │   ├── mechanical/                   #   🛠️ build123d 建模 / 装配 / 仿真 / Playbook
 │   ├── pcb/                          #   ⚡ tscircuit 端到端造板（legacy-kicad/ 为归档旧路线）
 │   ├── viewer/                       #   网页多引擎预览
@@ -224,6 +226,7 @@ build123d-cad/
 │   ├── actuator-sizing/              #   执行器扭矩 / 速度 / 热裕量早期 gate
 │   ├── pcb-mechanical-reliability/   #   PCB 刚度 / 支撑柱 / 连接器 / 装配间隙 gate
 │   ├── circuit-simulation/           #   电源预算 / 保护 / 电流 / 热风险 gate
+│   ├── gait-optimization/            #   步态评分 / 参数建议 / gait gate
 │   └── robot-dog-digital-twin/       #   机械狗数字孪生 gate / score / failure report
 ├── shared/                           # 跨子技能协议
 │   ├── handoff-protocols.md          #   文件接口 + 路径约定

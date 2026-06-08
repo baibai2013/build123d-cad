@@ -28,7 +28,9 @@ pcb+mechanical ─pcb_mechanical.yaml/metadata─▶ pcb-mechanical-reliability 
 pcb-mechanical-reliability ─pcb_fit.json+pcb_reliability_report.json─▶ robot-dog-digital-twin (G2/G3 PCB 结构 blocker 输入)
 pcb/electronics-bom ─circuit_requirements.yaml/metadata─▶ circuit-simulation (电源预算/保护/热风险检查)
 circuit-simulation ─circuit_check.json+power_budget.json+thermal_report.json─▶ robot-dog-digital-twin (G2/G3 电路 blocker 输入)
-mechanical/pcb/simulation/actuator-sizing/pcb-mechanical-reliability/circuit-simulation ─reports─▶ robot-dog-digital-twin (实体前 gate + design_score + failure_report)
+simulation/actuator-sizing ─gait_validation.yaml/metrics─▶ gait-optimization (步态评分/参数建议)
+gait-optimization ─gait_score.json+best_gait_params.yaml─▶ robot-dog-digital-twin (G3 步态 blocker 输入)
+mechanical/pcb/simulation/actuator-sizing/pcb-mechanical-reliability/circuit-simulation/gait-optimization ─reports─▶ robot-dog-digital-twin (实体前 gate + design_score + failure_report)
 robot-dog-digital-twin ─next_iteration_plan.md─▶ mechanical/pcb/simulation (参数迭代建议,不直接 import)
 ```
 
@@ -42,6 +44,7 @@ robot-dog-digital-twin ─next_iteration_plan.md─▶ mechanical/pcb/simulation
 | actuator-sizing | robot-dog-digital-twin | 中——改 `torque_margin.json`/`actuator_spec.yaml` 字段需跑自身和 digital-twin gate 测试 |
 | pcb-mechanical-reliability | robot-dog-digital-twin / mechanical / pcb | 中——改 `pcb_fit.json`/`pcb_reliability_report.json` 字段需跑自身和 digital-twin gate 测试 |
 | circuit-simulation | robot-dog-digital-twin / pcb / electronics-bom | 中——改 `circuit_check.json`/`power_budget.json`/`thermal_report.json` 字段需跑自身和 digital-twin gate 测试 |
+| gait-optimization | robot-dog-digital-twin / simulation / actuator-sizing | 中——改 `gait_score.json`/`best_gait_params.yaml` 字段需跑自身和 digital-twin gate 测试 |
 | robot-dog-digital-twin | 作为编排层读取 mechanical / pcb / simulation / control / manufacturing 报告 | 中——改 gate/score 需跑自身测试 |
 | urdf | srdf / sdf / viewer | 中 |
 | parts-catalog | mechanical | 低 |
@@ -55,6 +58,7 @@ robot-dog-digital-twin ─next_iteration_plan.md─▶ mechanical/pcb/simulation
 `actuator-sizing` 是执行器校核层,产物被 digital-twin 编排层读取。
 `pcb-mechanical-reliability` 是 PCB 结构可靠性校核层,产物被 digital-twin 编排层读取。
 `circuit-simulation` 是电路/电源/热风险校核层,产物被 digital-twin 编排层读取。
+`gait-optimization` 是步态评分与参数建议层,产物被 digital-twin 编排层读取。
 
 ## 高扇入接口登记
 

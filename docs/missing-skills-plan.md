@@ -1,8 +1,9 @@
 # 缺失子技能规划方案(机器狗「虚拟验证→实体样机」全链路补全)
 
 > 状态:**P0 孵化中**。`robot-dog-digital-twin`、`requirements-verification`
-> 与 `actuator-sizing`、`pcb-mechanical-reliability`、`circuit-simulation` MVP 已落地;
-> 其余条目仍是缺口分析与子技能规划,后续逐个按 `docs/adding-new-subskill.md` 流程立项。
+> 与 `actuator-sizing`、`pcb-mechanical-reliability`、`circuit-simulation`、
+> `gait-optimization` MVP 已落地;其余条目仍是缺口分析与子技能规划,
+> 后续逐个按 `docs/adding-new-subskill.md` 流程立项。
 >
 > 关联:现有 12 子技能(见 `SKILL.md`)、架构红线(见本文 §2)、handoff 约定(`shared/handoff-protocols.md`)。
 
@@ -513,6 +514,11 @@ simulation/mujoco/
 
 ### 3.4.2 `gait-optimization` — 步态参数搜索与评分
 
+**落地状态(2026-06-08)**:已以 `skills/gait-optimization/` MVP 落地,包含
+`gait_validation.yaml` metadata 输入、IK/相位/站立/慢走/roll/pitch/打滑/扭矩裕量/速度/能耗
+确定性评分、候选步态参数选择、示例 `quadruped_mvp/` 和 pytest。第一版是规则评分和参数建议,
+不替代 MuJoCo、MPC、强化学习或实体行走测试。
+
 **定位**:回答"行走算法是否合理"。不是看模型能不能动,而是按分级场景量化稳定性、速度、
 足端打滑、body roll/pitch、扭矩裕量和能耗。
 
@@ -551,6 +557,13 @@ best_gait_params.yaml
 failed_candidates.json
 trajectory.json
 ```
+
+**后续增强**:
+
+- 从 `simulation` 的真实 `sim_result.json` / `trajectory.json` 自动生成 `gait_validation.yaml`。
+- 从 `actuator-sizing` 读取 `torque_margin.json`,替换手写扭矩裕量。
+- 增加 slope、step obstacle、push disturbance、friction variation 场景。
+- 接入 MuJoCo 批量参数搜索,把当前候选评分升级为真实仿真搜索。
 
 ---
 
@@ -782,7 +795,7 @@ skills/<skill-name>/
 | P0-1 | `skills/robot-dog-digital-twin/`、`shared/schemas/{requirements,verification_matrix,design_score}.schema.json` | quadruped MVP 能生成 `gate_report` 和 `design_score` |
 | P0-2 | `skills/requirements-verification/`、`skills/actuator-sizing/` | ✅ requirements 和 torque margin 已能独立跑 smoke |
 | P0-3 | `skills/pcb-mechanical-reliability/`、`skills/circuit-simulation/` | ✅ PCB fit 和电源预算已能产 blocker |
-| P0-4 | `skills/gait-optimization/` | 平地站立/慢走指标能评分 |
+| P0-4 | `skills/gait-optimization/` | ✅ 平地站立/慢走指标已能评分 |
 | P1-1 | `skills/fea/`、`skills/wear-fatigue/` | 结构和磨损从占位报告升级到可计算报告 |
 | P1-2 | `skills/mujoco-simulation/`、`skills/motion-control/` | MuJoCo 场景和真步态轨迹接入 |
 | P2 | `skills/firmware/`、`skills/sim2real-calibration/`、`skills/integration/` | 真实控制和实物闭环进入人工 gate |

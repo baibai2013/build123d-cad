@@ -1,0 +1,81 @@
+{
+  "project": "quadruped_mvp",
+  "valid": false,
+  "score": 36,
+  "blockers": [
+    "stand stable time 21s below target 30s",
+    "flat walk fell",
+    "body roll 11deg above limit 8deg",
+    "body pitch 9deg above limit 8deg",
+    "foot slip ratio 0.18 above limit 0.12",
+    "joint torque margin 12% below target 20%"
+  ],
+  "warnings": [
+    "average speed 0.43m/s below target 0.5m/s",
+    "cost of transport 3.1 above limit 2.5"
+  ],
+  "levels": {
+    "L0_single_leg_ik": true,
+    "L1_phase_complete": true,
+    "L2_stand_stable": false,
+    "L3_flat_walk_no_fall": false,
+    "L4_posture_within_limits": false,
+    "L5_foot_slip_ok": false,
+    "L6_torque_margin_ok": false,
+    "L7_speed_energy_ok": false
+  },
+  "metrics": {
+    "stand_stable_seconds": 21.0,
+    "flat_walk_no_fall": false,
+    "fall_time_s": 4.2,
+    "max_body_roll_deg": 11.0,
+    "max_body_pitch_deg": 9.0,
+    "foot_slip_ratio": 0.18,
+    "joint_torque_margin_pct": 12.0,
+    "average_speed_mps": 0.43,
+    "cost_of_transport": 3.1
+  },
+  "current_params": {
+    "name": "trot_v0",
+    "stride_mm": 62,
+    "clearance_mm": 42,
+    "duty_factor": 0.48,
+    "body_height_mm": 135,
+    "phase_pattern": "trot"
+  },
+  "best_candidate": {
+    "name": "safer_trot",
+    "valid": true,
+    "score": 100,
+    "params": {
+      "stride_mm": 42,
+      "clearance_mm": 30,
+      "duty_factor": 0.58,
+      "body_height_mm": 120,
+      "phase_pattern": "trot"
+    },
+    "blockers": [],
+    "warnings": [],
+    "metrics": {
+      "stand_stable_seconds": 32.0,
+      "flat_walk_no_fall": true,
+      "fall_time_s": 0.0,
+      "max_body_roll_deg": 6.0,
+      "max_body_pitch_deg": 6.0,
+      "foot_slip_ratio": 0.08,
+      "joint_torque_margin_pct": 26.0,
+      "average_speed_mps": 0.52,
+      "cost_of_transport": 2.2
+    }
+  },
+  "next_actions": [
+    "lower body height or increase stance duty factor",
+    "reduce stride length and increase duty factor",
+    "reduce lateral body motion and stance width error",
+    "move COM or reduce acceleration/stride aggressiveness",
+    "reduce stride length or increase stance time",
+    "reduce gait aggressiveness or increase actuator torque",
+    "increase speed only after stability blockers are cleared",
+    "reduce vertical motion and avoid excessive swing clearance"
+  ]
+}

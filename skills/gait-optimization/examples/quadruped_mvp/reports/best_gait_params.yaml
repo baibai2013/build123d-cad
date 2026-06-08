@@ -1,0 +1,10 @@
+version: "1.0"
+name: safer_trot
+score: 100
+valid: true
+params:
+  stride_mm: 42
+  clearance_mm: 30
+  duty_factor: 0.58
+  body_height_mm: 120
+  phase_pattern: trot
