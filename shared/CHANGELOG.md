@@ -42,6 +42,8 @@
 
 | 2026-06-08 | **新增 mujoco-simulation 子技能(P1 MuJoCo 场景门禁层)** — ① 新增 `skills/mujoco-simulation/`，提供 `run_scenarios.py`、`summarize_results.py`、MVP MJCF/scenario/output/backend references、`examples/quadruped_mvp/` 和 pytest;② 父 `SKILL.md` / `multi-skill-router.md` 增加 MuJoCo、MJCF、高保真动力学、接触摩擦、斜坡、台阶、推扰路由;③ `handoff-protocols.md` 增加 `reports/mujoco_result.json + mujoco_validation_report.md + simulation/mujoco/results/*.sim_result.json` 输出接口;④ `dependencies.md` 加 `mujoco-simulation → gait-optimization / robot-dog-digital-twin`;⑤ `pytest.ini` 纳入新测试路径。 | mujoco-simulation · gait-optimization · simulation · robot-dog-digital-twin | hardware | 非破坏(纯新增);MVP 为 metadata backend,示例故意 walk/slope blockers;自身 tests 4/4 |
 
+| 2026-06-08 | **新增 motion-control 子技能(P1 IK/步态轨迹层)** — ① 新增 `skills/motion-control/`，提供 `solve_ik.py`、`generate_gait.py`、MVP IK/gait/output references、`examples/quadruped_mvp/` 和 pytest;② 父 `SKILL.md` / `multi-skill-router.md` 增加 IK、FK、逆运动学、运动控制、gait generator、trajectory、controller_params 路由;③ `handoff-protocols.md` 增加 `reports/ik_report.json + motion_control_report.json` 与 `control/trajectory.json + controller_params.yaml` 输出接口;④ `dependencies.md` 加 `motion-control → simulation/mujoco-simulation/firmware/robot-dog-digital-twin`;⑤ `pytest.ini` 纳入新测试路径。 | motion-control · simulation · mujoco-simulation · firmware · robot-dog-digital-twin | hardware | 非破坏(纯新增);MVP 为 2-link IK + 相位轨迹,示例故意 IK overreach 产 blocker;自身 tests 5/5 |
+
 ## 登记规则
 
 - 任何修改 shared/ 的 PR 必须新增一行,内容含日期 / 变更 / 影响子技能 / Owner / 备注

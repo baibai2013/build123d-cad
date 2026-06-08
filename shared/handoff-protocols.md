@@ -21,6 +21,7 @@
 | pcb-mechanical-reliability | PCB 结构可靠性报告 | `<project>/reports/`：`pcb_fit.json` + `pcb_reliability_report.json` + `connector_clearance.json` + `pcb_mechanical_report.md` |
 | circuit-simulation | 电路/电源/热风险报告 | `<project>/reports/`：`circuit_check.json` + `power_budget.json` + `thermal_report.json` + `protection_checklist.md` + `circuit_simulation_report.md` |
 | gait-optimization | 步态评分与参数建议 | `<project>/reports/`：`gait_score.json` + `best_gait_params.yaml` + `failed_candidates.json` + `trajectory.json` + `gait_optimization_report.md` |
+| motion-control | IK 与轨迹控制产物 | `<project>/reports/`：`ik_report.json` + `motion_control_report.json` + `motion_control_report.md`;`<project>/control/`：`ik_solution.json` + `trajectory.json` + `controller_params.yaml` |
 | mujoco-simulation | MuJoCo 场景验证报告 | `<project>/reports/`：`mujoco_result.json` + `mujoco_validation_report.md`;`<project>/simulation/mujoco/results/*.sim_result.json` + `trajectories/*.trajectory.json` |
 | fea | 结构 FEA 门禁报告 | `<project>/reports/`：`fea_report.json` + `static_case_report.json` + `fea_checklist.md` |
 | wear-fatigue | 磨损/疲劳/维护周期报告 | `<project>/reports/`：`wear_report.json` + `fatigue_report.json` + `maintenance_interval.md` + `wear_fatigue_report.md` |
@@ -47,14 +48,17 @@
 17. **circuit-simulation → robot-dog-digital-twin**：`reports/circuit_check.json` + `reports/power_budget.json` + `reports/thermal_report.json` → G2/G3 电路 blocker 与设计评分输入。
 18. **simulation/actuator-sizing → gait-optimization**：步态参数/仿真结果/扭矩裕量 metadata → `reports/gait_score.json` + `reports/best_gait_params.yaml`。
 19. **gait-optimization → robot-dog-digital-twin**：`reports/gait_score.json` + `reports/best_gait_params.yaml` → G3 步态 blocker 与设计评分输入。
-20. **urdf/mjcf/scenarios → mujoco-simulation**：MJCF/URDF + stand/walk/slope/drop/push 场景 → `reports/mujoco_result.json` + `simulation/mujoco/results/*.sim_result.json`。
-21. **mujoco-simulation → gait-optimization**：高保真场景指标/轨迹 → `reports/gait_score.json` 的后续真实输入。
-22. **mujoco-simulation → robot-dog-digital-twin**：`reports/mujoco_result.json` → G3/P1 动力学 blocker 与设计评分输入。
-23. **mechanical → fea**：结构载荷/材料/初步求解 metadata → `reports/fea_report.json` + `reports/static_case_report.json`。
-24. **fea → robot-dog-digital-twin**：`reports/fea_report.json` → G3/P1 结构 blocker 与设计评分输入。
-25. **mechanical/simulation/gait → wear-fatigue**：齿轮、轴承、足垫、关节、线束、连接器 metadata + 载荷谱 → `reports/wear_report.json` + `reports/fatigue_report.json`。
-26. **wear-fatigue → robot-dog-digital-twin**：`reports/wear_report.json` + `reports/fatigue_report.json` + `reports/maintenance_interval.md` → G3/P1 寿命 blocker 与维护建议输入。
-27. **多域报告 → robot-dog-digital-twin**：`requirements.yaml` + `verification_matrix.yaml` + `artifacts.json` + 各域报告 → `reports/design_score.json` + `reports/failure_report.md` + `reports/next_iteration_plan.md`。
+20. **urdf/mechanical → motion-control**：腿长、关节限位、足端目标和 gait 参数 → `control/trajectory.json` + `control/controller_params.yaml`。
+21. **motion-control → simulation/mujoco-simulation/firmware**：`control/trajectory.json` + `controller_params.yaml` → 动力学验证或固件控制参数输入。
+22. **motion-control → robot-dog-digital-twin**：`reports/ik_report.json` + `reports/motion_control_report.json` → G3/P1 控制 blocker 与设计评分输入。
+23. **urdf/mjcf/scenarios → mujoco-simulation**：MJCF/URDF + stand/walk/slope/drop/push 场景 → `reports/mujoco_result.json` + `simulation/mujoco/results/*.sim_result.json`。
+24. **mujoco-simulation → gait-optimization**：高保真场景指标/轨迹 → `reports/gait_score.json` 的后续真实输入。
+25. **mujoco-simulation → robot-dog-digital-twin**：`reports/mujoco_result.json` → G3/P1 动力学 blocker 与设计评分输入。
+26. **mechanical → fea**：结构载荷/材料/初步求解 metadata → `reports/fea_report.json` + `reports/static_case_report.json`。
+27. **fea → robot-dog-digital-twin**：`reports/fea_report.json` → G3/P1 结构 blocker 与设计评分输入。
+28. **mechanical/simulation/gait → wear-fatigue**：齿轮、轴承、足垫、关节、线束、连接器 metadata + 载荷谱 → `reports/wear_report.json` + `reports/fatigue_report.json`。
+29. **wear-fatigue → robot-dog-digital-twin**：`reports/wear_report.json` + `reports/fatigue_report.json` + `reports/maintenance_interval.md` → G3/P1 寿命 blocker 与维护建议输入。
+30. **多域报告 → robot-dog-digital-twin**：`requirements.yaml` + `verification_matrix.yaml` + `artifacts.json` + 各域报告 → `reports/design_score.json` + `reports/failure_report.md` + `reports/next_iteration_plan.md`。
 
 ## 规则
 

@@ -1,0 +1,56 @@
+{
+  "project": "quadruped_mvp",
+  "valid": false,
+  "solutions": [
+    {
+      "name": "front_left_stance",
+      "leg": "front_left",
+      "valid": true,
+      "required": true,
+      "target": {
+        "x_mm": 45.0,
+        "z_mm": -135.0,
+        "distance_mm": 142.302
+      },
+      "joints_deg": {
+        "hip_pitch": -30.543,
+        "knee_pitch": -79.47
+      },
+      "blockers": []
+    },
+    {
+      "name": "front_right_swing",
+      "leg": "front_right",
+      "valid": true,
+      "required": true,
+      "target": {
+        "x_mm": 85.0,
+        "z_mm": -110.0,
+        "distance_mm": 139.014
+      },
+      "joints_deg": {
+        "hip_pitch": -9.641,
+        "knee_pitch": -82.608
+      },
+      "blockers": []
+    },
+    {
+      "name": "rear_left_overreach",
+      "leg": "rear_left",
+      "valid": false,
+      "required": true,
+      "target": {
+        "x_mm": 165.0,
+        "z_mm": -120.0,
+        "distance_mm": 204.022
+      },
+      "joints_deg": {
+        "hip_pitch": 0.0,
+        "knee_pitch": 0.0
+      },
+      "blockers": [
+        "rear_left_overreach target distance 204.0mm exceeds reach 185.0mm"
+      ]
+    }
+  ]
+}

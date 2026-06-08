@@ -1,0 +1,109 @@
+{
+  "format": "build123d-cad.trajectory.v1",
+  "points": [
+    {
+      "timeFromStartSec": 0.0,
+      "positionsByNameDeg": {
+        "front_left_hip_pitch": -7.5,
+        "front_left_knee_pitch": -55.0,
+        "front_right_hip_pitch": 0.0,
+        "front_right_knee_pitch": -55.0,
+        "rear_left_hip_pitch": 0.0,
+        "rear_left_knee_pitch": -55.0,
+        "rear_right_hip_pitch": -7.5,
+        "rear_right_knee_pitch": -55.0
+      }
+    },
+    {
+      "timeFromStartSec": 0.0857,
+      "positionsByNameDeg": {
+        "front_left_hip_pitch": -5.625,
+        "front_left_knee_pitch": -55.0,
+        "front_right_hip_pitch": 1.875,
+        "front_right_knee_pitch": -50.625,
+        "rear_left_hip_pitch": 1.875,
+        "rear_left_knee_pitch": -50.625,
+        "rear_right_hip_pitch": -5.625,
+        "rear_right_knee_pitch": -55.0
+      }
+    },
+    {
+      "timeFromStartSec": 0.1714,
+      "positionsByNameDeg": {
+        "front_left_hip_pitch": -3.75,
+        "front_left_knee_pitch": -55.0,
+        "front_right_hip_pitch": 3.75,
+        "front_right_knee_pitch": -46.383,
+        "rear_left_hip_pitch": 3.75,
+        "rear_left_knee_pitch": -46.383,
+        "rear_right_hip_pitch": -3.75,
+        "rear_right_knee_pitch": -55.0
+      }
+    },
+    {
+      "timeFromStartSec": 0.2571,
+      "positionsByNameDeg": {
+        "front_left_hip_pitch": -1.875,
+        "front_left_knee_pitch": -55.0,
+        "front_right_hip_pitch": 5.625,
+        "front_right_knee_pitch": -48.297,
+        "rear_left_hip_pitch": 5.625,
+        "rear_left_knee_pitch": -48.297,
+        "rear_right_hip_pitch": -1.875,
+        "rear_right_knee_pitch": -55.0
+      }
+    },
+    {
+      "timeFromStartSec": 0.3429,
+      "positionsByNameDeg": {
+        "front_left_hip_pitch": 0.0,
+        "front_left_knee_pitch": -55.0,
+        "front_right_hip_pitch": -7.5,
+        "front_right_knee_pitch": -55.0,
+        "rear_left_hip_pitch": -7.5,
+        "rear_left_knee_pitch": -55.0,
+        "rear_right_hip_pitch": 0.0,
+        "rear_right_knee_pitch": -55.0
+      }
+    },
+    {
+      "timeFromStartSec": 0.4286,
+      "positionsByNameDeg": {
+        "front_left_hip_pitch": 1.875,
+        "front_left_knee_pitch": -50.625,
+        "front_right_hip_pitch": -5.625,
+        "front_right_knee_pitch": -55.0,
+        "rear_left_hip_pitch": -5.625,
+        "rear_left_knee_pitch": -55.0,
+        "rear_right_hip_pitch": 1.875,
+        "rear_right_knee_pitch": -50.625
+      }
+    },
+    {
+      "timeFromStartSec": 0.5143,
+      "positionsByNameDeg": {
+        "front_left_hip_pitch": 3.75,
+        "front_left_knee_pitch": -46.383,
+        "front_right_hip_pitch": -3.75,
+        "front_right_knee_pitch": -55.0,
+        "rear_left_hip_pitch": -3.75,
+        "rear_left_knee_pitch": -55.0,
+        "rear_right_hip_pitch": 3.75,
+        "rear_right_knee_pitch": -46.383
+      }
+    },
+    {
+      "timeFromStartSec": 0.6,
+      "positionsByNameDeg": {
+        "front_left_hip_pitch": 5.625,
+        "front_left_knee_pitch": -48.297,
+        "front_right_hip_pitch": -1.875,
+        "front_right_knee_pitch": -55.0,
+        "rear_left_hip_pitch": -1.875,
+        "rear_left_knee_pitch": -55.0,
+        "rear_right_hip_pitch": 5.625,
+        "rear_right_knee_pitch": -48.297
+      }
+    }
+  ]
+}

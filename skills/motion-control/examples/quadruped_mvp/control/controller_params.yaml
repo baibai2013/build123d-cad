@@ -1,0 +1,8 @@
+project: quadruped_mvp
+mode: position
+control_rate_hz: 200
+kp: 28
+kd: 0.8
+gait_type: trot
+cycle_time_s: 0.6
+duty_factor: 0.55

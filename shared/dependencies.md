@@ -30,13 +30,16 @@ pcb/electronics-bom ─circuit_requirements.yaml/metadata─▶ circuit-simulati
 circuit-simulation ─circuit_check.json+power_budget.json+thermal_report.json─▶ robot-dog-digital-twin (G2/G3 电路 blocker 输入)
 simulation/actuator-sizing ─gait_validation.yaml/metrics─▶ gait-optimization (步态评分/参数建议)
 gait-optimization ─gait_score.json+best_gait_params.yaml─▶ robot-dog-digital-twin (G3 步态 blocker 输入)
+urdf/mechanical ─kinematic metadata+motion_plan.yaml─▶ motion-control (IK/步态轨迹生成)
+motion-control ─trajectory.json+controller_params.yaml─▶ simulation/mujoco-simulation/firmware (轨迹与控制参数输入)
+motion-control ─ik_report.json+motion_control_report.json─▶ robot-dog-digital-twin (G3/P1 控制 blocker 输入)
 mujoco-simulation ─mujoco_result.json+*.sim_result.json─▶ gait-optimization (高保真场景指标,后续替换 metadata gait 输入)
 mujoco-simulation ─mujoco_result.json+*.sim_result.json─▶ robot-dog-digital-twin (G3/P1 动力学 blocker 输入)
 mechanical ─fea_cases.yaml/STEP metadata─▶ fea (结构强度/刚度/模态检查)
 fea ─fea_report.json+static_case_report.json─▶ robot-dog-digital-twin (G3/P1 结构 blocker 输入)
 mechanical/simulation/gait-optimization ─wear_inputs.yaml/loads─▶ wear-fatigue (齿轮/轴承/足垫/线束/连接器寿命检查)
 wear-fatigue ─wear_report.json+fatigue_report.json+maintenance_interval.md─▶ robot-dog-digital-twin (G3/P1 寿命 blocker 输入)
-mechanical/pcb/simulation/actuator-sizing/pcb-mechanical-reliability/circuit-simulation/gait-optimization/mujoco-simulation/fea/wear-fatigue ─reports─▶ robot-dog-digital-twin (实体前 gate + design_score + failure_report)
+mechanical/pcb/simulation/actuator-sizing/pcb-mechanical-reliability/circuit-simulation/gait-optimization/motion-control/mujoco-simulation/fea/wear-fatigue ─reports─▶ robot-dog-digital-twin (实体前 gate + design_score + failure_report)
 robot-dog-digital-twin ─next_iteration_plan.md─▶ mechanical/pcb/simulation (参数迭代建议,不直接 import)
 ```
 
@@ -51,6 +54,7 @@ robot-dog-digital-twin ─next_iteration_plan.md─▶ mechanical/pcb/simulation
 | pcb-mechanical-reliability | robot-dog-digital-twin / mechanical / pcb | 中——改 `pcb_fit.json`/`pcb_reliability_report.json` 字段需跑自身和 digital-twin gate 测试 |
 | circuit-simulation | robot-dog-digital-twin / pcb / electronics-bom | 中——改 `circuit_check.json`/`power_budget.json`/`thermal_report.json` 字段需跑自身和 digital-twin gate 测试 |
 | gait-optimization | robot-dog-digital-twin / simulation / actuator-sizing | 中——改 `gait_score.json`/`best_gait_params.yaml` 字段需跑自身和 digital-twin gate 测试 |
+| motion-control | simulation / mujoco-simulation / firmware / robot-dog-digital-twin | 中——改 `trajectory.json`/`controller_params.yaml`/`ik_report.json` 字段需跑自身和仿真相关测试 |
 | mujoco-simulation | robot-dog-digital-twin / gait-optimization / simulation | 中——改 `mujoco_result.json`/`*.sim_result.json` 字段需跑自身和 digital-twin/gait 相关测试 |
 | fea | robot-dog-digital-twin / mechanical | 中——改 `fea_report.json`/`static_case_report.json` 字段需跑自身和 digital-twin gate 测试 |
 | wear-fatigue | robot-dog-digital-twin / mechanical / simulation / gait-optimization | 中——改 `wear_report.json`/`fatigue_report.json`/`maintenance_interval.md` 字段需跑自身和 digital-twin gate 测试 |
@@ -68,6 +72,7 @@ robot-dog-digital-twin ─next_iteration_plan.md─▶ mechanical/pcb/simulation
 `pcb-mechanical-reliability` 是 PCB 结构可靠性校核层,产物被 digital-twin 编排层读取。
 `circuit-simulation` 是电路/电源/热风险校核层,产物被 digital-twin 编排层读取。
 `gait-optimization` 是步态评分与参数建议层,产物被 digital-twin 编排层读取。
+`motion-control` 是 IK/步态轨迹与控制参数生成层,产物被 simulation/MuJoCo/firmware/digital-twin 读取。
 `mujoco-simulation` 是高保真动力学场景校核层,产物被 gait/digital-twin 编排层读取。
 `fea` 是结构强度/刚度/模态校核层,产物被 digital-twin 编排层读取。
 `wear-fatigue` 是磨损/疲劳/维护周期校核层,产物被 digital-twin 编排层读取。

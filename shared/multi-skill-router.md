@@ -25,6 +25,7 @@
 | pcb-mechanical-reliability | PCB刚度、PCB挠曲、PCB硬度、支撑柱、固定孔、连接器受力、线束弯折、PCB装配间隙、pcb_fit、pcb_reliability_report | ✅ P0 PCB 结构 |
 | circuit-simulation | 电路合理性、电源预算、电流峰值、保护电路、急停、欠压、TVS、保险丝、MOSFET热、驱动器热、thermal_report、power_budget、circuit_check | ✅ P0 电路 |
 | gait-optimization | 步态优化、行走算法、trot、walk、gait_score、best_gait_params、foot slip、body roll、body pitch、cost of transport、会不会摔 | ✅ P0 步态 |
+| motion-control | IK、FK、逆运动学、运动控制、gait generator、trot trajectory、walk trajectory、controller_params、trajectory.json、足端目标、相位轨迹 | ✅ P1 控制 |
 | fea | FEA、有限元、结构强度、刚度、变形、位移、安全系数、应力、模态、跌落冲击、fea_report、会不会断 | ✅ P1 结构 |
 | wear-fatigue | 磨损、疲劳、轴承寿命、齿轮寿命、足垫磨耗、关节限位撞击、螺丝松动、线束弯折、夹线风险、连接器松脱、维护周期、wear_report、fatigue_report | ✅ P1 寿命 |
 | mujoco-simulation | MuJoCo、MJCF、高保真动力学、接触摩擦、斜坡、台阶、推扰、drop、slope、step obstacle、push disturbance、mujoco_result、sim_result | ✅ P1 MuJoCo |
@@ -50,6 +51,7 @@
 - "这块 PCB 在机身里刚度/支撑/连接器空间合理吗" → pcb-mechanical-reliability(主,产 pcb_fit.json + pcb_reliability_report.json)
 - "这套电路/电源预算/保护/热风险合理吗" → circuit-simulation(主,产 circuit_check.json + power_budget.json + thermal_report.json)
 - "这个步态/行走算法会不会摔 / 下一版步态参数怎么改" → gait-optimization(主,产 gait_score.json + best_gait_params.yaml)
+- "生成 IK 解 / trot 轨迹 / controller_params 给 simulation 或 firmware" → motion-control(主,产 ik_report.json + trajectory.json + controller_params.yaml)
 - "这个腿/机身强度够吗 / 变形大不大 / 要不要 FEA" → fea(主,产 fea_report.json + static_case_report.json)
 - "这些齿轮/轴承/足垫/线束/连接器多久会磨坏 / 维护周期多长" → wear-fatigue(主,产 wear_report.json + fatigue_report.json + maintenance_interval.md)
 - "用 MuJoCo/MJCF 跑斜坡、台阶、drop、推扰和接触摩擦" → mujoco-simulation(主,产 mujoco_result.json + *.sim_result.json)

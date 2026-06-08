@@ -2,7 +2,7 @@
 
 > 状态:**P0 孵化中**。`robot-dog-digital-twin`、`requirements-verification`
 > 与 `actuator-sizing`、`pcb-mechanical-reliability`、`circuit-simulation`、
-> `gait-optimization`、`fea`、`wear-fatigue`、`mujoco-simulation` MVP 已落地;
+> `gait-optimization`、`motion-control`、`fea`、`wear-fatigue`、`mujoco-simulation` MVP 已落地;
 > 其余条目仍是缺口分析与子技能规划,
 > 后续逐个按 `docs/adding-new-subskill.md` 流程立项。
 >
@@ -323,6 +323,11 @@ actuator_sizing_report.md
 
 ### 3.2 `motion-control` — 运动控制算法(可执行版)
 
+**落地状态(2026-06-08)**:已以 `skills/motion-control/` MVP 落地,包含 `motion_plan.yaml`
+metadata 输入、2-link 平面腿 IK、关节限位/可达性 blocker、trot/walk/bound 相位轨迹生成、
+`trajectory.json`、`controller_params.yaml`、示例 `quadruped_mvp/` 和 pytest。第一版是可执行
+IK/轨迹文件合同,不替代 3D 全身运动学、MPC/WBC、状态估计或实时固件控制。
+
 **定位**:把 `mechanical` 里只有"指引"的运动学/步态,做成**能跑的库**,在 `simulation` 里验证,
 再下发给 `firmware` 执行。填补 `simulation` 现在"相位正弦 MVP"到"真步态"的距离。
 
@@ -344,6 +349,13 @@ actuator_sizing_report.md
 
 **与现状的关系**:`simulation` 的 `gait` 模式应改为**消费** `motion-control` 的轨迹,
 而非自己内嵌正弦驱动 → 两者解耦,各管"算"与"验"。
+
+**后续增强**:
+
+- 从 `urdf` / `architecture.yaml` 自动生成 link length、joint limits 和足端默认目标。
+- 增加 3D hip ab/adduction、Jacobian/DLS IK、奇异规避和轨迹平滑。
+- 让 `simulation` / `mujoco-simulation` 直接消费 `control/trajectory.json`。
+- 增加 VMC/WBC/MPC 或 terrain-adaptive foot placement 作为后续 controller 层。
 
 ---
 
@@ -823,7 +835,7 @@ skills/<skill-name>/
 | `fea` | `run_static_case.py`、`summarize_fea.py` | `load-cases.md`、`materials.md` | `fea_report.json` |
 | `wear-fatigue` | `estimate_wear.py`、`estimate_fatigue.py` | `wear-models.md`、`bearing-life.md` | `wear_report.json`、`maintenance_interval.md` |
 | `mujoco-simulation` | `run_scenarios.py`、`summarize_results.py` | `scenarios.md`、`backend-plan.md` | `mujoco_result.json`、`*.sim_result.json` |
-| `motion-control` | `solve_ik.py`、`generate_gait.py` | `ik-contract.md`、`trajectory-format.md` | `trajectory.json`、`controller_params.yaml` |
+| `motion-control` | `solve_ik.py`、`generate_gait.py` | `ik-model.md`、`gait-contract.md` | `trajectory.json`、`controller_params.yaml` |
 | `firmware` | `generate_project.py`、`run_firmware_tests.py` | `mcu-targets.md`、`can-protocol.md` | `firmware_report.json`、`calibration.json` |
 
 ### 4.4 分阶段落盘顺序
@@ -838,7 +850,8 @@ skills/<skill-name>/
 | P0-4 | `skills/gait-optimization/` | ✅ 平地站立/慢走指标已能评分 |
 | P1-1 | `skills/fea/`、`skills/wear-fatigue/` | ✅ FEA 与磨损疲劳 MVP 均已能产 blocker |
 | P1-2 | `skills/mujoco-simulation/` | ✅ MuJoCo 场景合同与 metadata backend 已能产动力学 blocker |
-| P1-3 | `skills/motion-control/`、`skills/mujoco-simulation/` real backend | 真步态轨迹和真实 MuJoCo 求解器接入 |
+| P1-3 | `skills/motion-control/` | ✅ IK 与相位步态轨迹 MVP 已能产 blocker 和 trajectory |
+| P1-4 | `skills/mujoco-simulation/` real backend | 真实 MuJoCo 求解器接入 |
 | P2 | `skills/firmware/`、`skills/sim2real-calibration/`、`skills/integration/` | 真实控制和实物闭环进入人工 gate |
 
 ### 4.5 模块间上下文清理纪律

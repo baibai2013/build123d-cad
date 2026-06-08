@@ -1,0 +1,42 @@
+project: quadruped_mvp
+
+link_lengths:
+  thigh_mm: 90
+  shank_mm: 95
+
+joint_limits_deg:
+  hip_pitch_min: -75
+  hip_pitch_max: 75
+  knee_pitch_min: -145
+  knee_pitch_max: 5
+
+ik_targets:
+  - name: front_left_stance
+    leg: front_left
+    x_mm: 45
+    z_mm: -135
+    required: true
+  - name: front_right_swing
+    leg: front_right
+    x_mm: 85
+    z_mm: -110
+    required: true
+  - name: rear_left_overreach
+    leg: rear_left
+    x_mm: 165
+    z_mm: -120
+    required: true
+
+gait:
+  type: trot
+  cycle_time_s: 0.6
+  samples_per_cycle: 8
+  stride_length_mm: 60
+  swing_height_mm: 35
+  body_height_mm: 135
+  duty_factor: 0.55
+  controller:
+    mode: position
+    control_rate_hz: 200
+    kp: 28
+    kd: 0.8
