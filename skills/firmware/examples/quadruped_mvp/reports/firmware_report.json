@@ -1,0 +1,62 @@
+{
+  "project": "quadruped_mvp",
+  "valid": false,
+  "blockers": [
+    "undervoltage cutoff 18V below safe minimum 20V",
+    "thermal shutdown 85C above max 80C",
+    "encoder offset calibration is required but not captured"
+  ],
+  "warnings": [
+    "platformio build is not run by this MVP"
+  ],
+  "summary": {
+    "mcu": "STM32G431CBT6",
+    "toolchain": "platformio",
+    "joint_count": 12,
+    "control_frequency_hz": 500.0,
+    "bus": "can_fd",
+    "emergency_stop": true
+  },
+  "target": {
+    "mcu": "STM32G431CBT6",
+    "toolchain": "platformio",
+    "framework": "stm32_hal",
+    "clock_mhz": 170,
+    "joint_count": 12
+  },
+  "control_loop": {
+    "mode": "foc_position",
+    "frequency_hz": 500,
+    "frequency_min_hz": 250,
+    "telemetry_hz": 100,
+    "watchdog_ms": 20
+  },
+  "bus": {
+    "type": "can_fd",
+    "bitrate_kbps": 1000,
+    "command_id_base": 512,
+    "telemetry_id_base": 768,
+    "estop_id": 256,
+    "heartbeat_ms": 20
+  },
+  "safety": {
+    "emergency_stop": true,
+    "undervoltage_cutoff_v": 18,
+    "undervoltage_min_v": 20,
+    "overcurrent_limit_a": 35,
+    "thermal_shutdown_c": 85,
+    "thermal_shutdown_max_c": 80
+  },
+  "calibration": {
+    "joint_zero_required": true,
+    "encoder_offset_required": true,
+    "torque_sensor_required": false,
+    "captured_joint_zero": true,
+    "captured_encoder_offset": false
+  },
+  "next_actions": [
+    "raise undervoltage cutoff or update battery safety requirement",
+    "lower thermal shutdown threshold",
+    "capture encoder offsets before closed-loop motor control"
+  ]
+}

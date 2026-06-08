@@ -14,8 +14,8 @@
 
 <br>
 
-**一次安装，22 个子技能。两条主线 — 🛠️ CAD 机械建模 · ⚡ PCB 板级电气 — 端到端打通；
-外加网页预览 / 机器人描述 / 动力学仿真 / 制造出工 / 需求合同 / 执行器裕量 / PCB 结构可靠性 / 电路电源热检查 / 步态评分 / 运动控制轨迹 / FEA 结构门禁 / 磨损疲劳门禁 / MuJoCo 场景门禁 / 机械狗数字孪生编排。**
+**一次安装，23 个子技能。两条主线 — 🛠️ CAD 机械建模 · ⚡ PCB 板级电气 — 端到端打通；
+外加网页预览 / 机器人描述 / 动力学仿真 / 制造出工 / 需求合同 / 执行器裕量 / PCB 结构可靠性 / 电路电源热检查 / 步态评分 / 运动控制轨迹 / 固件 dry-run / FEA 结构门禁 / 磨损疲劳门禁 / MuJoCo 场景门禁 / 机械狗数字孪生编排。**
 
 <br>
 
@@ -43,7 +43,7 @@
 
 ## 这是什么
 
-`build123d-cad` 是一个 **硬件设计 Super Skill**：一个父技能下面挂 22 个子技能（monorepo 模块化）。
+`build123d-cad` 是一个 **硬件设计 Super Skill**：一个父技能下面挂 23 个子技能（monorepo 模块化）。
 一次 `npx skills add` 安装即得全部能力；每个子技能独立 `SKILL.md / references / scripts / tests`，可单独 `pytest` 回归。
 
 父级 `SKILL.md` 只做关键词路由（≤ 220 行），进子技能再读细节——**两层路由**，避免一次性把整套实现塞进上下文。
@@ -125,7 +125,7 @@ export default () => (
 
 ---
 
-## 子技能集合（22 个）
+## 子技能集合（23 个）
 
 | 子技能 | 一句话定位 | 路径 | 优先级 |
 |---|---|---|---|
@@ -147,6 +147,7 @@ export default () => (
 | circuit-simulation | 电路与电源热早期校核：检查 ERC/DRC、电源预算、电机驱动电流、保护、热风险 → 输出 `circuit_check.json` / `power_budget.json` / `thermal_report.json` | [skills/circuit-simulation](skills/circuit-simulation/) | **P0 ✅ 电路** |
 | gait-optimization | 步态合理性早期校核：检查 IK/相位/站立/慢走/roll/pitch/打滑/扭矩/能耗 → 输出 `gait_score.json` / `best_gait_params.yaml` | [skills/gait-optimization](skills/gait-optimization/) | **P0 ✅ 步态** |
 | motion-control | 运动控制轨迹 MVP：检查二维腿 IK、生成 trot/walk/bound 相位轨迹和控制参数 → 输出 `trajectory.json` / `controller_params.yaml` / `ik_report.json` | [skills/motion-control](skills/motion-control/) | **P1 ✅ 控制** |
+| firmware | 固件 dry-run MVP：检查 MCU/控制环/CAN/安全/校准合同，生成 manifest/CAN 帧/校准报告，不烧录不上电 | [skills/firmware](skills/firmware/) | **P2 ✅ dry-run** |
 | fea | 结构 FEA 早期门禁：检查应力、安全系数、变形、模态和跌落风险 → 输出 `fea_report.json` / `static_case_report.json` | [skills/fea](skills/fea/) | **P1 ✅ 结构** |
 | wear-fatigue | 磨损疲劳早期门禁：检查齿轮/轴承/足垫/关节限位/线束/连接器寿命风险 → 输出 `wear_report.json` / `fatigue_report.json` / `maintenance_interval.md` | [skills/wear-fatigue](skills/wear-fatigue/) | **P1 ✅ 寿命** |
 | mujoco-simulation | MuJoCo 场景门禁：检查 stand/walk/slope/drop/push 的稳定性、接触、打滑、扭矩和能耗 → 输出 `mujoco_result.json` / `*.sim_result.json` | [skills/mujoco-simulation](skills/mujoco-simulation/) | **P1 ✅ MuJoCo** |
@@ -198,6 +199,7 @@ pip install pybullet numpy
 > 这套电路的电源预算、保护和热风险合理吗            # → circuit-simulation
 > 这个机械狗步态会不会摔，下一版参数怎么改          # → gait-optimization
 > 生成机械狗 IK 解和 trot 轨迹给仿真                # → motion-control
+> 给机械狗固件规划 CAN 帧、急停和校准 dry-run       # → firmware
 > 这条腿强度够吗，变形会不会太大                  # → fea
 > 这些齿轮、轴承、足垫和线束多久会磨坏             # → wear-fatigue
 > 用 MuJoCo 跑斜坡、台阶、推扰和接触摩擦场景       # → mujoco-simulation
@@ -222,7 +224,7 @@ pip install pybullet numpy
 build123d-cad/
 ├── SKILL.md                          # 父级路由（≤ 220 行）：关键词 → 子技能
 ├── README.md                         # 本文件（开发者视角）
-├── skills/                           # 子技能集合（22 个），每个可独立 pytest
+├── skills/                           # 子技能集合（23 个），每个可独立 pytest
 │   ├── mechanical/                   #   🛠️ build123d 建模 / 装配 / 仿真 / Playbook
 │   ├── pcb/                          #   ⚡ tscircuit 端到端造板（legacy-kicad/ 为归档旧路线）
 │   ├── viewer/                       #   网页多引擎预览
@@ -237,6 +239,7 @@ build123d-cad/
 │   ├── circuit-simulation/           #   电源预算 / 保护 / 电流 / 热风险 gate
 │   ├── gait-optimization/            #   步态评分 / 参数建议 / gait gate
 │   ├── motion-control/               #   IK / gait trajectory / controller params
+│   ├── firmware/                     #   固件 dry-run / CAN / calibration / safety gate
 │   ├── fea/                          #   结构强度 / 刚度 / 模态 / FEA gate
 │   ├── wear-fatigue/                 #   磨损 / 疲劳 / 维护周期 gate
 │   ├── mujoco-simulation/            #   MuJoCo / MJCF / 高保真场景 gate

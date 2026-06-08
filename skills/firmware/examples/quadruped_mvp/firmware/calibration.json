@@ -1,0 +1,11 @@
+{
+  "project": "quadruped_mvp",
+  "calibration": {
+    "joint_zero_required": true,
+    "encoder_offset_required": true,
+    "torque_sensor_required": false,
+    "captured_joint_zero": true,
+    "captured_encoder_offset": false
+  },
+  "ready_for_closed_loop": false
+}

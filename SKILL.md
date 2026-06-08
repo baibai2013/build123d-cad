@@ -1,17 +1,17 @@
 ---
 name: build123d-cad
 description: |
-  硬件设计 Super Skill。一个父技能内含 22 个子技能（mechanical / viewer / urdf /
+  硬件设计 Super Skill。一个父技能内含 23 个子技能（mechanical / viewer / urdf /
   srdf / sdf / simulation / gcode / sendcutsend / parts-catalog / bambu-labs / pcb / electronics-bom /
   requirements-verification / actuator-sizing / pcb-mechanical-reliability / circuit-simulation /
-  gait-optimization / motion-control / fea / wear-fatigue / mujoco-simulation / robot-dog-digital-twin），
+  gait-optimization / motion-control / firmware / fea / wear-fatigue / mujoco-simulation / robot-dog-digital-twin），
   覆盖机械建模 → 网页预览 → 机器人描述 → 动力学仿真 → 制造出工 → 电子域全链路。
   触发词：build123d、CAD建模、做一个零件、参数化设计、装配、URDF、机器人描述、
   MoveIt、Gazebo、SDF、动力学仿真、pybullet、跌落测试、步态仿真、headless sim、站得稳吗、
   切片、3D打印、激光切割、SendCutSend、Bambu、找现成零件、
   STEP、网页预览、分享链接、PCB、tscircuit、代码写PCB、Gerber、嘉立创、JLCPCB、下单打板、电子BOM、
   需求合同、验证矩阵、执行器选型、扭矩裕量、热裕量、PCB刚度、PCB挠曲、连接器受力、
-  电源预算、电路保护、热风险、步态优化、行走算法、IK、FK、运动控制、轨迹生成、FEA、结构强度、刚度、磨损、疲劳、轴承寿命、维护周期、MuJoCo、MJCF、高保真动力学、数字孪生、虚拟样机、机械狗验证、
+  电源预算、电路保护、热风险、步态优化、行走算法、IK、FK、运动控制、轨迹生成、固件、嵌入式、CAN、校准、FEA、结构强度、刚度、磨损、疲劳、轴承寿命、维护周期、MuJoCo、MJCF、高保真动力学、数字孪生、虚拟样机、机械狗验证、
   设计评分、实体样机 gate。
   父级只做路由，详细能力在 skills/<name>/SKILL.md。
 ---
@@ -36,7 +36,7 @@ description: |
 
 ---
 
-## 子技能集合（22 个）
+## 子技能集合（23 个）
 
 | 子 skill | 触发场景关键词（部分匹配即触发） | 路径 | 优先级 |
 |---|---|---|---|
@@ -58,6 +58,7 @@ description: |
 | circuit-simulation | 电路合理性 / 电源预算 / 电流峰值 / 保护电路 / 急停 / 欠压 / TVS / 热风险 / circuit_check / power_budget | skills/circuit-simulation/SKILL.md | P0 ✅ 电路 |
 | gait-optimization | 步态优化 / 行走算法 / trot / gait_score / foot slip / body roll / body pitch / cost of transport / best_gait_params | skills/gait-optimization/SKILL.md | P0 ✅ 步态 |
 | motion-control | IK / FK / 逆运动学 / gait generator / trot trajectory / controller_params / trajectory.json / 运动控制 | skills/motion-control/SKILL.md | P1 ✅ 控制 |
+| firmware | 固件 / 嵌入式 / MCU / FOC / CAN / 校准 / 急停 / firmware_report / can_frames | skills/firmware/SKILL.md | P2 ✅ dry-run |
 | fea | FEA / 有限元 / 结构强度 / 刚度 / 变形 / 安全系数 / 应力 / 模态 / 跌落冲击 / fea_report | skills/fea/SKILL.md | P1 ✅ 结构 |
 | wear-fatigue | 磨损 / 疲劳 / 轴承寿命 / 齿轮寿命 / 足垫磨耗 / 线束弯折 / 连接器松脱 / maintenance_interval | skills/wear-fatigue/SKILL.md | P1 ✅ 寿命 |
 | mujoco-simulation | MuJoCo / MJCF / 高保真动力学 / 接触摩擦 / slope / step obstacle / push disturbance / mujoco_result | skills/mujoco-simulation/SKILL.md | P1 ✅ MuJoCo |
@@ -93,6 +94,7 @@ description: |
 - 「这套电路/电源预算/保护/热风险合理吗」 → circuit-simulation（主，产 circuit_check.json + power_budget.json）
 - 「这个步态/行走算法会不会摔 / foot slip 高不高 / 下一版步态参数怎么改」 → gait-optimization（主，产 gait_score.json）
 - 「生成 IK 解 / trot 轨迹 / controller_params 给仿真或固件」 → motion-control（主，产 trajectory.json + controller_params.yaml）
+- 「规划 MCU 固件 / CAN 帧 / 校准 / 安全状态机 dry-run」 → firmware（主，产 firmware_report.json + can_frames.md）
 - 「这个腿/机身强度够吗 / 变形大不大 / 要不要 FEA」 → fea（主，产 fea_report.json）
 - 「齿轮/轴承/足垫/线束会不会很快磨坏 / 维护周期多长」 → wear-fatigue（主，产 wear_report.json + fatigue_report.json）
 - 「用 MuJoCo/MJCF 跑斜坡、台阶、推扰、接触摩擦验证」 → mujoco-simulation（主，产 mujoco_result.json）

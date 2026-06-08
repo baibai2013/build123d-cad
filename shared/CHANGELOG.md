@@ -46,6 +46,8 @@
 
 | 2026-06-08 | **electronics-bom 从 P3 占位升级为 P1 离线选型 MVP** — ① 更新 `skills/electronics-bom/`，提供 `select_parts.py`、`check_availability.py`、离线 curated robot electronics catalog、`examples/quadruped_mvp/` 和 pytest;② 父 `SKILL.md` / `multi-skill-router.md` 将 electronics-bom 状态改为 active/P1,增加 MCU、电机驱动、编码器、IMU、电源器件、连接器路由;③ `handoff-protocols.md` 增加 `reports/electronics_bom.json + availability_report.json + electrical/library/selected_parts.json` 输出接口;④ `dependencies.md` 加 `electronics-bom → pcb/circuit-simulation/firmware/robot-dog-digital-twin`;⑤ tests 从 placeholder 扩展到离线选型与可用性报告。 | electronics-bom · pcb · circuit-simulation · firmware · robot-dog-digital-twin | hardware | 非破坏(占位填实);MVP 不做实时库存/价格或采购;示例故意高电流驱动需求产 blocker;自身 tests 7/7 |
 
+| 2026-06-08 | **新增 firmware 子技能(P2 dry-run 固件合同层)** — ① 新增 `skills/firmware/`，提供 `generate_project.py`、`run_firmware_tests.py`、MVP target/safety/CAN/calibration references、`examples/quadruped_mvp/` 和 pytest;② 父 `SKILL.md` / `multi-skill-router.md` 增加固件、嵌入式、MCU、FOC、CAN、校准、急停、欠压、过流路由;③ `handoff-protocols.md` 增加 `reports/firmware_report.json + firmware_test_report.json` 和 `firmware/project_manifest.json + can_frames.md + calibration.json` 输出接口;④ `dependencies.md` 加 `firmware → robot-dog-digital-twin`;⑤ `pytest.ini` 纳入新测试路径。 | firmware · electronics-bom · motion-control · pcb · robot-dog-digital-twin | hardware | 非破坏(纯新增);MVP 不编译、不烧录、不上电,示例故意欠压/热阈值/编码器校准 blocker;自身 tests 4/4 |
+
 ## 登记规则
 
 - 任何修改 shared/ 的 PR 必须新增一行,内容含日期 / 变更 / 影响子技能 / Owner / 备注

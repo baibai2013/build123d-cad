@@ -1,0 +1,19 @@
+{
+  "project": "quadruped_mvp",
+  "valid": false,
+  "checks": {
+    "target_defined": true,
+    "control_loop_ok": true,
+    "bus_contract_ok": true,
+    "safety_contract_ok": false,
+    "calibration_contract_ok": false
+  },
+  "blockers": [
+    "undervoltage cutoff 18V below safe minimum 20V",
+    "thermal shutdown 85C above max 80C",
+    "encoder offset calibration is required but not captured"
+  ],
+  "warnings": [
+    "platformio build is not run by this MVP"
+  ]
+}

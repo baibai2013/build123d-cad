@@ -3,7 +3,7 @@
 > 状态:**P0 孵化中**。`robot-dog-digital-twin`、`requirements-verification`
 > 与 `actuator-sizing`、`pcb-mechanical-reliability`、`circuit-simulation`、
 > `gait-optimization`、`motion-control`、`fea`、`wear-fatigue`、`mujoco-simulation`、
-> `electronics-bom` MVP 已落地;其余条目仍是缺口分析与子技能规划,
+> `electronics-bom`、`firmware` dry-run MVP 已落地;其余条目仍是缺口分析与子技能规划,
 > 后续逐个按 `docs/adding-new-subskill.md` 流程立项。
 >
 > 关联:现有 12 子技能(见 `SKILL.md`)、架构红线(见本文 §2)、handoff 约定(`shared/handoff-protocols.md`)。
@@ -63,7 +63,7 @@
 | ③ 电子 | 原理图 / PCB / BOM / 出件下单 | `pcb` `electronics-bom` | ✅ PCB 强,BOM MVP |
 | ③ PCB 机械可靠性 | PCB 刚度 / 挠曲 / 固定孔应力 / 连接器受力 / 机身干涉 | `pcb-mechanical-reliability` | ✅ MVP |
 | ③ 电路验证 | 电源预算 / 电流峰值 / 保护电路 / 热风险 / SPICE 粗验 | `circuit-simulation` | ✅ MVP |
-| ④ **固件** | MCU 驱动 / FOC 电机环 / 总线协议 / 标定 | —— | ❌ **完全空白** |
+| ④ **固件** | MCU 驱动 / FOC 电机环 / 总线协议 / 标定 | `firmware` | ✅ dry-run MVP |
 | ⑤ 描述 | URDF / SRDF / SDF | `urdf` `srdf` `sdf` | ✅ 强 |
 | ⑤ 仿真 | 动力学 / 步态 / 稳定性 | `simulation`(pybullet MVP) | 🟡 未到真步态 |
 | ⑤ 运控算法 | FK/IK / 步态生成 / 平衡 / MPC | `mechanical`(仅"指引") | ❌ 无可执行实现 |
@@ -289,6 +289,12 @@ actuator_sizing_report.md
 
 ### 3.1 `firmware` — 嵌入式/电机控制固件(P2,最大断崖)
 
+**落地状态(2026-06-08)**:已以 `skills/firmware/` dry-run MVP 落地,包含
+`firmware_plan.yaml` metadata 输入、MCU/toolchain/控制环/CAN/急停/欠压/过流/热关断/校准合同检查、
+`firmware_report.json`、`firmware_test_report.json`、`project_manifest.json`、`can_frames.md`、
+`calibration.json`、示例 `quadruped_mvp/` 和 pytest。第一版不编译、不烧录、不上电、不让电机动作,
+只做实体前固件合同与安全 gate。
+
 **定位**:把 `pcb` 造出来的驱动板/主控板"装上能跑的代码"。从 MCU 工程脚手架到电机闭环。
 
 **边界(做什么)**:
@@ -314,10 +320,18 @@ actuator_sizing_report.md
 - 上游 `pcb` → `firmware`:`output/<task>/electrical/` 的 netlist + BOM(MCU 型号/引脚/外设)
 - 上游 `mechanical` / `urdf`:关节限位、减速比、零位定义(标定用)
 - 下游 `firmware` → `simulation`:导出控制环参数/期望轨迹,做 sim↔real 对比
-- 产物:`output/<task>/firmware/` —— 工程目录 + `*.elf`/`*.bin` + `can-frames.md` + `calibration.json`
+- 产物:`firmware/project_manifest.json`、`firmware/can_frames.md`、`firmware/calibration.json`、
+  `reports/firmware_report.json`、`reports/firmware_test_report.json`。
 
 **风险**:固件强依赖具体硬件,headless 可验证性差 → 用 Renode/QEMU + 单测把"能编译+逻辑对"
 闭环,实体烧录/上电明确标为 gate(类似 `bambu-labs` 的 `--execute --confirm`)。
+
+**后续增强**:
+
+- 接入 PlatformIO/CMake 的 headless build,但保持 dry-run 默认。
+- 从 `electronics-bom` / `pcb` 自动填 MCU、CAN 收发器、编码器和驱动器 metadata。
+- 增加 C/CPP 单元测试、协议 golden frames 和 calibration hash。
+- 真实 flash/上电/电机动作必须单独 gate + 显式人工确认。
 
 ---
 
@@ -865,7 +879,8 @@ skills/<skill-name>/
 | P1-3 | `skills/motion-control/` | ✅ IK 与相位步态轨迹 MVP 已能产 blocker 和 trajectory |
 | P1-4 | `skills/electronics-bom/` | ✅ 原占位已填实为离线 curated BOM 选型 MVP |
 | P1-5 | `skills/mujoco-simulation/` real backend | 真实 MuJoCo 求解器接入 |
-| P2 | `skills/firmware/`、`skills/sim2real-calibration/`、`skills/integration/` | 真实控制和实物闭环进入人工 gate |
+| P2-1 | `skills/firmware/` | ✅ 固件 dry-run 合同、安全和校准 gate 已能产 blocker |
+| P2-2 | `skills/sim2real-calibration/`、`skills/integration/` | 真实控制和实物闭环进入人工 gate |
 
 ### 4.5 模块间上下文清理纪律
 
